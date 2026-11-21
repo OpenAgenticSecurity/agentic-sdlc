@@ -23,6 +23,10 @@ description: Use when about to claim a task is done, fixed, passing, deployed or
 - **Verify committed objects & raw counts**: Check generated/attested artifacts
   against `git show HEAD:<path>` (not only uncommitted working tree bytes), and
   never rely on output-truncating CLI wrappers for factual counts.
+- **Verify coupled artifact closure**: Confirm code/API/schema edits also synced
+  coupled tests, docs, and `STATUS.md` (via `scripts/check-change-sync.py` when
+  configured, using deterministic `git diff` / OpenAPI / AST projections rather
+  than blind full-repo scans).
 - **Prove gates with negative mutations**: Verify at least one violating/
   malicious input fails for the expected reason while an adjacent legal control
   passes.

@@ -177,3 +177,9 @@ cross-product rules into these standards. Prefer an executable check for a stabl
 invariant. Existing standards should be extended before creating duplicate guides.
 Source/test observations that contradict STATUS are documentation defects to
 reconcile; stale prose does not override fresh implementation evidence.
+
+**Projection-driven doc sync**: Before asking a coding agent to update `STATUS.md`
+or architecture/API docs on a large repo, extract a deterministic projection first
+(`git diff --name-status`, OpenAPI JSON, AST summary, or schema export) and pair
+it with `scripts/check-change-sync.py` rather than having the agent blindly scan
+the entire repository and trigger `auto-compact` drift.

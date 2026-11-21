@@ -2,7 +2,7 @@
 
 **Updated**: 2026-11-21
 **Chinese**: [README.zh.md](README.zh.md)
-**Authoritative Source**: [`standards/`](../standards/README.md) & [`checklists/`](../checklists/README.md) (`v0.1.0`)
+**Authoritative Source**: [`standards/`](../standards/README.md) & [`checklists/`](../checklists/README.md) (`v0.2.0`)
 
 > **Trust Boundary**: Every `SKILL.md` in this directory is **100% standalone**
 > (works inside any unrelated repo via `npx skills add`) and **explicitly

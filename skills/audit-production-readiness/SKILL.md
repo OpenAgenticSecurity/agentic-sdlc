@@ -98,7 +98,10 @@ Rule clearly between H1 and H2 using verified evidence — no hedging.
 5. **Security**: Secret exposure & runtime `/proc`/env boundary, endpoint auth
    coverage (resolved via dependency graph, not naive grep), injection surfaces
    (SQL/shell/XSS/template/SSRF), and AI/agent attack surface (prompt injection,
-   tool privilege boundaries, HITL gates on destructive actions, tenant isolation).
+   least-privilege tool boundaries, read-only exfiltration, HITL 15-second
+   decision cards & anti-rubber-stamp checks, asymmetric self-learning — learned
+   rules may only tighten constraints, never auto-expand permissions — and
+   tenant isolation).
 
 ## 6. Output Structure & Round-Over-Round Continuity
 

@@ -70,9 +70,10 @@
 - [ ] Never leave cross-session resources (HTTP/LLM/DB/SSH clients) without an explicit `with` / `async with` owner.
 - [ ] Never pressure an agent with emotional prompts — supply the exact stack trace and ask for root-cause analysis.
 
-## 6. Four Architectural Disciplines
+## 6. Four Architectural Disciplines & Model-Upgrade Guardrails
 
-1. **Separate Reasoning from Execution**: Keep LLM planning/decision logic cleanly separated from deterministic I/O and state execution.
+1. **Separate Reasoning from Execution**: Keep LLM planning/decision logic cleanly separated from deterministic I/O and state execution (empirical compounding: structured architecture drove a ~10x gap in messages per 1K LOC, `r = 0.969`).
 2. **Explicit Resource Lifecycles**: Whoever creates a client/session/connection owns closing it via context managers.
 3. **Protocol over Glue Code**: Replace repetitive bespoke adapters with explicit schemas and protocols to reduce cross-session cognitive tax.
 4. **Plan Before Structural Change**: Large architecture changes start in a fresh planning session and land as reversible increments.
+5. **Treat every model upgrade as a high-risk release**: Upgrading to a stronger model can still break working workflows via (a) fixed context-compression thresholds clipping fresh tool output, (b) old defensive prompts conflicting with native tool calling, (c) stronger parallel tool calls exposing latent concurrency deadlocks, (d) stricter safety refusals blocking legitimate defensive/security bug fixes, (e) over-exploration exhausting step/rate budgets, (f) IDE/proxy silent fallback to a weaker default model, or (g) stricter schema adherence exposing previously masked ambiguity — always run a fixed regression suite before switching.

@@ -15,6 +15,7 @@ GitHub repositories.
 ## Reference Examples (Optional)
 
 - `issue-claim.example.md` — Managed Issue Claim Comment format validated & checked for owned-path overlaps via `scripts/agent-claim.py`.
+- `agentic-sync.example.json` — Declarative coupled-change rules enforced via `scripts/check-change-sync.py` (ensures code/API/doc edits update coupled tests, docs, `STATUS.md`, or bilingual mirrors).
 - `suite-catalog.example.json` — Example suite catalogue for repositories adopting `standards/testing-strategy/affected-closure-contract.md`.
 
 ## Quick Apply & Local Git Guardrails

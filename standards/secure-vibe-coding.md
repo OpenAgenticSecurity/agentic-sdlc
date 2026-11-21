@@ -133,6 +133,15 @@ When the AI-written application itself invokes LLMs, tools, or MCP servers:
 - **Pin tool definitions & sandbox execution**: Verify MCP tool catalog digests
   (fail closed on rug-pull/schema drift) and run untrusted code/commands inside
   resource-bounded sandboxes without exposing host credentials.
+- **Prevent read-only tool exfiltration**: Even when all write tools are
+  blocked, pairing an internal sensitive read (logs, knowledge base, secrets)
+  with an outbound network/search tool (`web_fetch`, external search) allows
+  exfiltration through URL queries or search terms — isolate or domain-allowlist
+  egress on high-sensitivity sessions.
+- **Never classify tool risk by name substring**: Never treat a tool as
+  read-only merely because its name contains `read`, `get`, or `check` — default
+  every tool to `mutating` unless explicitly allowlisted in a signed capability
+  manifest.
 
 ## 6. Mandatory Security Verification (Red-before-Green)
 

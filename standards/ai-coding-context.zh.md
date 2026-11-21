@@ -164,3 +164,8 @@ browser/API journey 都必须运行。
 按“失败案例 → 根因 → 适用边界 → 预防规则 → 回归测试 → 当前状态”沉淀。产品实现细节留在
 产品指南，跨产品规则提升到共享标准；可机器判断的稳定约束优先变成检查。先扩充现有标准，
 再考虑新增文档。新鲜源码/测试与 STATUS 冲突时，应修正文档；旧文字不覆盖实际实现证据。
+
+**投影驱动文档同步**：在大仓里让 Coding Agent 同步 `STATUS.md` 或架构/API 文档前，
+先用确定性工具抽出现实投影（`git diff --name-status`、OpenAPI JSON、AST 摘要或
+Schema 导出）并配合 `scripts/check-change-sync.py` 守门，避免让 Agent 盲扫全仓触发
+`auto-compact` 与幻觉漂移。

@@ -92,7 +92,7 @@ Deliver a clear verdict (`<= 200` words) grounded in verified findings — no he
 - [ ] **Credentials & runtime exposure**: Hardcoded secrets count (with command), secret boundaries across client/server/logs/env/mounted files/`/proc`.
 - [ ] **AuthN/AuthZ coverage**: `M / N` protected endpoints computed via route/dependency graph (not naive decorator grep) + tenant/object IDOR check.
 - [ ] **Injection & unsafe sinks**: SQL/NoSQL, shell/command, XSS/HTML, template, SSRF, path traversal, unsafe deserialization.
-- [ ] **AI/Agent attack surface (if applicable)**: Prompt-injection exposure, least-privilege tool identity, HITL gates on destructive actions, multi-dimensional loop/cost caps, cross-tenant memory isolation.
+- [ ] **AI/Agent attack surface (if applicable)**: Prompt-injection exposure, least-privilege tool identity, HITL gates on destructive actions, multi-dimensional loop/cost caps, cross-tenant memory isolation, anti-approval-fatigue 15-second decision cards (monitoring rubber-stamp rates), triangular quality metrics (efficiency × reopen/override rate × canary ground truth), and **asymmetric self-learning** (automated rules may only tighten constraints or add context — never auto-expand permissions, drop approvals, or add permanent allowlists).
 - [ ] **Pre-release operational safety**: Verify `SECRET_KEY` / signing keys are preserved across deploys (changing them breaks password hashes, sessions, and encrypted columns); require verified DB backups, forward-compatible non-destructive migrations, and critical-table row-count checks; pin immutable container image digests (never `:latest`) with `read_only`, `no-new-privileges`, and `cap_drop: ALL`.
 
 ---

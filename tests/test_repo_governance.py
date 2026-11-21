@@ -163,6 +163,7 @@ def test_progressive_profiles_and_five_standalone_skills_exist() -> None:
         "profiles/L1-team/workflows/ci-go.yml",
         "profiles/L1-team/workflows/ci-java.yml",
         "profiles/L1-team/issue-claim.example.md",
+        "profiles/L1-team/agentic-sync.example.json",
         "profiles/L1-team/suite-catalog.example.json",
         "profiles/L1-team/candidate-gates.workflow.yml",
         "profiles/L2-governed/README.md",
@@ -208,8 +209,15 @@ def test_progressive_profiles_and_five_standalone_skills_exist() -> None:
             f"{rel} must explicitly declare non-authoritative status"
         )
 
-    for rel in ("standards/secure-vibe-coding.md", "standards/secure-vibe-coding.zh.md"):
-        assert (REPO / rel).is_file(), f"missing secure vibe coding standard: {rel}"
+    for rel in (
+        "standards/secure-vibe-coding.md",
+        "standards/secure-vibe-coding.zh.md",
+        "standards/reliable-and-performant-coding.md",
+        "standards/reliable-and-performant-coding.zh.md",
+        "standards/versioning-and-releases.md",
+        "standards/versioning-and-releases.zh.md",
+    ):
+        assert (REPO / rel).is_file(), f"missing core coding standard: {rel}"
 
 
 def test_ci_workflows_security_and_non_self_attestation_contract() -> None:
@@ -367,8 +375,12 @@ def test_plugin_manifest_versions_agree() -> None:
     for rel in (
         "skills/README.md",
         "skills/README.zh.md",
+        "profiles/L0-solo/AGENTS.md",
     ):
-        assert f"`v{version}`" in (REPO / rel).read_text(encoding="utf-8"), f"{rel} must reference v{version}"
+        assert f"v{version}" in (REPO / rel).read_text(encoding="utf-8"), f"{rel} must reference v{version}"
+    assert f"v{version}" in (REPO / "site/index.html").read_text(encoding="utf-8"), (
+        f"site/index.html must reference v{version}"
+    )
 
 
 def test_repository_does_not_declare_an_installable_python_package() -> None:
@@ -467,7 +479,7 @@ def test_bilingual_standards_and_checklists_keep_structural_parity() -> None:
             )
     assert pairs >= 18, f"expected >=18 bilingual standards/checklists pairs, found {pairs}"
 
-    for pair_base in ("docs/empirical-findings", "docs/workflow-integration", "examples/README", "evals/README"):
+    for pair_base in ("docs/ontology", "docs/empirical-findings", "docs/workflow-integration", "examples/README", "evals/README"):
         en = REPO / f"{pair_base}.md"
         zh = REPO / f"{pair_base}.zh.md"
         assert en.is_file() and zh.is_file(), f"missing bilingual pair: {pair_base}"

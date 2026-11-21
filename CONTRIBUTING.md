@@ -78,7 +78,8 @@ uv pip compile requirements-test.in --universal --generate-hashes \
 ## Releasing
 
 Plugin manifests under `.claude-plugin/`, `.cursor-plugin/` and `.codex-plugin/`
-carry the version, and `skills/README.md` / `skills/README.zh.md` cite it.
+carry the version, and `skills/README.{md,zh.md}`, `profiles/L0-solo/AGENTS.md`,
+and `site/index.html` cite it. See [`standards/versioning-and-releases.md`](standards/versioning-and-releases.md).
 `tests/test_repo_governance.py::test_plugin_manifest_versions_agree` lists every
 file and fails if one is missed. Bump them together, then push a `v<version>`
 tag. The release workflow re-runs `make verify-all` and publishes a source

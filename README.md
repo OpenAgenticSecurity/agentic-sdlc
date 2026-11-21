@@ -88,7 +88,7 @@ python3 -S agentic-sdlc/scripts/run-evals.py
 Or drop the reusable composite Action (`action.yml`) into any repository's CI (pinned to a 40-char commit SHA):
 
 ```yaml
-- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.1.0
+- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.0
   with:
     target: .
 ```
@@ -158,7 +158,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | Where It Lives | What You Put There | Why |
 |---|---|---|
 | **Global Coding Agent** (Claude Code / Cursor / Codex) | Install the 6 **`skills/`** once via `/plugin install` or `npx skills add` | **Language-agnostic** security, PR audit, production-readiness, fake-done dereference & multi-agent Git guardrails (NOT code style/formatting rules). Loaded only on demand with zero permanent context tax. |
-| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.1.0 -->`. |
+| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.0 -->`. |
 | **Local Machine / CI** (run on demand or per PR) | **`scripts/audit-repo.py`** (or 4-line **`action.yml`**) + **`scripts/workspace-git.py guardrails`** | Catches unpinned Actions, multi-language unsafe sinks, `--passWithNoTests`, and direct commits on `main` deterministically. |
 | **PR Reviews & GitHub** | Cite stable Rule IDs (**`OAS-CI-01`**, **`OAS-SVC-01`**, **`OAS-GH-02`**) + **`DoneClaim`** + import `github-ruleset.import.json` | Keeps `standards/` & `checklists/` as human reference (like OWASP ASVS) while enforcing the hard merge boundary on GitHub. |
 
@@ -175,9 +175,9 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | **`profiles/`** | Copy-ready **`L0-solo`** (unified `AGENTS.md` + thin `@AGENTS.md` `CLAUDE.md`), **`L1-team`** (Python/TS/Rust/Go/Java fail-closed CI), **`L2-governed`** (importable GitHub Ruleset JSON) | [profiles/README.md](profiles/README.md) ([中文](profiles/README.zh.md)) |
 | **`examples/`** | Runnable backend contract gates (`pytest`) & Playwright 3-layer frontend E2E starter | [examples/README.md](examples/README.md) ([中文](examples/README.zh.md)) |
 | **`evals/`** | 14-case polyglot planted-trap eval harness (`scripts/run-evals.py`) + Skill eval rubrics | [evals/README.md](evals/README.md) ([中文](evals/README.zh.md)) |
-| **`standards/`** | 7 concise bilingual standards + 2 lightweight closed contracts (`affected-closure`, `enforcement-evidence`) | [standards/README.md](standards/README.md) ([中文](standards/README.zh.md)) |
-| **`scripts/`** | 8 adopter/eval helpers (`audit-repo.py`, `run-evals.py`, `bootstrap.sh`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py`, `link-shared-node-deps.mjs`, `check-product-compliance.sh`) + 3 contract/doc checkers | [BOOTSTRAP.md](BOOTSTRAP.md) |
-| **`docs/`** | Workflow integration map, self-contained empirical evidence & security engineering manifesto | [workflow-integration.md](docs/workflow-integration.md) · [empirical-findings.md](docs/empirical-findings.md) · [manifesto.md](docs/manifesto.md) |
+| **`standards/`** | 9 concise bilingual standards (incl. Security, Reliability/Performance & Versioning) + 2 closed contracts (`affected-closure`, `enforcement-evidence`) | [standards/README.md](standards/README.md) ([中文](standards/README.zh.md)) |
+| **`scripts/`** | 9 adopter/eval helpers (`audit-repo.py`, `check-change-sync.py`, `run-evals.py`, `bootstrap.sh`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py`, `link-shared-node-deps.mjs`, `check-product-compliance.sh`) + 3 contract/doc checkers | [BOOTSTRAP.md](BOOTSTRAP.md) |
+| **`docs/`** | Agentic SDLC Ontology (9 entities / 5 axioms), workflow integration map, empirical evidence & manifesto | [ontology.md](docs/ontology.md) · [workflow-integration.md](docs/workflow-integration.md) · [empirical-findings.md](docs/empirical-findings.md) · [manifesto.md](docs/manifesto.md) |
 | **`site/`** | Zero-dependency bilingual GitHub Pages site + canonical JSON schema hosting | [site/index.html](site/index.html) · [Live Site](https://openagenticsecurity.github.io/agentic-sdlc/) |
 
 ### Requirements
@@ -186,7 +186,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 |---|---|
 | Skills, checklists, profiles, standards | Nothing — plain Markdown, YAML and JSON |
 | `bootstrap.sh`, `check-product-compliance.sh` | Bash 3.2+ and Git on macOS or Linux (Windows is untested; use WSL) |
-| `audit-repo.py`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py` | Python 3.11+ standard library; the `gh` CLI for `--github`, `--live`, and `publish` |
+| `audit-repo.py`, `check-change-sync.py`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py` | Python 3.11+ standard library; the `gh` CLI for `--github`, `--live`, and `publish` |
 | `observe-github-ruleset.py --validate`, `make verify-all` | The hash-locked packages in `requirements-test.txt` |
 | `link-shared-node-deps.mjs` | Node.js 18.3+ and npm |
 

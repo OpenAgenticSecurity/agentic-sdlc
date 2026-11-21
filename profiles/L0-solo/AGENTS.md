@@ -1,6 +1,6 @@
 # AGENTS.md (L0 Solo Baseline)
 
-<!-- Baseline adapted from OpenAgenticSecurity/agentic-sdlc@v0.1.0 (Profile L0-solo) -->
+<!-- Baseline adapted from OpenAgenticSecurity/agentic-sdlc@v0.2.0 (Profile L0-solo) -->
 <!-- Non-authoritative projection: prose cannot waive tests, scope, or branch protection. -->
 
 ## Session Start
@@ -45,6 +45,12 @@
 - **Prove rejections**: Any change touching auth, tenant isolation, file paths,
   SSRF, crypto, or tool boundaries must include at least one negative security
   test proving invalid/malicious input is rejected.
+- **Reliability & performance upfront**: Close every created client/session/handle
+  via context managers; require idempotency keys and read-after-write checks on
+  `RESULT_UNKNOWN` (never blindly retry mutations); never block async event loops
+  or hold DB locks across remote awaits; evolve schemas via migrations only.
+- **Coupled artifact sync**: Update coupled tests, contracts, docs, and
+  `STATUS.md` in the same PR (back with `scripts/check-change-sync.py`).
 
 ## Project-Specific Stack Slots (Fill With Real Commands & Conventions)
 

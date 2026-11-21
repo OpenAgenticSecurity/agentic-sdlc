@@ -1,0 +1,56 @@
+{
+  "schema_version": "openagenticsecurity.sync.change-sync-config.v1",
+  "rules": [
+    {
+      "id": "SYNC-TESTS",
+      "description": "Production source edits must accompany unit/integration tests",
+      "when_changed": [
+        "src/**/*.py",
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.go",
+        "src/**/*.rs",
+        "src/**/*.java"
+      ],
+      "exclude": [
+        "**/*_test.*",
+        "**/*.test.*",
+        "**/*.spec.*"
+      ],
+      "require_any": [
+        "tests/**",
+        "test/**",
+        "**/*_test.*",
+        "**/*.test.*",
+        "**/*.spec.*"
+      ]
+    },
+    {
+      "id": "SYNC-CONTRACT-DOCS",
+      "description": "API, schema, or migration changes must update contract docs or STATUS.md",
+      "when_changed": [
+        "src/api/**",
+        "migrations/**",
+        "alembic/**",
+        "schema/**"
+      ],
+      "require_any": [
+        "docs/architecture/STATUS.md",
+        "docs/**",
+        "README.md"
+      ]
+    },
+    {
+      "id": "SYNC-BILINGUAL-DOCS",
+      "description": "English and Chinese normative docs stay synchronized",
+      "when_changed": [
+        "docs/*.md"
+      ],
+      "require_mirror": {
+        "from_suffix": ".md",
+        "to_suffix": ".zh.md",
+        "bidirectional": true
+      }
+    }
+  ]
+}
