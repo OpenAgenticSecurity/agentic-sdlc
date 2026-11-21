@@ -14,7 +14,7 @@
     hero_note: "提炼自 2000+ 亿 Token 多仓工程实践与 15,384 条真实 Claude Code / Codex 对话——由 9 大实体、5 条公理、9 篇标准、6 个独立 Skills 与零依赖验证脚本统一收口。",
     cta_audit: "10 秒体检你的仓库",
     cta_ontology: "阅读本体论总纲 ↗",
-    cta_release: "v0.2.1 正式版 ↗",
+    cta_release: "v0.2.2 正式版 ↗",
     ev_kicker: "01 · 一线实证数据",
     ev_title: "为什么绿灯单测依然会放行坏掉的 AI 代码",
     ev_desc: "每一条控制规则都源自真实生产事故，且严格绑定各自独立分母，绝不跨样本夸大。",

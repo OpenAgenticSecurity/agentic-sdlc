@@ -88,7 +88,7 @@ python3 -S agentic-sdlc/scripts/run-evals.py
 Or drop the reusable composite Action (`action.yml`) into any repository's CI (pinned to a 40-char commit SHA):
 
 ```yaml
-- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.1
+- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.2
   with:
     target: .
 ```
@@ -158,7 +158,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | Where It Lives | What You Put There | Why |
 |---|---|---|
 | **Global Coding Agent** (Claude Code / Cursor / Codex) | Install the 6 **`skills/`** once via `/plugin install` or `npx skills add` | **Language-agnostic** security, PR audit, production-readiness, fake-done dereference & multi-agent Git guardrails (NOT code style/formatting rules). Loaded only on demand with zero permanent context tax. |
-| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.1 -->`. |
+| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.2 -->`. |
 | **Local Machine / CI** (run on demand or per PR) | **`scripts/audit-repo.py`** (or 4-line **`action.yml`**) + **`scripts/workspace-git.py guardrails`** | Catches unpinned Actions, multi-language unsafe sinks, `--passWithNoTests`, and direct commits on `main` deterministically. |
 | **PR Reviews & GitHub** | Cite stable Rule IDs (**`OAS-CI-01`**, **`OAS-SVC-01`**, **`OAS-GH-02`**) + **`DoneClaim`** + import `github-ruleset.import.json` | Keeps `standards/` & `checklists/` as human reference (like OWASP ASVS) while enforcing the hard merge boundary on GitHub. |
 

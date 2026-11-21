@@ -170,20 +170,14 @@ export function ensureStore({
     install(buildDir, { ignoreScripts });
     fs.mkdirSync(path.join(buildDir, 'node_modules'), { recursive: true });
     fs.writeFileSync(path.join(buildDir, STORE_COMPLETE_MARKER), 'ok\n');
-    if (readOnlyStore) lockTreeReadOnly(buildDir);
     try {
       fs.renameSync(buildDir, storeDir);
     } catch (error) {
       if (error.code !== 'ENOTEMPTY' && error.code !== 'EEXIST') throw error;
     }
+    if (readOnlyStore) lockTreeReadOnly(storeDir);
   } finally {
-    if (fs.existsSync(buildDir)) {
-      if (readOnlyStore) {
-        // Restore write bit on temp dir only when cleaning up an aborted/raced build.
-        fs.chmodSync(buildDir, 0o700);
-      }
-      fs.rmSync(buildDir, { recursive: true, force: true });
-    }
+    fs.rmSync(buildDir, { recursive: true, force: true });
   }
   return completeStore(storeDir);
 }

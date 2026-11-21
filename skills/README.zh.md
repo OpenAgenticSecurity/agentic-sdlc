@@ -2,7 +2,7 @@
 
 **更新日期**: 2026-11-21
 **English**: [README.md](README.md)
-**绑定权威源**：[`standards/`](../standards/README.zh.md) 与 [`checklists/`](../checklists/README.zh.md)（`v0.2.1`）
+**绑定权威源**：[`standards/`](../standards/README.zh.md) 与 [`checklists/`](../checklists/README.zh.md)（`v0.2.2`）
 
 > **信任边界声明**：本目录下 6 个 `SKILL.md` 全部**独立自包含**（用 `npx skills add` 装到任意外部仓库零缺失文件即可直接工作），且均为**显式非权威投影**。Skill 让 Coding Agent 承担日常执行与检查工作，真正的信任边界由 Prompt 窗口之外的机制守住：本地 Git Hooks（`scripts/workspace-git.py`）、**`deps`** 生命周期钩子，以及受保护 GitHub Ruleset（`scripts/observe-github-ruleset.py`）。
 
