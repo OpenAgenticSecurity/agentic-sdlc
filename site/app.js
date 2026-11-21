@@ -3,77 +3,80 @@
 
   var COPY_ZH = {
     nav_evidence: "实证数据",
-    nav_proof: "10 秒自检",
-    nav_workflow: "开发流嵌入",
+    nav_ontology: "本体论",
+    nav_quickstart: "10 秒验证",
+    nav_workflow: "开发流",
     nav_skills: "6 个 Skills",
-    nav_arch: "三层防线",
-    pill_zero: "零框架绑定",
-    pill_polyglot: "Python · TS/JS · Go · Rust · Java",
+    meta_zero: "零框架依赖",
+    meta_langs: "Python · TS/JS · Go · Rust · Java",
     hero_title: "别让 Coding Agent 既当选手又当裁判。",
-    hero_sub: "给“代码由 Coding Agent 来写”的仓库准备的一套护栏：Agent 会读的规则、它跳不过的确定性本地检查，以及它无法自己批准自己的 GitHub 合并边界。",
-    hero_meta: "提炼自 2000+ 亿 Token 真实多仓 AI 辅助工程实践，配套分母明确的专项研究、14 用例多语言评测与 Fail-Closed 脚本。",
+    hero_lead: "为 AI 参与写代码的仓库准备的纯文件护栏：Agent 会读的规则、它跳不过的确定性本地检查，以及它无法自己批准自己的 GitHub 合并边界。",
+    hero_note: "提炼自 2000+ 亿 Token 多仓工程实践与 15,384 条真实 Claude Code / Codex 对话——由 9 大实体、5 条公理、9 篇标准、6 个独立 Skills 与零依赖验证脚本统一收口。",
     cta_audit: "10 秒体检你的仓库",
-    cta_skills: "安装 6 个独立 Skills",
-    cta_evidence: "阅读完整实证数据 ↗",
-    ev_eyebrow: "一线实证数据 · 严格区分分母",
+    cta_ontology: "阅读本体论总纲 ↗",
+    cta_release: "v0.2.0 正式版 ↗",
+    ev_kicker: "01 · 一线实证数据",
     ev_title: "为什么绿灯单测依然会放行坏掉的 AI 代码",
-    ev_desc: "本仓库每一条规则都源自真实生产事故，而不是泛泛的 Prompt 技巧。每项量化结论均严格绑定对应样本分母。",
-    stat1_label: "累计多仓 AI 工程实战体量（Token）",
-    stat1_note: "Claude Code、Cursor 与 Codex 并发协作，覆盖 Python、TS/React 与 Rust",
-    stat2_label: "CI 与单测合计捕获的前端 Bug 比例",
-    stat2_note: "454 个去重前端缺陷（~10 万行）；前 4 类根因占 84%",
-    stat3_label: "CI 捕获的后端性能事故比例",
-    stat3_note: "100+ 项真实修复（~38 万行）；仅 16% 在压垮前主动发现",
-    stat4_label: "AI Code Review 经取证复核后留下的真阻断项",
-    stat4_note: "另有 15/15 → 0/15 旧门禁漂移与 0/33 架构图无条件准确",
-    chart1_title: "454 个前端缺陷：前 4 类根因占 84%",
-    chart1_sub: "基于 321 个明确归因的 React/TypeScript 缺陷样本",
-    chart2_title: "上下文悬崖与规模相变临界点",
-    chart2_sub: "基于 443 次追踪会话 / 84 亿 Token 专项样本集",
-    proof_eyebrow: "10 秒实证体检 · 零 pip install",
-    proof_title: "直接对着你自己的仓库跑一遍",
-    proof_desc: "不必轻信文档宣传。用纯 Python 标准库对任意本地仓库跑一次只读体检，或在 CI 中直接贴入 4 行可复用 GitHub Action。",
-    tab_audit: "10 秒自检脚本",
-    tab_skills: "安装 6 个 Skills",
-    tab_action: "4 行 CI Action",
-    tab_bootstrap: "一键落地 L0–L2",
+    ev_desc: "每一条控制规则都源自真实生产事故，且严格绑定各自独立分母，绝不跨样本夸大。",
+    m1_l: "多仓生产实战累计 Token",
+    m1_s: "另分析 15,384 条真实 Claude Code / Codex 工程对话",
+    m2_l: "CI 与单测捕获的前端 Bug",
+    m2_s: "454 个去重缺陷（~10 万行）；前 4 类根因占 84%",
+    m3_l: "CI 捕获的后端性能修复",
+    m3_s: "100+ 项真实修复（~38 万行）；仅 16% 为主动发现",
+    m4_l: "AI Review 经复核留下的真阻断",
+    m4_s: "另有 15/15 → 0/15 旧门禁漂移与 0/33 架构图准确",
+    c1_title: "454 个前端缺陷 · 前 4 类根因占 84%",
+    c1_sub: "基于 321 个明确归因的 React/TypeScript 缺陷样本",
+    c2_title: "规模相变临界点与上下文悬崖",
+    c2_sub: "基于 443 次追踪会话 / 84 亿 Token 专项样本集",
+    on_kicker: "02 · AGENTIC SDLC 本体论（v0.2.0 新增）",
+    on_title: "五条公理，从根源消除 Agent 本体混淆",
+    on_desc: "Agent 反复翻车很少是因为漏看清单文字，而是把会话记忆混成代码现实、把单文件修改混成耦合完成、把总结混成证据。",
+    a1_t: "公理 1 · 事实压倒记忆（Reality > Memory）",
+    a1_d: "新鲜拉取的 origin/main、真实调用链与构造点、STATUS.md 以及只读运行态探针无条件压倒会话记忆与过时文档。",
+    a2_t: "公理 2 · 耦合变更闭包（ArtifactGraph）",
+    a2_d: "修改源码、API 或 Schema 后，在耦合的单测、契约、文档与 STATUS.md 全部同步前，状态只能是 PARTIAL——由 scripts/check-change-sync.py 强制守门。",
+    a3_t: "公理 3 · 状态不可有损折叠",
+    a3_d: "NOT_RUN、UNKNOWN、RESULT_UNKNOWN、CONFLICT 与 ERROR 是一等互斥状态；严禁压缩成布尔 true 或假默认值（?? 0 / || []）。",
+    a4_t: "公理 4 · 主体与裁判分离（Non-Self-Attestation）",
+    a4_d: "产出 Patch 的执行主体永不具备认证自身 Gate 变更的权威；受保护 GitHub Ruleset 与独立机制审查掌握最终合并边界。",
+    a5_t: "公理 5 · 不对称知识演化",
+    a5_d: "生产事故必须升级为负向变异测试与确定性门禁；自动学习只能收紧约束或补上下文，绝不能自动放宽权限或取消审批。",
+    qs_kicker: "03 · 10 秒零安装验证",
+    qs_title: "直接对着你自己的仓库跑一遍",
+    qs_desc: "纯 Python 3.11+ 标准库、严格只读、零 pip install。跑一条命令，立刻看到自己代码库里的真实盲区。",
+    t_audit: "10 秒自检",
+    t_sync: "耦合同步门禁",
+    t_skills: "6 个 Skills",
+    t_action: "4 行 CI Action",
+    t_boot: "一键落地 L0–L2",
     copy: "复制",
-    wf_eyebrow: "AI 编码真实的一天",
-    wf_title: "不换工具，精准卡在 5 个高危交接点",
-    wf_desc: "继续用 Claude Code、Cursor、Codex 和 superpowers 做编码内环；把 agentic-sdlc 像安全带与刹车一样套在最容易翻车的 5 个节点。",
-    step1_t: "1. 接单开工",
-    step1_d: "统一读根目录 AGENTS.md 与 STATUS.md，从 origin/main 开隔离 Worktree，并用 workspace-git.py 钩子物理拦截直提交 main。",
-    step2_t: "2. 规划与写码",
-    step2_d: "非平凡改动（>3 文件或 >50 行）先定边界与失败测试；写到鉴权、租户、危险 Sink、密钥或依赖时自动触发 secure-vibe-coding。",
-    step3_t: "3. 喊“完成”之前",
-    step3_d: "运行 done-claim-verify 与 audit-pr-diff：核验 4 个假完成断点，输出带精确命令、退出码与 does_not_prove[] 的 DoneClaim。",
-    step4_t: "4. 开 PR 与 CI",
-    step4_d: "运行 40 位 SHA 锁定的多语言 Fail-Closed CI 与 4 行 action.yml，拦截多语言危险 Sink 与 --passWithNoTests；评审直接引用 OAS-* 编号。",
-    step5_t: "5. 合并与上线",
-    step5_d: "导入不可自证 GitHub Ruleset 与 CODEOWNERS；发版前运行五维 audit-production-readiness，输出 H1 生产级 vs H2 Demo 级裁决。",
-    sk_eyebrow: "6 个独立自包含 Skills · 脱离具体编程语言",
-    sk_title: "零重叠护栏，按需加载零常态开销",
-    sk_desc: "这 6 个 Skills 沉淀的是跨语言安全红线、验收核查、审计与 Git 不变量（不包含代码风格规范），每个 Skill 均显式声明自身非权威。",
-    sk1: "检查目标仓库真实技术栈，安全落地统一 AGENTS.md、极薄 @AGENTS.md CLAUDE.md、STATUS.md、PR 模板与 Fail-Closed CI，绝不覆盖已有文件。",
-    sk2: "强制默认拒绝鉴权/租户隔离、参数化查询、安全 Sink、SSRF 169.254.169.254 防护、零兜底密钥、防幻觉包投毒与反向安全单测。",
-    sk3: "基于 file:line 取证审查分支 diff，覆盖七宗罪、安全红线、前端 454 Bug、后端 8 类性能陷阱与门禁面变更审查。",
-    sk4: "整仓五维实现审计（架构/设计/功能/性能/安全），落实 7 条证据纪律、三层默认值核查、数据活性与 H1/H2 生产 vs Demo 裁决。",
-    sk5: "拒绝裸布尔 done=true；保留 NOT_RUN/FAIL/ERROR/CONFLICT，解引用 4 个假完成断点，强制输出 DoneClaim 与 does_not_prove[]。",
-    sk6: "通过远端基线刷新、Worktree 隔离、Managed Issue Claim、跨会话契约交接、禁 Stacked PR 与 5 项安全清理协调多 Agent 并发。",
-    ar_eyebrow: "零信任与不可自证（Non-Self-Attestation）",
-    ar_title: "三层纵深防线",
-    ar_desc: "Prompt 里的文字规则会随上下文压缩不断衰减，真正的信任边界必须建在模型窗口之外。",
-    l1_t: "第一层 · Agent 内环（易用性，非权威）",
-    l1_d: "6 个独立 Skills · llms.txt（约 1K-token 路由表）· 统一根目录 AGENTS.md + 极薄 @AGENTS.md CLAUDE.md · 8 套实证清单。",
-    l2_t: "第二层 · 本地确定性护栏",
-    l2_d: "零依赖多语言 audit-repo.py（Python/JS/TS/Go/Rust/Java）· 可卸载 Git 钩子（workspace-git.py）· 按 lockfile 寻址共享 Node 仓 · 即将开源的 Rust 本地工程承载 deps 与 sealed-data。",
-    l3_t: "第三层 · GitHub 外部合并边界（不可自证）",
-    l3_d: "40 位 SHA 锁定多语言 CI 模板 · 4 行可复用 action.yml · 门禁面 CODEOWNERS · 可导入 Branch Ruleset JSON · 只读 observe-github-ruleset.py。",
-    lim_title: "诚实边界（does_not_prove）",
-    lim1: "Markdown 规则与 Skills 只是易用性投影，无法防住蓄意 Prompt 注入，也不能在支付、鉴权或生产运维上替代人类工程判断。",
-    lim2: "PR 受控源码运行的 CI 与本地自检始终属于 candidate / advisory，绝不构成可自证的合并权威。",
-    lim3: "静态检查只捕获高信噪比结构与供应链缺陷；运行期业务逻辑与 P99 负载仍需真实集成测试与外部门禁保障。",
-    footer_sub: "Apache-2.0 · 零运行依赖 · 为在真实生产代码库中使用 Coding Agent 的工程师打造。"
+    sample_lbl: "典型仓库的真实拦截输出示例",
+    wf_kicker: "04 · 工作流嵌入",
+    wf_title: "不换现有工具，卡住 5 个高危交接点",
+    wf_desc: "继续用 Claude Code、Cursor、Codex 与 superpowers 写代码，只把确定性护栏套在最容易翻车的 5 个节点上。",
+    w1_t: "接单开工",
+    w1_d: "统一读根目录 AGENTS.md 与 STATUS.md，开隔离 Worktree，并用 workspace-git.py 物理拦住直提交 main。",
+    w2_t: "规划与写码",
+    w2_d: "执行非平凡任务阈值（>3 文件 / >50 行）、secure-vibe-coding 及写码前可靠性与性能不变量。",
+    w3_t: "喊“完成”前",
+    w3_d: "跑 check-change-sync.py、done-claim-verify 与 audit-pr-diff，输出带 does_not_prove[] 的 DoneClaim。",
+    w4_t: "开 PR 与 CI",
+    w4_d: "运行 40 位 SHA 锁定的多语言 Fail-Closed CI 与 4 行 action.yml，评审直接引用 OAS-* 规则编号。",
+    w5_t: "合并与上线",
+    w5_d: "启用不可自证 GitHub Ruleset 与 CODEOWNERS；发版前运行五维 audit-production-readiness（H1/H2 裁决）。",
+    sk_kicker: "05 · 6 个独立 Skills 与 9 篇标准",
+    sk_title: "脱离具体编程语言，按需加载零常态负担",
+    sk_desc: "Skills 沉淀的是跨语言安全、可靠、审计与 Git 不变量（不包含格式/代码风格规则），且全部显式声明自身非权威。",
+    s1: "探测目标仓库真实技术栈，安全落地统一 AGENTS.md、极薄 @AGENTS.md CLAUDE.md、STATUS.md、PR 模板与 Fail-Closed CI。",
+    s2: "强制默认拒绝鉴权/租户隔离、安全 Sink、SSRF 169.254.169.254 防护、默认 mutating 工具白名单、防只读外泄与反向安全单测。",
+    s3: "基于 file:line 取证审查 diff，覆盖七宗罪、安全红线、前端 454 Bug、后端 8 类性能陷阱与门禁面变更审查。",
+    s4: "整仓五维审计，落实 7 条证据纪律、三层默认值、数据活性、发版前运维红线、自学习不对称与 H1/H2 裁决。",
+    s5: "拒绝裸布尔 done=true；保留非绿状态、解引用 4 个假完成断点、校验耦合同步并强制声明 does_not_prove[]。",
+    s6: "以远端基线刷新、隔离 Worktree、Managed Issue Claim、跨会话契约交接、禁 Stacked PR 与安全清理协调多 Agent 并发。",
+    lim_h: "诚实边界（does_not_prove）",
+    lim_p: "Markdown 规则与 Skills 只是易用性投影，绝不构成合并权威。PR 受控 CI 与本地自检始终属于 candidate / advisory；支付、鉴权、运行期语义与 P99 负载仍需真实集成测试、受保护 GitHub Ruleset 与人类工程判断。"
   };
 
   var COPY_EN = {};
@@ -94,63 +97,31 @@
         nodes[j].textContent = dict[k];
       }
     }
-    var langBtn = document.getElementById("lang-toggle");
-    if (langBtn) {
-      langBtn.textContent = lang === "zh" ? "EN" : "中文";
+    var btn = document.getElementById("lang-toggle");
+    if (btn) {
+      btn.textContent = lang === "zh" ? "EN" : "中文";
     }
     try {
       window.localStorage.setItem("oas-lang", lang);
     } catch (_err) {
-      // Storage may be disabled in privacy modes; ignore safely.
+      // Ignore storage errors cleanly.
     }
   }
 
-  function applyTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
-    var themeBtn = document.getElementById("theme-toggle");
-    if (themeBtn) {
-      themeBtn.textContent = theme === "light" ? "☾" : "☀";
-    }
-    try {
-      window.localStorage.setItem("oas-theme", theme);
-    } catch (_err) {
-      // Ignore storage failures cleanly.
-    }
-  }
-
-  var initialLang = "en";
-  var initialTheme = "dark";
   try {
-    var savedLang = window.localStorage.getItem("oas-lang");
-    if (savedLang === "zh" || savedLang === "en") {
-      initialLang = savedLang;
-    }
-    var savedTheme = window.localStorage.getItem("oas-theme");
-    if (savedTheme === "light" || savedTheme === "dark") {
-      initialTheme = savedTheme;
+    var saved = window.localStorage.getItem("oas-lang");
+    if (saved === "zh") {
+      applyLang("zh");
     }
   } catch (_err) {
-    // Fall back to defaults.
-  }
-
-  applyTheme(initialTheme);
-  if (initialLang === "zh") {
-    applyLang("zh");
+    // Default to English.
   }
 
   var langToggle = document.getElementById("lang-toggle");
   if (langToggle) {
     langToggle.addEventListener("click", function () {
-      var current = document.documentElement.lang.indexOf("zh") === 0 ? "zh" : "en";
-      applyLang(current === "zh" ? "en" : "zh");
-    });
-  }
-
-  var themeToggle = document.getElementById("theme-toggle");
-  if (themeToggle) {
-    themeToggle.addEventListener("click", function () {
-      var current = document.documentElement.getAttribute("data-theme") || "dark";
-      applyTheme(current === "light" ? "dark" : "light");
+      var isZh = document.documentElement.lang.indexOf("zh") === 0;
+      applyLang(isZh ? "en" : "zh");
     });
   }
 
