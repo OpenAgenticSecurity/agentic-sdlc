@@ -53,9 +53,10 @@ description: Use when writing or reviewing code that touches authentication, aut
      datasets, `deps security-audit` for secret literals, when those tools are
      installed) instead of reading raw production datasets or secret files.
 7. **Defend agent tool boundaries**: Default every tool to `mutating` (never
-   classify read-only by name substring like `read`/`get`/`check`), route
-   side-effecting LLM output through a closed validated IR, and isolate
-   outbound web/fetch tools on sessions that read sensitive internal data
-   (prevents read-only exfiltration).
+   classify read-only by name substring like `read`/`get`/`check`), bind high-
+   risk approvals atomically to `(actor, task, tool, target, canonical_args_hash,
+   expiry, nonce)` to reject replay, route side-effecting LLM output through a
+   closed validated IR, and isolate outbound web/fetch tools on sessions that
+   read sensitive internal data (prevents read-only exfiltration).
 
 *Optional full standard & checklist*: `https://github.com/OpenAgenticSecurity/agentic-sdlc` (`standards/secure-vibe-coding.md`, `checklists/secure-vibe-coding-review.md`).

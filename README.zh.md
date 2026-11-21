@@ -87,7 +87,7 @@ python3 -S agentic-sdlc/scripts/run-evals.py
 也可以在任意仓库 CI 里直接接入 4 行可复用 GitHub Action（`action.yml`，按 40 位 SHA 锁定）：
 
 ```yaml
-- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.0
+- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.1
   with:
     target: .
 ```
@@ -157,7 +157,7 @@ make verify-all
 | 放在哪里 | 放什么 / 怎么用 | 为什么这样分工 |
 |---|---|---|
 | **本机全局 Coding Agent**（Claude Code / Cursor / Codex） | 一次性装好 6 个 **`skills/`**（`/plugin install` 或 `npx skills add`） | 全部是**脱离具体编程语言**的安全红线、PR 排雷、五维生产就绪审计、假完成核验与多 Agent Git 护栏（不含代码风格/格式规范），按需触发，零常驻上下文消耗。 |
-| **你的业务仓库**（按项目拷一次、改成真实命令） | 唯一一份 **`AGENTS.md`** + 极薄 `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI 模板（`scripts/bootstrap.sh`） | Cursor、Codex、Claude Code 统一读根目录 `AGENTS.md`（无需再维护重复的全局 `.mdc`）；在栈槽位里填入本仓真实命令与语言规范，顶部留 `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.0 -->`。 |
+| **你的业务仓库**（按项目拷一次、改成真实命令） | 唯一一份 **`AGENTS.md`** + 极薄 `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI 模板（`scripts/bootstrap.sh`） | Cursor、Codex、Claude Code 统一读根目录 `AGENTS.md`（无需再维护重复的全局 `.mdc`）；在栈槽位里填入本仓真实命令与语言规范，顶部留 `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.1 -->`。 |
 | **本地终端 / CI**（按需或每次 PR 运行） | **`scripts/audit-repo.py`**（或 4 行 **`action.yml`**）+ **`scripts/workspace-git.py guardrails`** | 零依赖确定性拦截未锁 SHA 的 Actions、多语言高危 Sink、`--passWithNoTests` 以及 Agent 直提交 `main`。 |
 | **PR Review 与 GitHub 设置** | 引用稳定规则编号（**`OAS-CI-01`**、**`OAS-SVC-01`**、**`OAS-GH-02`**）+ **`DoneClaim`** + 导入 `github-ruleset.import.json` | `standards/` 与 `checklists/` 像 OWASP ASVS 一样供人查阅与评审引用，真正的硬合并边界交给 GitHub Ruleset。 |
 
@@ -212,4 +212,5 @@ make verify-all
 
 `agentic-sdlc` 主要面向在真实生产或多仓代码库中使用 Coding Agent 的**软件工程师、技术负责人、安全工程师与 AI-Native 研发团队**。
 
+- **作用域边界**：本仓库聚焦**「用 Coding Agent 安全交付任意软件的工程与外环护栏」**（适用于 Web、微服务、CLI、基础库或 AI 应用）。完整的生产级 Agent 运行时架构（耐久执行、工作负载身份平面、长期记忆治理与运行期应急演练）刻意交由独立的同级姊妹仓承载，保持本仓极简、跨语言通用。
 - **如果你是零开发经验的个人 Vibe Coder**：采用 `L0` 与 `skills/` 依然可以帮你挡住约 80% 的常见致命失误（密钥泄漏、缺鉴权、假数据、写脏 `main`），并让代码保持干净、随时可供专业工程师接手；**但没有任何 SDLC 模板或 AI Skill 可以替代生产商业化所需的人类工程判断**。在涉及支付计费、认证授权、多租户敏感数据或生产运维（备份恢复、限流、费用封顶与故障响应）正式向客户收费前，仍需要具备工程经验的人员进行独立审查。

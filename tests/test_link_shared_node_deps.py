@@ -184,3 +184,54 @@ console.log(JSON.stringify({{ rc1, rc2, seenFlags }}));
     assert proc.returncode == 0, proc.stderr
     assert json.loads(proc.stdout.strip()) == {"rc1": 0, "rc2": 0, "seenFlags": [True]}
     assert (zero / "node_modules").is_dir()
+
+
+@pytest.mark.skipif(NODE is None, reason="node runtime not available")
+def test_read_only_store_blocks_cross_worktree_tampering(tmp_path: Path) -> None:
+    assert NODE is not None
+    import os
+
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        pytest.skip("root ignores POSIX read-only file modes")
+
+    wt = tmp_path / "wt-ro"
+    _write_pkg(wt)
+    store = tmp_path / "ro-store"
+    js_driver = f"""
+import fs from 'node:fs';
+import path from 'node:path';
+const mod = await import({json.dumps(SCRIPT.as_uri())});
+
+function fakeInstall(buildDir) {{
+  const nm = path.join(buildDir, 'node_modules');
+  fs.mkdirSync(path.join(nm, 'demo-pkg'), {{ recursive: true }});
+  fs.writeFileSync(path.join(nm, 'demo-pkg', 'index.js'), 'export const ok = true;\\n');
+}}
+
+const rc = mod.main(
+  ['--project-dir', {json.dumps(str(wt))}, '--store-dir', {json.dumps(str(store))}, '--read-only-store'],
+  {{ install: fakeInstall, log: () => {{}} }},
+);
+console.log(JSON.stringify({{ rc }}));
+"""
+    try:
+        proc = subprocess.run(
+            [NODE, "--input-type=module", "-e", js_driver],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert proc.returncode == 0, proc.stderr
+        assert json.loads(proc.stdout.strip()) == {"rc": 0}
+
+        linked_file = wt / "node_modules" / "demo-pkg" / "index.js"
+        assert linked_file.is_file()
+        with pytest.raises(PermissionError):
+            linked_file.write_text("tampered\n", encoding="utf-8")
+    finally:
+        # Restore write bits so pytest tmp_path teardown can remove the store cleanly.
+        for path in sorted(store.rglob("*"), reverse=True):
+            if not path.is_symlink():
+                path.chmod(0o700 if path.is_dir() else 0o600)
+        if store.exists():
+            store.chmod(0o700)

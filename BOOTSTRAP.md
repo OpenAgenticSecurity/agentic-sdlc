@@ -200,6 +200,7 @@ To keep real datasets out of agent context once `sealed-data` is installed, run
 
 1. **Templates & Candidate CI**:
    - Keep `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`, and `.github/workflows/candidate-gates.yml` (pinned to 40-char Action commit SHAs, exact PR head checkout `${{ github.event.pull_request.head.sha || github.sha }}`, `persist-credentials: false`).
+   - If you enable GitHub **Merge Queue**, also add `merge_group:` under `on:` and resolve `${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha || github.sha }}` — the default templates wire `pull_request` only.
    - Treat PR-controlled CI as **candidate / advisory** — never self-attesting.
 2. **Enforcement-Surface `CODEOWNERS` (`L2`)**:
    - Protect `.github/`, `Makefile`, `AGENTS.md`, `CLAUDE.md`, schemas, and gate scripts via `.github/CODEOWNERS` (see `profiles/L2-governed/CODEOWNERS.example`). Replace `@org/...` placeholders with real team/user handles — `check-product-compliance.sh --profile L2` fails closed if `@org/` remains, because GitHub silently skips unknown owners.

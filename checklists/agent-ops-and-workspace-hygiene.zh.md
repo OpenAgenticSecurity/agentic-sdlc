@@ -27,6 +27,7 @@
   - 按 `package-lock.json` + `package.json` 依赖字段 + 平台/架构/Node ABI 计算 SHA-256，在外部缓存目录（`~/.cache/shared-node-deps/<hash>/`）一次性原子化 `npm ci`，每个 worktree 内保持真实 `node_modules/` 目录并将各包软链指向共享仓。
   - **单独拷贝 `.package-lock.json`** 而非软链（避免 `npm` 原地改写污染所有 worktree 共享的 store）。
   - `.vite`、`.cache`、`.tmp`、`.turbo`、`.next` 留在各 worktree 本地隔离，且绝不破坏已存在的真实 `node_modules/` 安装。
+  - **共享缓存信任边界**：仅在**同一信任域**的本地开发 Worktree 之间共享依赖仓；绝不让互不信任的任务或受保护 Verifier 共用可写依赖仓，处理不受信 lockfile 时建议显式启用 `--read-only-store` 与 `--ignore-scripts`。
 
 ### 共享环境的 3 个真实大坑
 

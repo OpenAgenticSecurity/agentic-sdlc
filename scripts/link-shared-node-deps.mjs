@@ -124,9 +124,42 @@ function completeStore(storeDir) {
   return nodeModules;
 }
 
-export function ensureStore({ storeRoot, key, projectDir, ignoreScripts = false, install = npmCi }) {
+function lockTreeReadOnly(rootDir) {
+  const stack = [rootDir];
+  const dirs = [];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    const st = fs.lstatSync(current);
+    if (st.isSymbolicLink()) continue;
+    if (st.isDirectory()) {
+      dirs.push(current);
+      for (const entry of fs.readdirSync(current)) {
+        stack.push(path.join(current, entry));
+      }
+    } else {
+      fs.chmodSync(current, st.mode & ~0o222);
+    }
+  }
+  for (let i = dirs.length - 1; i >= 0; i -= 1) {
+    const st = fs.lstatSync(dirs[i]);
+    fs.chmodSync(dirs[i], st.mode & ~0o222);
+  }
+}
+
+export function ensureStore({
+  storeRoot,
+  key,
+  projectDir,
+  ignoreScripts = false,
+  readOnlyStore = false,
+  install = npmCi,
+}) {
   const storeDir = path.join(storeRoot, key);
-  if (fs.existsSync(storeDir)) return completeStore(storeDir);
+  if (fs.existsSync(storeDir)) {
+    const existing = completeStore(storeDir);
+    if (readOnlyStore) lockTreeReadOnly(storeDir);
+    return existing;
+  }
 
   fs.mkdirSync(storeRoot, { recursive: true });
   const buildDir = fs.mkdtempSync(path.join(storeRoot, `.build-${key}-`));
@@ -137,13 +170,20 @@ export function ensureStore({ storeRoot, key, projectDir, ignoreScripts = false,
     install(buildDir, { ignoreScripts });
     fs.mkdirSync(path.join(buildDir, 'node_modules'), { recursive: true });
     fs.writeFileSync(path.join(buildDir, STORE_COMPLETE_MARKER), 'ok\n');
+    if (readOnlyStore) lockTreeReadOnly(buildDir);
     try {
       fs.renameSync(buildDir, storeDir);
     } catch (error) {
       if (error.code !== 'ENOTEMPTY' && error.code !== 'EEXIST') throw error;
     }
   } finally {
-    fs.rmSync(buildDir, { recursive: true, force: true });
+    if (fs.existsSync(buildDir)) {
+      if (readOnlyStore) {
+        // Restore write bit on temp dir only when cleaning up an aborted/raced build.
+        fs.chmodSync(buildDir, 0o700);
+      }
+      fs.rmSync(buildDir, { recursive: true, force: true });
+    }
   }
   return completeStore(storeDir);
 }
@@ -203,9 +243,13 @@ function usageText() {
     '  --project-dir <dir>   Directory containing package.json & package-lock.json (default: cwd)',
     '  --frontend-dir <dir>  Alias for --project-dir',
     '  --store-dir <dir>     External shared store root (default: $SHARED_NODE_DEPS_STORE or ~/.cache/shared-node-deps)',
-    '  --ignore-scripts      Pass --ignore-scripts to npm ci when building the store',
+    '  --ignore-scripts      Pass --ignore-scripts to npm ci when building the store (recommended for untrusted lockfiles)',
+    '  --read-only-store     Remove write bits on the finalized shared store to block cross-worktree tampering',
     '  --dry-run             Compute store key and print planned action without writing',
     '  -h, --help            Show this help message',
+    '',
+    'Trust boundary: share stores only across same-trust-domain local worktrees.',
+    'Never share a writable store across mutually untrusted tasks or protected verifiers.',
   ].join('\n');
 }
 
@@ -217,6 +261,7 @@ export function main(argv, { env = process.env, install, log = console.log } = {
       'frontend-dir': { type: 'string' },
       'store-dir': { type: 'string' },
       'ignore-scripts': { type: 'boolean', default: false },
+      'read-only-store': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
@@ -264,6 +309,7 @@ export function main(argv, { env = process.env, install, log = console.log } = {
     key,
     projectDir,
     ignoreScripts: values['ignore-scripts'],
+    readOnlyStore: values['read-only-store'],
     install,
   });
   const result = linkNodeModules({ projectDir, storeNodeModules });

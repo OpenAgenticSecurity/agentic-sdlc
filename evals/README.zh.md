@@ -26,3 +26,8 @@ make eval-deterministic
 | [`fake-done-dereference`](skills/fake-done-dereference/prompt.md) | `done-claim-verify` | 拒绝把 `0 tests collected` 与未测环境报绿；输出带 `does_not_prove[]` 的 `DoneClaim` |
 | [`three-layer-default-and-liveness`](skills/three-layer-default-and-liveness/prompt.md) | `audit-production-readiness` | 抓出生产路径无写入方的“死守卫”与三层默认值漂移（代码 `False` vs `.env.default` 为 `1`） |
 | [`secure-vibe-coding-ssrf-idor`](skills/secure-vibe-coding-ssrf-idor/prompt.md) | `secure-vibe-coding` | 强制服务端租户隔离、拦截 `169.254.169.254` SSRF、杜绝硬编码兜底密钥并补齐反向安全单测 |
+
+## 3. 评测边界（区分 `pass@k` 与 `pass^k` 及 Holdout 集）
+
+- **绝不把 `14/14` 静态陷阱评测等同于“通用 Agent 可靠性”**：轨道一证明的是确定性静态检查器在植入反例上 100% 变红且对照组 0 误报，不代表概率性 Agent 在开放任务上无错。
+- **区分单次碰运气（`pass@k`）与多次稳定一致（`pass^k`）**：运行端到端 Agent 评测时，记录多轮重复一致性（`pass^k`），保留不参与 Prompt 调优的 Holdout 测试集，基于最终真实状态/副作用而非纯对话稿评分，且严禁产码 Agent 修改自己的验收 Oracle。

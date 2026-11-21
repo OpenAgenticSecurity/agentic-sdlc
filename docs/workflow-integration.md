@@ -56,3 +56,25 @@ your existing inner-loop tools as the **outer verification & safety boundary**.
 | **2. Repo Baseline (`L0`)** | 5 min | Run `scripts/bootstrap.sh --profile L0 --target <repo>` (adds unified `AGENTS.md`, thin `@AGENTS.md` `CLAUDE.md`, `STATUS.md`, `.gitignore`, fail-closed `make agent-check`). |
 | **3. Team CI (`L1`)** | 20 min | Add `--profile L1 --ci <python\|node-ts\|rust\|go\|java>`, add the 4-line `action.yml` audit step, and enable `workspace-git.py guardrails --apply`. |
 | **4. Governed Production (`L2`)** | 1 hour | Import `github-ruleset.import.json`, configure real `CODEOWNERS`, audit live Rulesets via `observe-github-ruleset.py`, run `audit-production-readiness` before launch, and optionally add `deps` / `sealed-data`. |
+
+---
+
+## 4. 0 / 30 / 60 / 90-Day Brownfield Rollout & Framework Crosswalk
+
+When rolling `agentic-sdlc` out across an existing organization, promote
+autonomy only on verified exit evidence — never relax gates when metrics miss:
+
+| Checkpoint | Exit Evidence Required Before Expanding Autonomy |
+|---|---|
+| **Day 0** | Inventory agents, tools & data sensitivity; record baseline defect/rework/review effort; pick one reversible, low-sensitivity pilot with an accountable owner |
+| **Day 30** | `L0`/`L1` baseline active; planted violations turn CI red; `check-change-sync.py` & negative security tests run in shadow/enforced mode; zero unknown authority paths |
+| **Day 60** | `L2` GitHub Rulesets & `CODEOWNERS` active; independent mechanism review verified; replay/revocation/isolation checks pass; review effort & reopen rates measured |
+| **Day 90** | Behavioral change manifests & consumer provenance verification active; 5-dimension `audit-production-readiness` completed; high-consequence actions remain human-gated |
+
+### Alignment with Industry Assurance Frameworks (Reference Mapping)
+
+| Industry Framework | Primary Controls Mapped in `agentic-sdlc` |
+|---|---|
+| **NIST SSDF / SP 800-218A** | Exact-revision CI, SHA-pinned actions, hash-locked deps, negative security tests, SLSA release provenance (`standards/versioning-and-releases.md`) |
+| **OWASP SAMM & Agentic Top 10** | Fail-closed auth/tenant/sink invariants, atomic argument-bound approvals, read-only exfiltration defense, anti-slopsquatting (`standards/secure-vibe-coding.md`) |
+| **NCSC / CISA Agentic AI Guidance** | Proportionate autonomy, producer/judge non-self-attestation, out-of-band kill switches, behavioral release gates (`docs/ontology.md`, `profiles/L2-governed/`) |

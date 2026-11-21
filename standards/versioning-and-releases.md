@@ -88,3 +88,29 @@ hand-built tarballs uploaded from a developer laptop:
   SHA).
 - Verify deployed artifacts and live runtime readback (not just tag creation)
   before closing the release.
+
+## 5. Consumer Provenance Verification (Close the SLSA Loop)
+
+Publishing attestations does nothing unless consumers verify them at install or
+deployment time (SLSA v1.2):
+
+- **Verify before executing or deploying**: Check artifact digest (`SHA256SUMS.txt`),
+  cryptographic signature, trusted OIDC issuer/builder, canonical source
+  repository, and expected build workflow (for example, `gh attestation verify`
+  or `cosign verify`).
+- **Fail closed on mismatch**: Reject a valid signature from an unexpected
+  repository/builder, a mismatched digest, or a tampered tool/plugin catalog.
+
+## 6. Behavioral Change Admission (Beyond Source-Code Diffs)
+
+In AI-assisted systems, a source-code diff is not the sole release trigger.
+Changes to **prompts, skills, tool catalogs, retrieval/index config, memory or
+compaction policies, safety policies, or model routing** are behavior-changing
+releases:
+
+- Inventory behavioral component identities alongside code revisions (disclose
+  explicitly when a hosted model cannot be pinned to an immutable snapshot).
+- Require relevant evaluation runs (not just unit tests) and an explicit
+  rollback or disable path before promoting behavioral changes.
+- Enforce coupled-change checks (e.g. `scripts/check-change-sync.py`) so prompt
+  or tool-catalog edits cannot skip regression gates.

@@ -8,7 +8,7 @@
     {
       "name": "agentic-sdlc",
       "description": "Agentic SDLC & Secure Vibe Coding skills: repo bootstrap, PR & 5-dimension production-readiness audit, fake-done dereference, multi-agent worktrees, and fail-closed verification",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "source": "./",
       "author": {
         "name": "OpenAgenticSecurity Contributors"

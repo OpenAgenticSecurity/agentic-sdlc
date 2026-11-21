@@ -37,3 +37,15 @@ evaluations (e.g. `claude plugin eval`):
 | [`fake-done-dereference`](skills/fake-done-dereference/prompt.md) | `done-claim-verify` | Refusing to call `0 tests collected` + untested staging a green `PASS`; emitting `DoneClaim` with `does_not_prove[]` |
 | [`three-layer-default-and-liveness`](skills/three-layer-default-and-liveness/prompt.md) | `audit-production-readiness` | Catching a dead spend guard whose production writer is missing + 3-layer default mismatch (code `False` vs `.env.default` `1`) |
 | [`secure-vibe-coding-ssrf-idor`](skills/secure-vibe-coding-ssrf-idor/prompt.md) | `secure-vibe-coding` | Enforcing server-side tenant scope, SSRF `169.254.169.254` blocking, zero hardcoded fallback secret, and negative security tests |
+
+## 3. Evaluation Boundaries (`pass@k` vs `pass^k` & Holdouts)
+
+- **Never equate `14/14` static traps with general agent reliability**: Track 1
+  proves our static checkers reject specific planted patterns with zero false
+  positives on clean controls — it does not measure probabilistic agent
+  success on open-ended tasks.
+- **Separate `pass@k` from consistency `pass^k`**: When running end-to-end
+  agent evals, track repeated-trial consistency (`pass^k`), maintain held-out
+  tasks never used for prompt tuning, grade actual final state/effects rather
+  than transcripts alone, and never let the patch-producing agent edit its own
+  acceptance oracle.

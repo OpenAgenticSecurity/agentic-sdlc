@@ -42,6 +42,11 @@ worktree quickly wastes tens of gigabytes and slows every agent session.
     from mutating the shared store in place).
   - Keeps tool caches (`.vite`, `.cache`, `.tmp`, `.turbo`, `.next`) local per
     worktree and leaves existing real `node_modules/` installs untouched.
+  - **Shared-cache trust boundary**: Share stores ONLY across same-trust-domain
+    local worktrees. Never mount a writable shared store across mutually
+    untrusted tasks or between candidate agent execution and a protected
+    verifier; pass `--read-only-store` and `--ignore-scripts` when hardening
+    untrusted lockfiles.
 
 ### Three Real Shared-Environment Traps to Guard Against
 

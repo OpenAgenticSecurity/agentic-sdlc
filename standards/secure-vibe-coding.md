@@ -127,12 +127,17 @@ When the AI-written application itself invokes LLMs, tools, or MCP servers:
   defend against Unicode invisible characters (`Cf` / default-ignorable code
   points), NFKC folding tricks, and JSON key smuggling when framing external
   content.
-- **Bind high-risk actions to canonical arguments**: Approval or authorization
-  grants must bind `(action, target, canonical_args_hash)` so a modified
-  parameter cannot replay an earlier approval.
-- **Pin tool definitions & sandbox execution**: Verify MCP tool catalog digests
-  (fail closed on rug-pull/schema drift) and run untrusted code/commands inside
-  resource-bounded sandboxes without exposing host credentials.
+- **Bind high-risk actions to atomic single-use approvals**: Approval or
+  authorization grants must bind `(actor, task, tool, target,
+  canonical_args_hash, expiry, nonce, policy_version)` and be **atomically
+  validated and consumed** at execution against current revocation state so
+  concurrent replay executes at most once and modified parameters fail closed.
+- **Pin tool definitions, protocol-specific auth & sandbox execution**: Verify
+  MCP tool catalog digests (fail closed on rug-pull/schema drift), apply
+  protocol-appropriate auth (HTTP MCP requires audience/resource binding and
+  forbids token passthrough; local stdio tools rely on OS/sandbox boundaries),
+  and run untrusted code/commands inside resource-bounded sandboxes without
+  exposing host credentials.
 - **Prevent read-only tool exfiltration**: Even when all write tools are
   blocked, pairing an internal sensitive read (logs, knowledge base, secrets)
   with an outbound network/search tool (`web_fetch`, external search) allows

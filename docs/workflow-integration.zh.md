@@ -54,3 +54,24 @@
 | **2. 仓库基线（`L0`）** | 5 分钟 | 运行 `scripts/bootstrap.sh --profile L0 --target <repo>`（落地统一 `AGENTS.md`、极薄 `@AGENTS.md` `CLAUDE.md`、`STATUS.md`、`.gitignore` 与 Fail-Closed `make agent-check`）。 |
 | **3. 团队 CI（`L1`）** | 20 分钟 | 使用 `--profile L1 --ci <python\|node-ts\|rust\|go\|java>`，在 CI 中接入 4 行 `action.yml` 体检，开启 `workspace-git.py guardrails --apply`。 |
 | **4. 生产治理（`L2`）** | 1 小时 | 导入 `github-ruleset.import.json`，配置真实 `CODEOWNERS`，用 `observe-github-ruleset.py` 验真，发版前跑 `audit-production-readiness`，按需叠加 `deps` / `sealed-data`。 |
+
+---
+
+## 4. 0 / 30 / 60 / 90 天存量团队迁移与权威框架映射
+
+在存量研发组织推广 `agentic-sdlc` 时，只基于核验后的退出证据逐步扩大自治范围；不达标时保持或收紧权限，绝不放宽门禁：
+
+| 里程碑 | 扩大自治前必须满足的退出证据 |
+|---|---|
+| **Day 0** | 盘点现有 Agent、工具与数据密级；记录当前缺陷/返工/Review 耗时基线；选定一个可回滚、低敏感试点并明确责任人 |
+| **Day 30** | 落地 `L0`/`L1` 基线；植入违规能打红 CI；`check-change-sync.py` 与反向安全单测跑通；无未知权限路径 |
+| **Day 60** | 启用 `L2` GitHub Ruleset 与 `CODEOWNERS`；独立机制审查落地；重放/吊销/隔离测试通过；量化 Review 耗时与 Reopen 率 |
+| **Day 90** | 行为变更清单与消费端溯源验签落地；完成五维 `audit-production-readiness` 审计；高影响动作保持人类审批门 |
+
+### 与主流安全工程框架对照（参考映射）
+
+| 行业框架 | 本仓对应的核心控制面 |
+|---|---|
+| **NIST SSDF / SP 800-218A** | 精确修订 CI、40 位 Action SHA 锁定、哈希锁定依赖、反向安全单测、SLSA 构建与消费端验签（`standards/versioning-and-releases.zh.md`） |
+| **OWASP SAMM & Agentic Top 10** | Fail-Closed 鉴权/租户/Sink 不变量、原子单次参数绑定审批、防只读外泄、防幻觉包投毒（`standards/secure-vibe-coding.zh.md`） |
+| **NCSC / CISA Agentic AI 指南** | 分级自治边界、主体与裁判不可自证分离、带外急停、行为组件变更准入（`docs/ontology.zh.md`、`profiles/L2-governed/`） |

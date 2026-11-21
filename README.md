@@ -88,7 +88,7 @@ python3 -S agentic-sdlc/scripts/run-evals.py
 Or drop the reusable composite Action (`action.yml`) into any repository's CI (pinned to a 40-char commit SHA):
 
 ```yaml
-- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.0
+- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.1
   with:
     target: .
 ```
@@ -158,7 +158,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | Where It Lives | What You Put There | Why |
 |---|---|---|
 | **Global Coding Agent** (Claude Code / Cursor / Codex) | Install the 6 **`skills/`** once via `/plugin install` or `npx skills add` | **Language-agnostic** security, PR audit, production-readiness, fake-done dereference & multi-agent Git guardrails (NOT code style/formatting rules). Loaded only on demand with zero permanent context tax. |
-| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.0 -->`. |
+| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.1 -->`. |
 | **Local Machine / CI** (run on demand or per PR) | **`scripts/audit-repo.py`** (or 4-line **`action.yml`**) + **`scripts/workspace-git.py guardrails`** | Catches unpinned Actions, multi-language unsafe sinks, `--passWithNoTests`, and direct commits on `main` deterministically. |
 | **PR Reviews & GitHub** | Cite stable Rule IDs (**`OAS-CI-01`**, **`OAS-SVC-01`**, **`OAS-GH-02`**) + **`DoneClaim`** + import `github-ruleset.import.json` | Keeps `standards/` & `checklists/` as human reference (like OWASP ASVS) while enforcing the hard merge boundary on GitHub. |
 
@@ -213,4 +213,5 @@ All candidate checks in this repository run from repository-controlled source an
 
 `agentic-sdlc` is built primarily for **software engineers, tech leads, security engineers, and AI-native teams** running Coding Agents on real production or multi-repo codebases.
 
+- **Scope boundary**: This repository focuses on **coding-agent software delivery guardrails** across any language stack (web apps, APIs, CLIs, libraries, or AI products). Full production agent runtime architecture (durable execution, workload identity planes, long-term memory governance, and runtime incident runbooks) intentionally lives in dedicated companion repositories rather than bloating this starter kit.
 - **If you are a solo non-engineer Vibe Coder**: `L0` + `skills/` will still prevent ~80% of common disasters (leaked keys, broken auth, fake data, clobbered `main`) and keep your repository clean enough for an engineer to take over later — **but no SDLC template or AI skill can replace human engineering judgment for commercial production**. Before taking customer money on payments, auth, multi-tenant data, or production operations (backups, rate limits, spend caps, incident response), have a qualified engineer review the live system.

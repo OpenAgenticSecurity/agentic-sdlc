@@ -157,6 +157,7 @@ deps agent-verify . --receipt .deps/receipt.json --remediate
 
 1. **模板与候选 CI**：
    - 落地 `.github/pull_request_template.md`、`.github/ISSUE_TEMPLATE/` 与 `.github/workflows/candidate-gates.yml`（Action 锁定到 40 位 commit SHA、精确检出 `${{ github.event.pull_request.head.sha || github.sha }}`、`persist-credentials: false`）。
+   - 如果启用了 GitHub **Merge Queue**，需在 `on:` 下额外添加 `merge_group:` 并将检出 SHA 改为 `${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha || github.sha }}`（默认模板仅配置 `pull_request`）。
    - PR 侧 CI 明确标为 **candidate / advisory**，绝不自证。
 2. **门禁表面 `CODEOWNERS`（`L2`）**：
    - 将 `.github/`、`Makefile`、`AGENTS.md`、`CLAUDE.md`、Schema 与校验脚本纳入 `.github/CODEOWNERS` 审查边界（见 `profiles/L2-governed/CODEOWNERS.example`）。务必把 `@org/...` 占位符替换为真实 team/用户 handle——`check-product-compliance.sh --profile L2` 发现 `@org/` 会直接 fail closed（GitHub 会静默跳过无效所有者）。

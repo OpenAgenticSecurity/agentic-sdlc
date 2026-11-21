@@ -37,3 +37,10 @@ JSON Schema contracts directly runnable in any repository.
 
 Adopting repositories may add stricter local rules, but should not weaken these
 core safety, verification, or non-self-attestation invariants.
+
+**Scope Boundary**: These standards govern **software delivery when coding
+agents write code** (plus minimal application-boundary red lines when that code
+invokes LLMs/tools). Full production agent runtime architecture (durable
+execution, workload identity planes, long-term memory stores, and operational
+incident runbooks) stays intentionally out of scope here to keep `agentic-sdlc`
+lean and universal across every language stack.

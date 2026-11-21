@@ -1,7 +1,7 @@
 {
   "name": "agentic-sdlc",
   "description": "OpenAgenticSecurity Agentic SDLC skills: bootstrap L0-L2 repos, audit PRs and 5-dimension production readiness, dereference fake-done claims, isolate multi-agent worktrees, and enforce secure-by-default Vibe Coding",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "OpenAgenticSecurity Contributors"
   },

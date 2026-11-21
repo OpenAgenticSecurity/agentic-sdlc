@@ -3,6 +3,8 @@ name: Candidate Gates
 on:
   pull_request:
     branches: [main] # Replace `main` if your default branch differs.
+  # If using GitHub Merge Queue, also enable `merge_group:` and resolve
+  # `github.event.merge_group.head_sha || github.event.pull_request.head.sha || github.sha`.
 
 permissions:
   contents: read
