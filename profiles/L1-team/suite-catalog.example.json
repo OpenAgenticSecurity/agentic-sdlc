@@ -1,0 +1,10 @@
+{
+  "entries": {
+    "backend-unit": "make backend-test",
+    "docs-check": "make docs-check",
+    "frontend-unit": "make frontend-test",
+    "full-suite": "make full-test",
+    "shared-contract-journey": "make contract-and-journey-test"
+  },
+  "schema_version": "openagenticsecurity.testing.affected-suite-catalog.v1"
+}

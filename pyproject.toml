@@ -1,0 +1,25 @@
+# Tool configuration only. This repository is not an installable Python package:
+# scripts/ are run in place, and the only dependencies are the hash-locked test
+# requirements in requirements-test.txt.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+# Same baseline the L1 Python CI template enforces for adopters
+# (profiles/L1-team/workflows/ci-python.yml).
+select = ["E9", "F", "B", "S", "ASYNC"]
+ignore = [
+  "S603", # every subprocess call passes a fixed argv list and never a shell string
+  "S607", # git, gh, node and make are resolved from PATH by design
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"examples/backend-contract-gates.py" = ["S101"]
+# In scripts/, `assert` only narrows a type directly after an explicit
+# `_require(...)` check that already raised on bad input.
+"scripts/*.py" = ["S101"]

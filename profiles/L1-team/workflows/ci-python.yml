@@ -1,0 +1,72 @@
+name: Python Fail-Closed Candidate Gates
+
+on:
+  pull_request:
+    branches: [main] # Replace `main` if your default branch differs (e.g. `master`).
+
+permissions:
+  contents: read
+
+concurrency:
+  group: py-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Candidate/advisory workflow executed from PR-controlled source.
+# Not self-attesting; mark this job required in GitHub Branch Rulesets.
+jobs:
+  agent-check:
+    name: agent-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact candidate revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install locked dependencies (fail closed if no lockfile is configured)
+        run: |
+          set -euo pipefail
+          # Prefer hash-locked requirements (`--require-hashes --only-binary=:all:`) or `uv sync --frozen`.
+          # Never install unpinned floating packages in security-critical CI.
+          if [ -f requirements-dev.txt ]; then
+            python -m pip install -r requirements-dev.txt
+          elif [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          else
+            echo "CI not configured: commit a pinned/locked dependency file (or replace this step with uv sync --frozen)." >&2
+            exit 2
+          fi
+
+      # Baseline: syntax errors, pyflakes, bugbear, bandit (S) and async rules.
+      # `assert` (S101) is allowed only in test files because pytest relies on it.
+      # Tune further in [tool.ruff.lint] of pyproject.toml; S603/S607 flag every
+      # subprocess call and need a per-call review before you ignore them.
+      - name: Security & correctness lint (Ruff F + B + S + ASYNC rules)
+        run: |
+          set -euo pipefail
+          git diff --check
+          ruff check --select E9,F,B,S,ASYNC --extend-per-file-ignores 'tests/**:S101' --extend-per-file-ignores '**/test_*.py:S101' .
+
+      - name: Run pytest (fail closed on exit code 5 / 0 tests collected)
+        run: |
+          set -euo pipefail
+          pytest -q
+
+      # Optional: if using `deps` as local/CI engineering carrier:
+      # - name: Architecture, lineage & security audit (deps)
+      #   run: deps security-audit . && deps agent-verify . --receipt .deps/receipt.json

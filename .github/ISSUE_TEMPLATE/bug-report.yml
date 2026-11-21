@@ -1,0 +1,62 @@
+name: Bug report
+description: A script, template, skill or checker in this repository does the wrong thing.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A check that passes when it should fail (a fail-open) is a
+        security issue: please report it privately through **Security advisories** instead.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - scripts/bootstrap.sh
+        - scripts/check-product-compliance.sh
+        - scripts/workspace-git.py
+        - scripts/agent-claim.py
+        - scripts/observe-github-ruleset.py
+        - scripts/link-shared-node-deps.mjs
+        - skills/ or plugin manifests
+        - profiles/ templates
+        - checklists/ or standards/
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Exact commands and output
+      description: Paste the commands you ran and what they printed, including the exit code.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Commit SHA or release tag of agentic-sdlc
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, plus the Bash / Python / Node versions that are relevant.
+      placeholder: "macOS 15, bash 3.2, Python 3.11"
+    validations:
+      required: true
+  - type: checkboxes
+    id: no-secrets
+    attributes:
+      label: Before submitting
+      options:
+        - label: This report contains no secrets, tokens, private paths or customer data.
+          required: true

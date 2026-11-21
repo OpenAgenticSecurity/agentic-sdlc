@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/OpenAgenticSecurity/agentic-sdlc/security/advisories/new
+    about: A check that can be bypassed or passes when it should fail belongs here, not in a public issue.
+  - name: Ask a question or share adoption feedback (Discussions)
+    url: https://github.com/OpenAgenticSecurity/agentic-sdlc/discussions
+    about: Questions about L0-L2 adoption, language stacks, or custom rulesets belong in GitHub Discussions.
+  - name: Getting started and maturity boundaries
+    url: https://github.com/OpenAgenticSecurity/agentic-sdlc/blob/main/BOOTSTRAP.md
+    about: Read BOOTSTRAP.md and MATURITY.md before opening an issue about adoption.

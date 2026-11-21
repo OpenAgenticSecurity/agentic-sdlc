@@ -1,0 +1,21 @@
+{
+  "name": "agentic-sdlc",
+  "description": "OpenAgenticSecurity Agentic SDLC skills: bootstrap L0-L2 repos, audit PRs and 5-dimension production readiness, dereference fake-done claims, isolate multi-agent worktrees, and enforce secure-by-default Vibe Coding",
+  "version": "0.1.0",
+  "author": {
+    "name": "OpenAgenticSecurity Contributors"
+  },
+  "homepage": "https://github.com/OpenAgenticSecurity/agentic-sdlc",
+  "repository": "https://github.com/OpenAgenticSecurity/agentic-sdlc",
+  "license": "Apache-2.0",
+  "keywords": [
+    "agentic-sdlc",
+    "ai-security",
+    "vibe-coding",
+    "devsecops",
+    "skills",
+    "code-review",
+    "worktree",
+    "verification"
+  ]
+}

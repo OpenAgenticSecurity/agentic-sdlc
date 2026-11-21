@@ -1,0 +1,28 @@
+# Enforcement surfaces require review by both an architecture/contract owner
+# and an independent mechanism reviewer (enforced externally via GitHub rulesets).
+# Notes:
+# 1. Head-branch CODEOWNERS cannot bootstrap protection for the same PR.
+# 2. Switch `@mylamour` to `@OpenAgenticSecurity/maintainers` once that GitHub
+#    org team is created with Write access (GitHub silently skips unknown teams).
+
+* @mylamour
+/.github/ @mylamour
+/.claude-plugin/ @mylamour
+/.cursor-plugin/ @mylamour
+/.codex-plugin/ @mylamour
+/Makefile @mylamour
+/action.yml @mylamour
+/pyproject.toml @mylamour
+/requirements-test* @mylamour
+/AGENTS.md @mylamour
+/CLAUDE.md @mylamour
+/llms.txt @mylamour
+/scripts/ @mylamour
+/tests/ @mylamour
+/standards/ @mylamour
+/checklists/ @mylamour
+/profiles/ @mylamour
+/skills/ @mylamour
+/examples/ @mylamour
+/evals/ @mylamour
+/site/ @mylamour

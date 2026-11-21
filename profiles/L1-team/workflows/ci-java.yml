@@ -1,0 +1,53 @@
+name: Java / Kotlin Fail-Closed Candidate Gates
+
+on:
+  pull_request:
+    branches: [main] # Replace `main` if your default branch differs.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Candidate/advisory workflow executed from PR-controlled source.
+# Not self-attesting; mark this job required in GitHub Branch Rulesets.
+jobs:
+  agent-check:
+    name: agent-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact candidate revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      # Recommended: pin your exact JDK distribution with a 40-char SHA-pinned
+      # actions/setup-java step when locking a specific Java version.
+      - name: Build, static checks & tests (fail closed if wrapper/build is missing)
+        run: |
+          set -euo pipefail
+          git diff --check
+          if [ -x ./gradlew ]; then
+            ./gradlew check --no-daemon --stacktrace
+          elif [ -x ./mvnw ]; then
+            ./mvnw -B -ntp verify
+          elif [ -f pom.xml ]; then
+            mvn -B -ntp verify
+          else
+            echo "CI not configured: commit Gradle wrapper (./gradlew) or Maven (./mvnw / pom.xml)." >&2
+            exit 2
+          fi
+
+      # Ensure your Gradle/Maven test task fails closed when 0 tests execute
+      # (e.g., Maven Surefire `-DfailIfNoTests=true`).

@@ -1,0 +1,48 @@
+# OpenAgenticSecurity / agentic-sdlc
+
+> Lean, agent-native Agentic SDLC standards, Secure Vibe Coding guardrails, 8 empirical & readiness checklists, progressive L0–L2 adoption kits, 6 standalone language-agnostic Agent Skills, reusable `action.yml`, starter gates, and fail-closed verification scripts.
+> Core thesis: Agent output is an untrusted draft by default. Let Coding Agents carry workflow ergonomics (`skills/`, `profiles/`, `checklists/`); let deterministic hooks, `deps`, and protected GitHub Rulesets carry the trust boundary.
+
+## Fast Routing Map for Coding Agents
+
+Read ONLY the file(s) matching your current task:
+
+- **Bootstrap Agentic SDLC into a user's repo (`L0` / `L1` / `L2`)**:
+  - Skill: `skills/bootstrap-agentic-sdlc/SKILL.md`
+  - Guide & workflow map: `BOOTSTRAP.md` (`BOOTSTRAP.zh.md`), `docs/workflow-integration.md`
+  - Templates: `profiles/L0-solo/`, `profiles/L1-team/` (`workflows/ci-{python,node-ts,rust,go,java}.yml`), `profiles/L2-governed/` (`github-ruleset.import.json`)
+  - Pure-Bash bootstrap (never overwrites): `scripts/bootstrap.sh --profile <L0|L1|L2> [--ci python|node-ts|rust|go|java] --target <repo>`
+  - Read-only check: `scripts/check-product-compliance.sh --profile <L0|L1|L2> <repo>`
+
+- **Write or review security-sensitive AI-generated code**:
+  - Skill: `skills/secure-vibe-coding/SKILL.md`
+  - Standard & checklist: `standards/secure-vibe-coding.md`, `checklists/secure-vibe-coding-review.md`
+
+- **Audit a PR / git diff before merge**:
+  - Skill: `skills/audit-pr-diff/SKILL.md`
+  - Checklists: `checklists/vibe-coding-seven-sins.md`, `checklists/frontend-vibe-coding-review.md`, `checklists/backend-performance-review.md`, `profiles/L2-governed/mechanism-review-checklist.md`
+  - Starter E2E & backend contract gates: `examples/frontend-3layer-gate.spec.ts`, `examples/backend-contract-gates.py`
+
+- **Audit full-repo production readiness (Demo vs Production, 5 dimensions)**:
+  - Skill: `skills/audit-production-readiness/SKILL.md`
+  - Checklist: `checklists/production-readiness-audit.md` (7 evidence disciplines, 3-layer defaults, data liveness, H1/H2 verdict)
+
+- **Verify completion & enforce fail-closed non-self-attestation**:
+  - Skill: `skills/done-claim-verify/SKILL.md`
+  - Checklist & templates: `checklists/fake-done-dereference.md`, `checklists/done-claim.template.md`, `checklists/done-claim.example.json`
+
+- **Coordinate multi-agent Git worktrees, Issue Claims, handoffs & workspace ops**:
+  - Skill: `skills/multi-agent-git-flow/SKILL.md`
+  - Checklists & template: `checklists/multi-agent-git-gates.md`, `checklists/agent-ops-and-workspace-hygiene.md`, `checklists/handoff.template.md`
+  - Scripts: `scripts/workspace-git.py`, `scripts/agent-claim.py`, `scripts/link-shared-node-deps.mjs`
+
+- **Instant read-only self-audit & deterministic evals (zero pip install)**:
+  - CLI: `python3 scripts/audit-repo.py <repo> [--github]` (Python/JS/TS/Go/Rust/Java + CI SHA pins + Rulesets)
+  - Reusable CI Action: `action.yml` (pin to 40-char SHA) | Offline evals: `scripts/run-evals.py`, `evals/`
+
+- **Strict L2 GitHub Ruleset observer**:
+  - `scripts/observe-github-ruleset.py --live --repo <owner/repo> --ruleset-id <id> --policy profiles/L2-governed/ruleset-policy.example.json --validate`
+
+- **Optional sibling enforcement & evidence docs**:
+  - `OpenAgenticSecurity/deps`, `OpenAgenticSecurity/sealed-data`, `OpenAgenticSecurity/assurance-contracts`
+  - `MATURITY.md`, `docs/empirical-findings.md`, `docs/manifesto.md`

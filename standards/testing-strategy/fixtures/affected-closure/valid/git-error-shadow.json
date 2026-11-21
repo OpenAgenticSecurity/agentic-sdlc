@@ -1,0 +1,18 @@
+{
+  "schema_version": "openagenticsecurity.testing.affected-closure-report.v1",
+  "authority": "candidate",
+  "trusted": false,
+  "base_sha": null,
+  "head_sha": null,
+  "changes": [],
+  "classification": "full",
+  "policy_mode": "shadow",
+  "reasons": [
+    "full_boundary:git_error"
+  ],
+  "recommended_suites": [
+    "full-suite"
+  ],
+  "shadow_only": true,
+  "error_code": "invalid_base_ref"
+}

@@ -1,0 +1,64 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "standards/**/schema/*.schema.json"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build-pages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Assemble static site and canonical JSON schemas
+        run: |
+          set -euo pipefail
+          rm -rf dist/site
+          mkdir -p dist/site/schemas/testing dist/site/schemas/governance
+          cp -R site/. dist/site/
+          touch dist/site/.nojekyll
+          cp standards/testing-strategy/schema/affected-closure-report.v1.schema.json \
+            dist/site/schemas/testing/affected-closure-report.v1.json
+          cp standards/testing-strategy/enforcement-evidence/schema/enforcement-evidence.v1.schema.json \
+            dist/site/schemas/governance/enforcement-evidence.v1.json
+
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: "dist/site"
+
+  deploy:
+    name: deploy-pages
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -1,0 +1,50 @@
+name: Checklist or standard proposal
+description: Propose a new checklist item, a change to a standard, a skill improvement or a template change.
+title: "[Proposal] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Everything in this repository is distilled from real incidents. A proposal is much
+        easier to accept when it comes with the failure that motivated it.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it belong?
+      options:
+        - checklists/
+        - standards/
+        - skills/
+        - profiles/ templates
+        - scripts/
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: What should change?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: What real incident, bug or measurement motivates it?
+      description: Describe or link it. Anonymize anything internal.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: How would a reviewer check that the rule works?
+      description: For example a negative test, a planted violation, or a command with its expected exit code.
+    validations:
+      required: false
+  - type: checkboxes
+    id: no-secrets
+    attributes:
+      label: Before submitting
+      options:
+        - label: This proposal contains no secrets, tokens, private paths or customer data.
+          required: true

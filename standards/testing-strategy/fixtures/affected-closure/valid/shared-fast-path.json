@@ -1,0 +1,28 @@
+{
+  "schema_version": "openagenticsecurity.testing.affected-closure-report.v1",
+  "authority": "candidate",
+  "trusted": false,
+  "base_sha": "1111111111111111111111111111111111111111",
+  "head_sha": "3333333333333333333333333333333333333333",
+  "changes": [
+    {
+      "path": "frontend/src/services/api.ts",
+      "status": "M"
+    },
+    {
+      "path": "frontend/src/types/request.ts",
+      "status": "M"
+    }
+  ],
+  "classification": "shared_boundary",
+  "policy_mode": "pull_request_fast_path",
+  "reasons": [
+    "shared_boundary:public_contract"
+  ],
+  "recommended_suites": [
+    "backend-test",
+    "frontend-check",
+    "browser-api"
+  ],
+  "shadow_only": false
+}

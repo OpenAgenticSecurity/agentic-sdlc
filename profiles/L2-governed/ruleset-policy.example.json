@@ -1,0 +1,15 @@
+{
+  "policy_id": "policy.example-repo.main.v1",
+  "policy_version": "1.0.0",
+  "required_status_contexts": [
+    "agent-check",
+    "security-scan"
+  ],
+  "minimum_approving_review_count": 2,
+  "require_code_owner_review": true,
+  "require_stale_review_dismissal": true,
+  "require_last_push_approval": true,
+  "forbid_unconditional_bypass": true,
+  "require_status_check_source_binding": true,
+  "allowed_pull_request_bypass_actors": []
+}

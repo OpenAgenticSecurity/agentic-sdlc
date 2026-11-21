@@ -1,0 +1,10 @@
+{
+  "schema_version": "openagenticsecurity.testing.affected-suite-catalog.v1",
+  "entries": {
+    "backend-test": "product:backend-test",
+    "browser-api": "product:browser-api",
+    "docs-check": "product:docs-check",
+    "frontend-check": "product:frontend-check",
+    "full-suite": "product:full-suite"
+  }
+}

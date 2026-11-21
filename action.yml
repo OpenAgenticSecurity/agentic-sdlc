@@ -1,0 +1,58 @@
+name: "OpenAgenticSecurity — Agentic SDLC Self-Audit"
+description: "Zero-dependency, read-only candidate audit for AI coding guardrails, CI Action SHA pinning, multi-language security traps, and GitHub Rulesets."
+
+inputs:
+  target:
+    description: "Repository directory to inspect (strictly read-only)."
+    required: false
+    default: "."
+  format:
+    description: "Output format: text or json."
+    required: false
+    default: "text"
+  github-ruleset-file:
+    description: "Optional path to an offline raw GitHub Ruleset JSON payload to evaluate."
+    required: false
+    default: ""
+  fail-on-findings:
+    description: "Exit non-zero when FAIL findings are detected (true or false)."
+    required: false
+    default: "true"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run zero-dependency candidate self-audit
+      shell: bash
+      env:
+        OAS_ACTION_PATH: ${{ github.action_path }}
+        OAS_TARGET: ${{ inputs.target }}
+        OAS_FORMAT: ${{ inputs.format }}
+        OAS_RULESET_FILE: ${{ inputs.github-ruleset-file }}
+        OAS_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+      run: |
+        set -euo pipefail
+        case "$OAS_FORMAT" in
+          text|json) ;;
+          *) echo "audit-repo action error: format must be 'text' or 'json'" >&2; exit 1 ;;
+        esac
+        case "$OAS_FAIL_ON_FINDINGS" in
+          true|false) ;;
+          *) echo "audit-repo action error: fail-on-findings must be 'true' or 'false'" >&2; exit 1 ;;
+        esac
+
+        args=("$OAS_TARGET" "--format" "$OAS_FORMAT")
+        if [ -n "$OAS_RULESET_FILE" ]; then
+          args+=("--github-ruleset-file" "$OAS_RULESET_FILE")
+        fi
+
+        set +e
+        python3 "$OAS_ACTION_PATH/scripts/audit-repo.py" "${args[@]}"
+        rc=$?
+        set -e
+
+        if [ "$rc" -eq 2 ] && [ "$OAS_FAIL_ON_FINDINGS" = "false" ]; then
+          echo "OpenAgenticSecurity candidate audit found FAIL items (advisory mode: fail-on-findings=false)." >&2
+          exit 0
+        fi
+        exit "$rc"

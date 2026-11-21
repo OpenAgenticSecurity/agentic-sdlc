@@ -1,0 +1,42 @@
+{
+  "claim_id": "claim.example.auth-guard.2026-11-20",
+  "subject": {
+    "kind": "service",
+    "name": "example-api",
+    "entrypoint": "POST /api/v1/actions/execute"
+  },
+  "revision": {
+    "git_commit": "1111111111111111111111111111111111111111",
+    "artifact_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "environment": {
+    "tier": "staging",
+    "runtime": "python-3.11.9 / postgres-16.4",
+    "verified_at": "2026-11-20T12:00:00Z"
+  },
+  "predicate": "Requests without a valid action grant for the exact target and normalized args hash return HTTP 403 and produce zero side effects.",
+  "evidence_locator": {
+    "command": "pytest -q tests/test_action_gate.py tests/test_action_gate_pg.py",
+    "artifact_ref": "evidence://staging/2026-11-20/action-gate-replay.json",
+    "stable_trace_id": "trace-example-0001",
+    "bridge_writer": "none"
+  },
+  "independent_observer": {
+    "role": "staging-verifier",
+    "mechanism": "live-http-readback-and-process-pid-check",
+    "reviewer": "security-reviewer-handle"
+  },
+  "dereference_checks": {
+    "subject_identity": "PASS",
+    "acceptance_predicate": "PASS",
+    "workload_lifecycle": "PASS",
+    "claim_provenance": "PASS"
+  },
+  "derived_status": "VERIFIED",
+  "first_breakpoint": null,
+  "does_not_prove": [
+    "production peak concurrency beyond 50 RPS staging replay",
+    "multi-region failover behavior",
+    "absence of unrelated regressions outside the action-gate boundary"
+  ]
+}

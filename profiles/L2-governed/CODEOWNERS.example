@@ -1,0 +1,14 @@
+# Enforcement-surface CODEOWNERS example (L2 Governed)
+# Remember:
+# 1. Head-branch CODEOWNERS cannot bootstrap protection for the same PR.
+# 2. Listing two owners means EITHER can satisfy CODEOWNERS, not BOTH.
+#    Enforce minimum approving reviews >= 2 + require_last_push_approval +
+#    dismiss_stale_reviews_on_push + no unconditional bypass in GitHub Rulesets.
+
+/.github/workflows/ @org/security-platform @org/architecture-owners
+/.github/CODEOWNERS @org/security-platform @org/architecture-owners
+/Makefile @org/security-platform @org/architecture-owners
+/AGENTS.md @org/architecture-owners
+/CLAUDE.md @org/architecture-owners
+/scripts/ @org/security-platform @org/architecture-owners
+/standards/ @org/architecture-owners

@@ -1,0 +1,57 @@
+name: Node / TypeScript Fail-Closed Candidate Gates
+
+on:
+  pull_request:
+    branches: [main] # Replace `main` if your default branch differs.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: node-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Candidate/advisory workflow executed from PR-controlled source.
+# Not self-attesting; mark this job required in GitHub Branch Rulesets.
+jobs:
+  agent-check:
+    name: agent-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact candidate revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install lockfile-exact dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Diff hygiene, lint & strict typecheck
+        run: |
+          set -euo pipefail
+          git diff --check
+          npm run lint
+          npx tsc --noEmit
+
+      - name: Run unit tests (ensure runner fails closed on 0 tests collected, e.g. vitest without --passWithNoTests)
+        run: npm test
+
+      # Optional: add Playwright E2E journey & disabled-feature 3-layer test for UI changes
+      # Optional: if using `deps` as engineering carrier:
+      # - name: Architecture & security audit (deps)
+      #   run: deps security-audit . && deps agent-verify . --receipt .deps/receipt.json

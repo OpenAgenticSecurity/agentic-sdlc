@@ -1,0 +1,58 @@
+name: Go Fail-Closed Candidate Gates
+
+on:
+  pull_request:
+    branches: [main] # Replace `main` if your default branch differs.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Candidate/advisory workflow executed from PR-controlled source.
+# Not self-attesting; mark this job required in GitHub Branch Rulesets.
+jobs:
+  agent-check:
+    name: agent-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact candidate revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      # Recommended: pin your exact Go version with a 40-char SHA-pinned
+      # actions/setup-go step (or commit the exact `go` directive in go.mod).
+      - name: Verify Go module & diff hygiene
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -f go.mod || { echo "CI not configured: missing go.mod" >&2; exit 2; }
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "Unformatted Go files:" >&2
+            printf '%s\n' "$unformatted" >&2
+            exit 1
+          fi
+
+      - name: Static analysis & race-detector tests (fail closed on zero tests)
+        run: |
+          set -euo pipefail
+          go vet ./...
+          test_files="$(find . -name '*_test.go' -not -path './vendor/*' | head -n 1)"
+          test -n "$test_files" || { echo "NOT_RUN: zero *_test.go files found" >&2; exit 2; }
+          go test -race -count=1 ./...
+
+      # Optional: add golangci-lint and govulncheck (pinned to immutable digests)
+      # Optional: run OpenAgenticSecurity/agentic-sdlc action (pinned to 40-char SHA)

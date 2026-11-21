@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagenticsecurity.github.io/schemas/testing/affected-closure-report.v1.json",
+  "title": "AffectedTestClosureReport v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "openagenticsecurity.testing.affected-closure-report.v1"
+    },
+    "authority": {
+      "const": "candidate"
+    },
+    "trusted": {
+      "const": false
+    },
+    "base_sha": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/sha"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "head_sha": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/sha"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change"
+      },
+      "uniqueItems": true
+    },
+    "classification": {
+      "enum": [
+        "docs_only",
+        "frontend_only",
+        "backend_only",
+        "shared_boundary",
+        "full"
+      ]
+    },
+    "policy_mode": {
+      "enum": [
+        "shadow",
+        "pull_request_fast_path"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/code"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "recommended_suites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/suite"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "shadow_only": {
+      "type": "boolean"
+    },
+    "error_code": {
+      "$ref": "#/$defs/code"
+    }
+  },
+  "required": [
+    "schema_version",
+    "authority",
+    "trusted",
+    "base_sha",
+    "head_sha",
+    "changes",
+    "classification",
+    "policy_mode",
+    "reasons",
+    "recommended_suites",
+    "shadow_only"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "policy_mode": {
+            "const": "shadow"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "shadow_only": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "policy_mode": {
+            "const": "pull_request_fast_path"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "shadow_only": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "error_code"
+        ]
+      },
+      "then": {
+        "properties": {
+          "base_sha": {
+            "type": "null"
+          },
+          "head_sha": {
+            "type": "null"
+          },
+          "changes": {
+            "maxItems": 0
+          },
+          "classification": {
+            "const": "full"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "base_sha": {
+            "$ref": "#/$defs/sha"
+          },
+          "head_sha": {
+            "$ref": "#/$defs/sha"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)(?!.*//)(?!.*[\\x00-\\x1f\\x7f])[A-Za-z0-9_.@+:-]+(?:/[A-Za-z0-9_.@+:-]+)*$"
+    },
+    "status": {
+      "enum": [
+        "A",
+        "D",
+        "M",
+        "T",
+        "U",
+        "B"
+      ]
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        }
+      },
+      "required": [
+        "path",
+        "status"
+      ]
+    },
+    "code": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9_.:-]*$"
+    },
+    "suite": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._:-]*$"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# agent-check: the single verification entrypoint named in AGENTS.md / CLAUDE.md
+# and called by .github/workflows/candidate-gates.yml (L1+).
+#
+# It fails closed until you replace the last recipe line with this repository's
+# real lint, typecheck and test commands. A missing tool or "0 tests collected"
+# must exit non-zero (NOT_RUN), never print a green skip.
+.PHONY: agent-check
+
+agent-check:
+	git diff --check
+	@echo "agent-check is not configured: replace this recipe line with your real lint, typecheck and test commands." >&2; exit 2

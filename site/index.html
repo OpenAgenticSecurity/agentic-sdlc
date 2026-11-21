@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenAgenticSecurity — Agentic SDLC | Stop Letting Coding Agents Grade Their Own Homework</title>
+  <meta name="description" content="Zero-dependency guardrails for AI-assisted repositories: 6 standalone skills, polyglot self-audit, fail-closed CI templates, and non-self-attesting GitHub Rulesets — distilled from 200B+ tokens of production engineering.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="#top">
+        <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path fill="currentColor" d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4zm0 2.18l7 3.11v4.71c0 4.42-2.98 8.58-7 9.75-4.02-1.17-7-5.33-7-9.75V7.29l7-3.11zm-1 5.32v5h2v-5h-2zm0 7v2h2v-2h-2z"/>
+        </svg>
+        <span>OpenAgenticSecurity</span>
+        <span class="brand-sep">/</span>
+        <strong>agentic-sdlc</strong>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#evidence" data-i18n="nav_evidence">Evidence</a>
+        <a href="#proof" data-i18n="nav_proof">10s Audit</a>
+        <a href="#workflow" data-i18n="nav_workflow">Workflow</a>
+        <a href="#skills" data-i18n="nav_skills">6 Skills</a>
+        <a href="#architecture" data-i18n="nav_arch">3 Layers</a>
+      </nav>
+      <div class="topbar-actions">
+        <button id="lang-toggle" class="btn btn-ghost" type="button" aria-label="Switch language">中文</button>
+        <button id="theme-toggle" class="btn btn-ghost" type="button" aria-label="Toggle theme">☀</button>
+        <a class="btn btn-primary" href="https://github.com/OpenAgenticSecurity/agentic-sdlc" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container">
+        <div class="pill-row">
+          <span class="pill">Apache-2.0</span>
+          <span class="pill">v0.1.0</span>
+          <span class="pill" data-i18n="pill_zero">Zero Framework Lock-In</span>
+          <span class="pill" data-i18n="pill_polyglot">Python · TS/JS · Go · Rust · Java</span>
+        </div>
+        <h1 class="hero-title" data-i18n="hero_title">Stop letting coding agents grade their own homework.</h1>
+        <p class="hero-sub" data-i18n="hero_sub">Guardrails for repositories where coding agents write the code: rules the agent reads, deterministic checks it cannot skip, and a GitHub merge boundary it cannot approve for itself.</p>
+        <p class="hero-meta" data-i18n="hero_meta">Distilled from 200B+ tokens of multi-repo AI-assisted production engineering — backed by explicit-denominator studies, 14-case polyglot evals, and fail-closed scripts.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary btn-lg" href="#proof" data-i18n="cta_audit">Run 10-Second Self-Audit</a>
+          <a class="btn btn-outline btn-lg" href="#skills" data-i18n="cta_skills">Install 6 Standalone Skills</a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/OpenAgenticSecurity/agentic-sdlc/blob/main/docs/empirical-findings.md" target="_blank" rel="noopener noreferrer" data-i18n="cta_evidence">Read Empirical Findings ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="evidence" class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow" data-i18n="ev_eyebrow">EMPIRICAL REALITY · EXPLICIT DENOMINATORS</span>
+          <h2 data-i18n="ev_title">Why green tests still ship broken AI code</h2>
+          <p data-i18n="ev_desc">Every control in this repository traces back to measured production failures rather than hypothetical prompt tips. Each metric is bound strictly to its own study denominator.</p>
+        </div>
+
+        <div class="stat-grid">
+          <article class="stat-card">
+            <div class="stat-num">200B+</div>
+            <div class="stat-label" data-i18n="stat1_label">Tokens of multi-repo production practice</div>
+            <div class="stat-note" data-i18n="stat1_note">Concurrent Claude Code, Cursor &amp; Codex across Python, TS/React &amp; Rust</div>
+          </article>
+          <article class="stat-card stat-warn">
+            <div class="stat-num">7%</div>
+            <div class="stat-label" data-i18n="stat2_label">Frontend bugs caught by CI &amp; unit tests</div>
+            <div class="stat-note" data-i18n="stat2_note">454 deduplicated issues (~100K LOC); top 4 root causes = 84%</div>
+          </article>
+          <article class="stat-card stat-warn">
+            <div class="stat-num">5%</div>
+            <div class="stat-label" data-i18n="stat3_label">Backend perf incidents caught by CI</div>
+            <div class="stat-note" data-i18n="stat3_note">100+ fixes (~380K LOC); only 16% found proactively before load</div>
+          </article>
+          <article class="stat-card stat-accent">
+            <div class="stat-num">24 → 2</div>
+            <div class="stat-label" data-i18n="stat4_label">AI review findings surviving verification</div>
+            <div class="stat-note" data-i18n="stat4_note">Plus 15/15 → 0/15 legacy gate drift &amp; 0/33 unconditionally accurate diagrams</div>
+          </article>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card chart-card">
+            <h3 data-i18n="chart1_title">454 Frontend Bugs: Top 4 Root Causes (84%)</h3>
+            <p class="muted" data-i18n="chart1_sub">Share of 321 root-caused React/TypeScript defects</p>
+            <svg class="bar-svg" viewBox="0 0 520 215" role="img" aria-label="Frontend bug root causes chart">
+              <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">
+                <text x="0" y="20" fill="var(--text)">Unasserted cross-layer edge</text>
+                <rect x="0" y="28" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="28" width="358" height="16" rx="4" fill="#ef4444"/>
+                <text x="468" y="40" fill="var(--text)" font-weight="700">39%</text>
+
+                <text x="0" y="72" fill="var(--text)">Holds only at small scale / P50 demo</text>
+                <rect x="0" y="80" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="80" width="166" height="16" rx="4" fill="#f59e0b"/>
+                <text x="468" y="92" fill="var(--text)" font-weight="700">18%</text>
+
+                <text x="0" y="124" fill="var(--text)">Copied from nearby (no shared fix)</text>
+                <rect x="0" y="132" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="132" width="147" height="16" rx="4" fill="#3b82f6"/>
+                <text x="468" y="144" fill="var(--text)" font-weight="700">16%</text>
+
+                <text x="0" y="176" fill="var(--text)">Plausible fake fallback (?? 0 / || [])</text>
+                <rect x="0" y="184" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="184" width="101" height="16" rx="4" fill="#a855f7"/>
+                <text x="468" y="196" fill="var(--text)" font-weight="700">11%</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="card chart-card">
+            <h3 data-i18n="chart2_title">Context Cliff &amp; Phase Transition</h3>
+            <p class="muted" data-i18n="chart2_sub">443 tracked sessions / 8.4B-token study sample</p>
+            <svg class="bar-svg" viewBox="0 0 520 215" role="img" aria-label="Session phase transition and failure rate chart">
+              <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">
+                <text x="0" y="20" fill="var(--text)">&lt;5K LOC disposable mode success</text>
+                <rect x="0" y="28" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="28" width="450" height="16" rx="4" fill="#10b981"/>
+                <text x="468" y="40" fill="var(--text)" font-weight="700">~100%</text>
+
+                <text x="0" y="72" fill="var(--text)">&gt;10K LOC unstructured vibe coding</text>
+                <rect x="0" y="80" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="80" width="253" height="16" rx="4" fill="#f59e0b"/>
+                <text x="468" y="92" fill="var(--text)" font-weight="700">~55%</text>
+
+                <text x="0" y="124" fill="var(--text)">Failure rate: early session (&lt;60 msgs)</text>
+                <rect x="0" y="132" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="132" width="46" height="16" rx="4" fill="#10b981"/>
+                <text x="468" y="144" fill="var(--text)" font-weight="700">&lt;10%</text>
+
+                <text x="0" y="176" fill="var(--text)">Failure rate: past 200+ messages</text>
+                <rect x="0" y="184" width="460" height="16" rx="4" fill="var(--track)"/>
+                <rect x="0" y="184" width="164" height="16" rx="4" fill="#ef4444"/>
+                <text x="468" y="196" fill="var(--text)" font-weight="700">35.7%</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="proof" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow" data-i18n="proof_eyebrow">10-SECOND PROOF · ZERO PIP INSTALL</span>
+          <h2 data-i18n="proof_title">Test it on your own repository right now</h2>
+          <p data-i18n="proof_desc">Do not take documentation on faith. Run the read-only Python standard-library audit against any local repo — or drop the 4-line composite GitHub Action into CI.</p>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Quickstart modes">
+          <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="tab-audit" data-i18n="tab_audit">10s Self-Audit</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="tab-skills" data-i18n="tab_skills">Install 6 Skills</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="tab-action" data-i18n="tab_action">4-Line CI Action</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="tab-bootstrap" data-i18n="tab_bootstrap">Bootstrap L0–L2</button>
+        </div>
+
+        <div id="tab-audit" class="tab-panel active">
+          <div class="code-box">
+            <div class="code-header">
+              <span>bash — zero pip install, strictly read-only</span>
+              <button class="copy-btn" type="button" data-copy="cmd-audit" data-i18n="copy">Copy</button>
+            </div>
+            <pre><code id="cmd-audit">git clone https://github.com/OpenAgenticSecurity/agentic-sdlc.git
+
+# 1. Audit your own repo locally in &lt;1 second (Python/JS/TS/Go/Rust/Java + CI SHA pins):
+python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo
+
+# 2. Also audit live GitHub Branch Rulesets read-only (requires authenticated `gh` CLI):
+python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo --github
+
+# 3. Verify 14/14 polyglot planted-trap evals offline (12 traps caught, 0 false positives):
+python3 -S agentic-sdlc/scripts/run-evals.py</code></pre>
+          </div>
+          <div class="terminal-preview">
+            <div class="terminal-bar">
+              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+              <span class="terminal-title">Sample output on a typical repo</span>
+            </div>
+            <pre class="terminal-body">=== OpenAgenticSecurity Self-Audit: your-app ===
+Authority : candidate (trusted=false; read-only, not self-attesting)
+Summary   : derived=FAIL | FAIL=5  WARN=3  PASS=2  NOT_RUN=0
+
+  <span class="t-fail">FAIL</span>  OAS-CTX-02  Worktree directories not ignored in .gitignore (.gitignore)
+  <span class="t-fail">FAIL</span>  OAS-CI-01   Unpinned GitHub Actions (.github/workflows/ci.yml:7 — actions/checkout@v4)
+  <span class="t-fail">FAIL</span>  OAS-SVC-01  Fail-open silent exception swallowing (src/auth.py:8 — except Exception: pass)
+  <span class="t-fail">FAIL</span>  OAS-GH-02   AI agent can push new commits after human approval (require_last_push_approval=false)
+  <span class="t-fail">FAIL</span>  OAS-GH-03   Required status check source is unbound (integration_id: null — spoofable)</pre>
+          </div>
+        </div>
+
+        <div id="tab-skills" class="tab-panel">
+          <div class="code-box">
+            <div class="code-header">
+              <span>Claude Code / Cursor / Codex — 6 language-agnostic standalone skills</span>
+              <button class="copy-btn" type="button" data-copy="cmd-skills" data-i18n="copy">Copy</button>
+            </div>
+            <pre><code id="cmd-skills"># Claude Code 2.1.275+ native one-step plugin install (zero third-party npm):
+/plugin install agentic-sdlc --marketplace OpenAgenticSecurity/agentic-sdlc
+
+# Cross-agent CLI (Claude Code / Cursor / Codex):
+npx skills add OpenAgenticSecurity/agentic-sdlc</code></pre>
+          </div>
+        </div>
+
+        <div id="tab-action" class="tab-panel">
+          <div class="code-box">
+            <div class="code-header">
+              <span>.github/workflows/agentic-audit.yml — pin to exact 40-char commit SHA</span>
+              <button class="copy-btn" type="button" data-copy="cmd-action" data-i18n="copy">Copy</button>
+            </div>
+            <pre><code id="cmd-action">- name: OpenAgenticSecurity candidate self-audit
+  uses: OpenAgenticSecurity/agentic-sdlc@&lt;40-char-commit-sha&gt; # v0.1.0
+  with:
+    target: .
+    fail-on-findings: "true"</code></pre>
+          </div>
+        </div>
+
+        <div id="tab-bootstrap" class="tab-panel">
+          <div class="code-box">
+            <div class="code-header">
+              <span>bash — never overwrites existing files or Makefiles</span>
+              <button class="copy-btn" type="button" data-copy="cmd-bootstrap" data-i18n="copy">Copy</button>
+            </div>
+            <pre><code id="cmd-bootstrap"># Preview first (--dry-run writes nothing):
+bash agentic-sdlc/scripts/bootstrap.sh --profile L0 --target /path/to/your-repo --dry-run
+
+# Apply L1 team baseline (supports --ci python | node-ts | rust | go | java):
+bash agentic-sdlc/scripts/bootstrap.sh --profile L1 --ci python --target /path/to/your-repo --with-skills
+
+# Install reversible local Git pre-commit/pre-push guardrails blocking direct commits on main:
+python3 agentic-sdlc/scripts/workspace-git.py guardrails --apply</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="workflow" class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow" data-i18n="wf_eyebrow">A REAL DAY WITH CODING AGENTS</span>
+          <h2 data-i18n="wf_title">5 exact hook points — keep your existing tools</h2>
+          <p data-i18n="wf_desc">Keep Claude Code, Cursor, Codex, and superpowers for inner-loop coding. Snap agentic-sdlc onto the 5 handoffs where AI workflows actually fail.</p>
+        </div>
+
+        <div class="steps">
+          <article class="step-card">
+            <span class="step-idx">01</span>
+            <h3 data-i18n="step1_t">Pick Up Task</h3>
+            <p data-i18n="step1_d">Read unified root <code>AGENTS.md</code> + <code>STATUS.md</code>, isolate in a fresh worktree from <code>origin/main</code>, and block direct commits on <code>main</code> with <code>workspace-git.py</code>.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-idx">02</span>
+            <h3 data-i18n="step2_t">Plan &amp; Code</h3>
+            <p data-i18n="step2_d">Enforce the non-trivial task gate (&gt;3 files / &gt;50 lines → plan + failing test first) and trigger <code>secure-vibe-coding</code> on auth, tenant scope, sinks, crypto &amp; deps.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-idx">03</span>
+            <h3 data-i18n="step3_t">Before Saying "Done"</h3>
+            <p data-i18n="step3_d">Run <code>done-claim-verify</code> + <code>audit-pr-diff</code>: dereference all 4 fake-done breakpoints and emit a <code>DoneClaim</code> with explicit <code>does_not_prove[]</code>.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-idx">04</span>
+            <h3 data-i18n="step4_t">Open PR &amp; CI</h3>
+            <p data-i18n="step4_d">Run SHA-pinned fail-closed CI (Python/TS/Rust/Go/Java) + 4-line <code>action.yml</code> catching multi-language sinks and <code>--passWithNoTests</code>; cite <code>OAS-*</code> IDs in review.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-idx">05</span>
+            <h3 data-i18n="step5_t">Merge &amp; Launch</h3>
+            <p data-i18n="step5_d">Enforce non-self-attesting GitHub Rulesets (<code>github-ruleset.import.json</code> + <code>CODEOWNERS</code>) and run 5-dimension <code>audit-production-readiness</code> (H1/H2 verdict).</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow" data-i18n="sk_eyebrow">6 STANDALONE SKILLS · LANGUAGE-AGNOSTIC</span>
+          <h2 data-i18n="sk_title">Zero-overlap guardrails, loaded only on demand</h2>
+          <p data-i18n="sk_desc">Skills carry security, verification, audit, and Git invariants — not language formatting or style rules. Every skill explicitly declares itself non-authoritative.</p>
+        </div>
+
+        <div class="skill-grid">
+          <article class="card">
+            <h3><code>bootstrap-agentic-sdlc</code></h3>
+            <p data-i18n="sk1">Inspects your real stack and safely scaffolds unified <code>AGENTS.md</code>, thin <code>@AGENTS.md</code> <code>CLAUDE.md</code>, <code>STATUS.md</code>, PR templates, and fail-closed CI without overwriting files.</p>
+          </article>
+          <article class="card">
+            <h3><code>secure-vibe-coding</code></h3>
+            <p data-i18n="sk2">Enforces default-deny auth/tenant isolation, parameterized queries, safe sinks, SSRF <code>169.254.169.254</code> defense, zero fallback secrets, anti-slopsquatting, and negative security tests.</p>
+          </article>
+          <article class="card">
+            <h3><code>audit-pr-diff</code></h3>
+            <p data-i18n="sk3">Audits diffs with <code>file:line</code> grounding across Seven Sins, Secure Vibe Coding, 454-bug frontend traps, 8-class backend performance traps, and enforcement-surface review.</p>
+          </article>
+          <article class="card">
+            <h3><code>audit-production-readiness</code></h3>
+            <p data-i18n="sk4">Full-repo 5-dimension audit (Architecture, Design, Functionality, Performance, Security) enforcing 7 evidence disciplines, 3-layer defaults, data liveness, and an H1 vs H2 verdict.</p>
+          </article>
+          <article class="card">
+            <h3><code>done-claim-verify</code></h3>
+            <p data-i18n="sk5">Refuses bare <code>"done": true</code> claims; preserves <code>NOT_RUN</code>/<code>FAIL</code>/<code>ERROR</code>/<code>CONFLICT</code>, dereferences 4 fake-done breakpoints, and requires <code>DoneClaim</code> + <code>does_not_prove[]</code>.</p>
+          </article>
+          <article class="card">
+            <h3><code>multi-agent-git-flow</code></h3>
+            <p data-i18n="sk6">Coordinates parallel agents via fresh remote baselines, isolated worktrees, Managed Issue Claims, cross-session contract handoffs, anti-stacked-PR rules, and 5-point safe cleanup.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture" class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow" data-i18n="ar_eyebrow">ZERO-TRUST &amp; NON-SELF-ATTESTATION</span>
+          <h2 data-i18n="ar_title">Three-layer defense architecture</h2>
+          <p data-i18n="ar_desc">Prompt rules decay across context compaction. Real trust boundaries must live outside the model window.</p>
+        </div>
+
+        <div class="layer-stack">
+          <div class="layer-box layer-1">
+            <div class="layer-tag">LAYER 1 · NON-AUTHORITATIVE ERGONOMICS</div>
+            <h3 data-i18n="l1_t">Inside the Coding Agent</h3>
+            <p data-i18n="l1_d">6 standalone Skills · <code>llms.txt</code> (~1K-token routing map) · unified root <code>AGENTS.md</code> + thin <code>@AGENTS.md</code> <code>CLAUDE.md</code> · 8 empirical checklists.</p>
+          </div>
+          <div class="layer-box layer-2">
+            <div class="layer-tag">LAYER 2 · DETERMINISTIC LOCAL GUARDRAILS</div>
+            <h3 data-i18n="l2_t">On the Developer Machine</h3>
+            <p data-i18n="l2_d">Zero-dep polyglot <code>audit-repo.py</code> (Python/JS/TS/Go/Rust/Java) · reversible Git hooks (<code>workspace-git.py</code>) · lockfile-keyed Node store · optional upcoming Rust carriers <code>deps</code> &amp; <code>sealed-data</code>.</p>
+          </div>
+          <div class="layer-box layer-3">
+            <div class="layer-tag">LAYER 3 · HARD MERGE BOUNDARY</div>
+            <h3 data-i18n="l3_t">External GitHub Enforcement (Not Self-Attesting)</h3>
+            <p data-i18n="l3_d">SHA-pinned fail-closed CI (Python/TS/Rust/Go/Java) · Reusable <code>action.yml</code> · Enforcement-surface <code>CODEOWNERS</code> · Importable GitHub Ruleset JSON · Read-only <code>observe-github-ruleset.py</code>.</p>
+          </div>
+        </div>
+
+        <div class="card limits-card">
+          <h3 data-i18n="lim_title">Honest Limits (<code>does_not_prove</code>)</h3>
+          <ul>
+            <li data-i18n="lim1">Markdown rules and Agent Skills are ergonomic projections — they cannot stop determined prompt injection or replace human engineering judgment on payments, auth, or production ops.</li>
+            <li data-i18n="lim2">PR-controlled CI jobs and local self-audits are always <code>candidate / advisory</code> — never self-attesting merge authority.</li>
+            <li data-i18n="lim3">Static checks catch high-signal structural and supply-chain traps; runtime semantics and P99 load still require real integration tests and external controls.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>OpenAgenticSecurity / agentic-sdlc</strong>
+        <p class="muted" data-i18n="footer_sub">Apache-2.0 · Zero runtime dependencies · Built for engineers running Coding Agents on real codebases.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/OpenAgenticSecurity/agentic-sdlc" target="_blank" rel="noopener noreferrer">Repository</a>
+        <a href="https://github.com/OpenAgenticSecurity/agentic-sdlc/blob/main/BOOTSTRAP.md" target="_blank" rel="noopener noreferrer">Bootstrap Guide</a>
+        <a href="https://github.com/OpenAgenticSecurity/agentic-sdlc/blob/main/MATURITY.md" target="_blank" rel="noopener noreferrer">Maturity</a>
+        <a href="https://github.com/OpenAgenticSecurity/agentic-sdlc/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer">Security</a>
+        <a href="https://github.com/OpenAgenticSecurity" target="_blank" rel="noopener noreferrer">Organization</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

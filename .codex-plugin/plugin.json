@@ -1,0 +1,40 @@
+{
+  "name": "agentic-sdlc",
+  "version": "0.1.0",
+  "description": "OpenAgenticSecurity Agentic SDLC & Secure Vibe Coding skills for Codex: L0-L2 repo bootstrap, PR & 5-dimension production-readiness auditing, fake-done dereference, multi-agent worktrees, and fail-closed verification.",
+  "author": {
+    "name": "OpenAgenticSecurity Contributors",
+    "url": "https://github.com/OpenAgenticSecurity"
+  },
+  "homepage": "https://github.com/OpenAgenticSecurity/agentic-sdlc",
+  "repository": "https://github.com/OpenAgenticSecurity/agentic-sdlc",
+  "license": "Apache-2.0",
+  "keywords": [
+    "agentic-sdlc",
+    "ai-security",
+    "vibe-coding",
+    "devsecops",
+    "code-review",
+    "verification",
+    "worktree"
+  ],
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "Agentic SDLC",
+    "shortDescription": "Secure-by-default AI coding guardrails, repo bootstrap, PR audit & done-claim verification",
+    "longDescription": "Bootstrap L0-L2 Agentic SDLC into any repository, audit diffs against empirical security/frontend/backend checklists, dereference fake-done claims with DoneClaim, and isolate multi-agent Git worktrees.",
+    "developerName": "OpenAgenticSecurity",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Bootstrap OpenAgenticSecurity/agentic-sdlc (L0) into this repository without overwriting existing files.",
+      "Audit my current git diff with the OpenAgenticSecurity security, frontend, and backend checklists."
+    ],
+    "websiteURL": "https://github.com/OpenAgenticSecurity/agentic-sdlc"
+  }
+}

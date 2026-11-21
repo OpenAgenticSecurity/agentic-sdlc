@@ -1,0 +1,57 @@
+{
+  "schema_version": "openagenticsecurity.governance.enforcement-evidence.v1",
+  "authority": "candidate",
+  "trusted": false,
+  "repository": "example-org/example-repo",
+  "default_branch": "main",
+  "observed_at": "2026-08-19T12:00:00Z",
+  "source": {
+    "kind": "github_ruleset_api",
+    "reference": "repos/example-org/example-repo/rulesets/12345",
+    "response_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "policy": {
+    "policy_id": "policy.example-repo.main.v1",
+    "policy_version": "1.0.0",
+    "required_status_contexts": [
+      "architecture-model",
+      "check-docs"
+    ],
+    "minimum_approving_review_count": 2,
+    "require_code_owner_review": true,
+    "require_stale_review_dismissal": true,
+    "require_last_push_approval": true,
+    "forbid_unconditional_bypass": true,
+    "require_status_check_source_binding": true,
+    "allowed_pull_request_bypass_actors": []
+  },
+  "observation": {
+    "ruleset_id": 12345,
+    "ruleset_name": "Protect default branches",
+    "target": "branch",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name_include": [
+        "~DEFAULT_BRANCH"
+      ],
+      "ref_name_exclude": []
+    },
+    "pull_request": {
+      "required_status_checks": [
+        {
+          "context": "architecture-model",
+          "integration_id": 15368
+        },
+        {
+          "context": "check-docs",
+          "integration_id": 15368
+        }
+      ],
+      "required_approving_review_count": 2,
+      "require_code_owner_review": true,
+      "dismiss_stale_reviews_on_push": true,
+      "require_last_push_approval": false
+    },
+    "bypass_actors": []
+  }
+}

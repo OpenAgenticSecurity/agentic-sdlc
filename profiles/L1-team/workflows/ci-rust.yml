@@ -1,0 +1,47 @@
+name: Rust Fail-Closed Candidate Gates
+
+on:
+  pull_request:
+    branches: [main] # Replace `main` if your default branch differs.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Candidate/advisory workflow executed from PR-controlled source.
+# Not self-attesting; mark this job required in GitHub Branch Rulesets.
+jobs:
+  agent-check:
+    name: agent-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact candidate revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      # Recommended: pin your exact toolchain version with a SHA-pinned
+      # dtolnay/rust-toolchain step (or commit rust-toolchain.toml).
+      - name: Formatting, Clippy (deny warnings) & Tests
+        run: |
+          set -euo pipefail
+          git diff --check
+          cargo fmt --all -- --check
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked
+
+      # Optional: if using `deps` as engineering carrier:
+      # - name: Architecture & security audit (deps)
+      #   run: deps security-audit . && deps agent-verify . --receipt .deps/receipt.json

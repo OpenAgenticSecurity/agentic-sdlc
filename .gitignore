@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Multi-agent worktree namespaces
+.worktrees/
+worktrees/
+.claude/worktrees/
+.cursor/worktrees/
+.codex/worktrees/
+
+# Local environment & runtime scratch
+.env
+.env.*
+!.env.example
+.DS_Store
+*.swp
+*.swo
+.coverage
+htmlcov/

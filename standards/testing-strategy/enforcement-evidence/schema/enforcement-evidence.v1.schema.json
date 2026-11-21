@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagenticsecurity.github.io/schemas/governance/enforcement-evidence.v1.json",
+  "title": "GovernanceEnforcementEvidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "openagenticsecurity.governance.enforcement-evidence.v1"
+    },
+    "authority": {
+      "const": "candidate"
+    },
+    "trusted": {
+      "const": false
+    },
+    "repository": {
+      "$ref": "#/$defs/repository"
+    },
+    "default_branch": {
+      "$ref": "#/$defs/branch"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "policy": {
+      "$ref": "#/$defs/policy"
+    },
+    "observation": {
+      "$ref": "#/$defs/observation"
+    }
+  },
+  "required": [
+    "schema_version",
+    "authority",
+    "trusted",
+    "repository",
+    "default_branch",
+    "observed_at",
+    "source",
+    "policy",
+    "observation"
+  ],
+  "$defs": {
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+      "maxLength": 200
+    },
+    "branch": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._/-]+$",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "github_ruleset_api"
+        },
+        "reference": {
+          "type": "string",
+          "pattern": "^repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/rulesets/[0-9]+$",
+          "maxLength": 240
+        },
+        "response_digest": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": ["kind", "reference", "response_digest"]
+    },
+    "status_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._:/-]{1,127}$"
+        },
+        "integration_id": {
+          "anyOf": [
+            {"type": "integer", "minimum": 1},
+            {"type": "null"}
+          ]
+        }
+      },
+      "required": ["context", "integration_id"]
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._:-]{1,127}$"
+        },
+        "policy_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "required_status_contexts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._:/-]{1,127}$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "minimum_approving_review_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "require_code_owner_review": {
+          "const": true
+        },
+        "require_stale_review_dismissal": {
+          "const": true
+        },
+        "require_last_push_approval": {
+          "const": true
+        },
+        "forbid_unconditional_bypass": {
+          "const": true
+        },
+        "require_status_check_source_binding": {
+          "type": "boolean"
+        },
+        "allowed_pull_request_bypass_actors": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/bypass_actor_ref"},
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "policy_id",
+        "policy_version",
+        "required_status_contexts",
+        "minimum_approving_review_count",
+        "require_code_owner_review",
+        "require_stale_review_dismissal",
+        "require_last_push_approval",
+        "forbid_unconditional_bypass",
+        "require_status_check_source_binding",
+        "allowed_pull_request_bypass_actors"
+      ]
+    },
+    "bypass_actor_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "anyOf": [
+            {"type": "integer", "minimum": 1},
+            {"type": "null"}
+          ]
+        },
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "DeployKey",
+            "EnterpriseTeam",
+            "Integration",
+            "OrganizationAdmin",
+            "RepositoryRole",
+            "Team",
+            "User"
+          ]
+        }
+      },
+      "required": ["actor_id", "actor_type"]
+    },
+    "bypass_actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "anyOf": [
+            {"type": "integer", "minimum": 1},
+            {"type": "null"}
+          ]
+        },
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "DeployKey",
+            "EnterpriseTeam",
+            "Integration",
+            "OrganizationAdmin",
+            "RepositoryRole",
+            "Team",
+            "User"
+          ]
+        },
+        "bypass_mode": {
+          "type": "string",
+          "enum": ["always", "exempt", "pull_request"]
+        }
+      },
+      "required": ["actor_id", "actor_type", "bypass_mode"]
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref_name_include": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 255},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "ref_name_exclude": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 255},
+          "uniqueItems": true
+        }
+      },
+      "required": ["ref_name_include", "ref_name_exclude"]
+    },
+    "pull_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required_status_checks": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/status_check"},
+          "uniqueItems": true
+        },
+        "required_approving_review_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "require_code_owner_review": {"type": "boolean"},
+        "dismiss_stale_reviews_on_push": {"type": "boolean"},
+        "require_last_push_approval": {"type": "boolean"}
+      },
+      "required": [
+        "required_status_checks",
+        "required_approving_review_count",
+        "require_code_owner_review",
+        "dismiss_stale_reviews_on_push",
+        "require_last_push_approval"
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ruleset_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ruleset_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "target": {
+          "const": "branch"
+        },
+        "enforcement": {
+          "enum": ["active", "disabled", "evaluate"]
+        },
+        "conditions": {
+          "$ref": "#/$defs/conditions"
+        },
+        "pull_request": {
+          "$ref": "#/$defs/pull_request"
+        },
+        "bypass_actors": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/bypass_actor"},
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "ruleset_id",
+        "ruleset_name",
+        "target",
+        "enforcement",
+        "conditions",
+        "pull_request",
+        "bypass_actors"
+      ]
+    }
+  }
+}

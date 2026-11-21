@@ -1,0 +1,18 @@
+{
+  "name": "openagenticsecurity",
+  "description": "OpenAgenticSecurity marketplace for Agentic SDLC and Secure Vibe Coding skills",
+  "owner": {
+    "name": "OpenAgenticSecurity Contributors"
+  },
+  "plugins": [
+    {
+      "name": "agentic-sdlc",
+      "description": "Agentic SDLC & Secure Vibe Coding skills: repo bootstrap, PR & 5-dimension production-readiness audit, fake-done dereference, multi-agent worktrees, and fail-closed verification",
+      "version": "0.1.0",
+      "source": "./",
+      "author": {
+        "name": "OpenAgenticSecurity Contributors"
+      }
+    }
+  ]
+}
