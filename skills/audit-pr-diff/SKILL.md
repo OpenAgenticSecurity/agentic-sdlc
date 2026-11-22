@@ -78,11 +78,20 @@ description: Use when asked to review, audit or sanity-check a branch diff or pu
   verify code default, shipped deployment template (`.env.example`/Helm/Compose),
   and live deployed value.
 
-### Zone E — Enforcement Surfaces (Non-Self-Attesting)
-If diff touches `.github/`, `Makefile`, `AGENTS.md`, `CLAUDE.md`, `CODEOWNERS`,
-schemas, checkers, or tests: explicitly flag that candidate CI is **not
-self-attesting** and requires independent mechanism review + planted-violation
-check (`0 tests collected` or `skip` != pass).
+### Zone E — Enforcement Surfaces, Reward Hacking & IaC Safety (Non-Self-Attesting)
+- If diff touches `.github/`, `Makefile`, `AGENTS.md`, `CLAUDE.md`, `.claude/`,
+  `.cursor/`, `.vscode/`, `.mcp.json`, `CODEOWNERS`, schemas, checkers, or
+  tests: flag that candidate CI is **not self-attesting** and requires
+  independent mechanism review + planted-violation check (`0 tests collected`
+  or `skip` != pass).
+- **Anti-Reward-Hacking**: Verify the diff did not delete/weaken failing test
+  assertions, insert `# noqa`/`eslint-disable`/`@ts-ignore`/`.skip` to silence
+  gates, write tautological tests that cannot fail, or hardcode test-specific
+  outputs.
+- **Instruction/CI/IaC poisoning**: Check instruction files for hidden Unicode
+  or endpoint overrides, CI workflows for untrusted `pull_request_target` /
+  `title`/`body` interpolation, and shared IaC modules (`terraform/modules/`)
+  for missing `prevent_destroy` or 0-minute staging bypasses.
 
 ## Step 3 — Optional Local Tools & Grounded Report
 

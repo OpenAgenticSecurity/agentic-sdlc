@@ -80,14 +80,14 @@ python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo
 # 2. 同时只读审计你仓库线上的 GitHub Branch Ruleset（需已登录 `gh` CLI）：
 python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo --github
 
-# 3. 实跑 14 用例多语言植入陷阱评测集（12/12 陷阱拦截，0 误报）：
+# 3. 实跑 19 用例确定性信任边界评测集（17/17 陷阱拦截，0 误报）：
 python3 -S agentic-sdlc/scripts/run-evals.py
 ```
 
 也可以在任意仓库 CI 里直接接入 4 行可复用 GitHub Action（`action.yml`，按 40 位 SHA 锁定）：
 
 ```yaml
-- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.2
+- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.3.0
   with:
     target: .
 ```
@@ -157,7 +157,7 @@ make verify-all
 | 放在哪里 | 放什么 / 怎么用 | 为什么这样分工 |
 |---|---|---|
 | **本机全局 Coding Agent**（Claude Code / Cursor / Codex） | 一次性装好 6 个 **`skills/`**（`/plugin install` 或 `npx skills add`） | 全部是**脱离具体编程语言**的安全红线、PR 排雷、五维生产就绪审计、假完成核验与多 Agent Git 护栏（不含代码风格/格式规范），按需触发，零常驻上下文消耗。 |
-| **你的业务仓库**（按项目拷一次、改成真实命令） | 唯一一份 **`AGENTS.md`** + 极薄 `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI 模板（`scripts/bootstrap.sh`） | Cursor、Codex、Claude Code 统一读根目录 `AGENTS.md`（无需再维护重复的全局 `.mdc`）；在栈槽位里填入本仓真实命令与语言规范，顶部留 `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.2 -->`。 |
+| **你的业务仓库**（按项目拷一次、改成真实命令） | 唯一一份 **`AGENTS.md`** + 极薄 `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI 模板（`scripts/bootstrap.sh`） | Cursor、Codex、Claude Code 统一读根目录 `AGENTS.md`（无需再维护重复的全局 `.mdc`）；在栈槽位里填入本仓真实命令与语言规范，顶部留 `<!-- OpenAgenticSecurity/agentic-sdlc@v0.3.0 -->`。 |
 | **本地终端 / CI**（按需或每次 PR 运行） | **`scripts/audit-repo.py`**（或 4 行 **`action.yml`**）+ **`scripts/workspace-git.py guardrails`** | 零依赖确定性拦截未锁 SHA 的 Actions、多语言高危 Sink、`--passWithNoTests` 以及 Agent 直提交 `main`。 |
 | **PR Review 与 GitHub 设置** | 引用稳定规则编号（**`OAS-CI-01`**、**`OAS-SVC-01`**、**`OAS-GH-02`**）+ **`DoneClaim`** + 导入 `github-ruleset.import.json` | `standards/` 与 `checklists/` 像 OWASP ASVS 一样供人查阅与评审引用，真正的硬合并边界交给 GitHub Ruleset。 |
 
@@ -170,10 +170,10 @@ make verify-all
 | **`llms.txt`** | 约 1K-token 的 Coding Agent 专用一页路由表 | [llms.txt](llms.txt) |
 | **`action.yml`** | 零依赖 Composite GitHub Action，在任意仓库 CI 里运行 `audit-repo.py` | [action.yml](action.yml) |
 | **`skills/`** | 6 个零重叠独立跨语言 Agent Skills + `.claude-plugin/` / `.cursor-plugin/` / `.codex-plugin/` | [skills/README.zh.md](skills/README.zh.md)（[English](skills/README.md)） |
-| **`checklists/`** | 8 套实证、安全、运维与生产就绪清单 + `DoneClaim` / `Handoff` 模板 | [checklists/README.zh.md](checklists/README.zh.md)（[English](checklists/README.md)） |
+| **`checklists/`** | 10 套实证、安全、指令/CI 注入、IaC/DB 与生产就绪清单 + `DoneClaim` / `Handoff` 模板 | [checklists/README.zh.md](checklists/README.zh.md)（[English](checklists/README.md)） |
 | **`profiles/`** | **`L0-solo`**（统一 `AGENTS.md` + 极薄 `@AGENTS.md` `CLAUDE.md`）、**`L1-team`**（Python/TS/Rust/Go/Java Fail-Closed CI）、**`L2-governed`**（可导入 GitHub Ruleset JSON） | [profiles/README.zh.md](profiles/README.zh.md)（[English](profiles/README.md)） |
 | **`examples/`** | 可直接运行的后端契约门禁（`pytest`）与 Playwright 三层前端 E2E 骨架 | [examples/README.zh.md](examples/README.zh.md)（[English](examples/README.md)） |
-| **`evals/`** | 14 用例多语言植入陷阱评测（`scripts/run-evals.py`）+ Skill 评测集 | [evals/README.zh.md](evals/README.zh.md)（[English](evals/README.md)） |
+| **`evals/`** | 19 用例确定性信任边界评测（`scripts/run-evals.py`）+ Skill 评测集 | [evals/README.zh.md](evals/README.zh.md)（[English](evals/README.md)） |
 | **`standards/`** | 9 篇双语核心标准（含安全、可靠/性能与版本发布标准）+ 2 套轻量闭合契约（`affected-closure`、`enforcement-evidence`） | [standards/README.zh.md](standards/README.zh.md)（[English](standards/README.md)） |
 | **`scripts/`** | 9 个接入/评测脚本（`audit-repo.py`、`check-change-sync.py`、`run-evals.py`、`bootstrap.sh`、`workspace-git.py`、`agent-claim.py`、`observe-github-ruleset.py`、`link-shared-node-deps.mjs`、`check-product-compliance.sh`）+ 3 个契约/文档校验器 | [BOOTSTRAP.zh.md](BOOTSTRAP.zh.md) |
 | **`docs/`** | Agentic SDLC 本体论（9 实体 / 5 公理）、工作流嵌入全景、实证数据与安全工程总纲宣言 | [ontology.zh.md](docs/ontology.zh.md) · [workflow-integration.zh.md](docs/workflow-integration.zh.md) · [empirical-findings.zh.md](docs/empirical-findings.zh.md) · [manifesto.zh.md](docs/manifesto.zh.md) |
@@ -195,7 +195,7 @@ make verify-all
 
 | 仓库 | 定位 |
 |---|---|
-| **`agentic-sdlc`**（本仓） | 方法论、Secure Vibe Coding 安全红线、8 套清单、6 个独立 Skills、可复用 `action.yml`、L0–L2 启动包与 Git/Ruleset 脚本 |
+| **`agentic-sdlc`**（本仓） | 方法论、9 篇标准、10 套清单、6 个独立 Skills、可复用 `action.yml`、L0–L2 启动包与 Git/Ruleset 脚本 |
 | **`deps`** *（即将开源于 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)）* | 第二层可选单二进制 Rust **工程承载**：Tree-sitter `deps context`/`locate`、`deps aac init`/`check`、`deps lineage-audit`、`deps security-audit`/`security-filter`、Claude Code 与 Codex 生命周期钩子（`deps agent-hook install`）、`deps agent-verify --receipt` |
 | **`sealed-data`** *（即将开源于 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)）* | 可选 Rust CLI：让 Agent 只基于审批后的 Data Card 开发和运行数据管道（`sealed-data seal`），不读取真实数据集 |
 | **`assurance-contracts`** *（即将开源于 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)）* | 可选的企业级 L2 协议套件：面向自建 Guardian 的 UI Assurance（8 Schema）与 Code Health（10 Schema）闭合契约与校验器 |

@@ -17,15 +17,15 @@ python3 -S scripts/run-evals.py
 make eval-deterministic
 ```
 
-It synthesizes 14 isolated cases — **12 planted-violation traps** (missing
-context/worktree hygiene, unpinned GitHub Actions, missing `permissions` /
-`persist-credentials: false`, `@org/` CODEOWNERS placeholder, Python fail-open
-`except: pass` / `shell=True` / hardcoded fallback secret, JS/TS
-`dangerouslySetInnerHTML` + `--passWithNoTests`, Go `InsecureSkipVerify` /
-`sh -c`, Rust `danger_accept_invalid_certs`, Java `Runtime.exec` /
-`ObjectInputStream`, and weak GitHub Rulesets allowing post-approval push or
-unbound `integration_id: null`) plus **2 clean polyglot controls** — asserting
-100% planted-trap recall and 0% false positives.
+It synthesizes 19 isolated cases — **17 planted-violation traps** (missing
+context/worktree hygiene, hidden Unicode & endpoint-hijack poisoning in
+`AGENTS.md`/`CLAUDE.md`, `.vscode/tasks.json` `folderOpen` &
+`bypassPermissions`, Comment-and-Control CI prompt injection &
+`pull_request_target` head checkout, unpinned GitHub Actions, missing
+`permissions` / `persist-credentials: false`, `@org/` CODEOWNERS placeholder,
+Python/JS/TS/Go/Rust/Java Day-0 smoke traps, and weak GitHub Rulesets allowing
+post-approval push or unbound `integration_id: null`) plus **2 clean polyglot
+controls** — asserting 100% planted-trap recall and 0% false positives.
 
 ## 2. Agent Skill Evals (`evals/skills/`)
 
@@ -40,10 +40,10 @@ evaluations (e.g. `claude plugin eval`):
 
 ## 3. Evaluation Boundaries (`pass@k` vs `pass^k` & Holdouts)
 
-- **Never equate `14/14` static traps with general agent reliability**: Track 1
-  proves our static checkers reject specific planted patterns with zero false
-  positives on clean controls — it does not measure probabilistic agent
-  success on open-ended tasks.
+- **Never equate `19/19` deterministic cases with general agent reliability**: Track 1
+  proves our deterministic checkers reject specific planted patterns with zero
+  false positives on clean controls — it does not measure probabilistic agent
+  success on open-ended tasks or replace deep dataflow SAST.
 - **Separate `pass@k` from consistency `pass^k`**: When running end-to-end
   agent evals, track repeated-trial consistency (`pass^k`), maintain held-out
   tasks never used for prompt tuning, grade actual final state/effects rather

@@ -17,6 +17,7 @@
 - Touches auth / paths / symlinks / parsing / rulesets / scripts / workflows: yes / no
 - Negative / mutation test(s) added or verified:
 - Zero hardcoded fallback secrets, fail-open catches, or unpinned actions/deps: [ ] confirmed
+- Zero weakened/deleted tests, lint suppressions (`# noqa`/`eslint-disable`), or unapproved copyleft snippets: [ ] confirmed
 
 ## Verification (Exact Commands Actually Run)
 

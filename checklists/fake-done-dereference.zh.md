@@ -71,6 +71,7 @@ DoneClaim = subject + revision + environment + predicate
 - [ ] AI Review 结论默认为 **candidate finding**，升级阻断前必须基于精确 PR-head checkout 给出 `file:line`、调用点、历史和线程核验。
 - [ ] 高危审计结论必须经过**独立反证复核**（不同证据源或角色主动寻找部署反例与前置条件）。
 - [ ] `STATUS.md` 与架构图必须附带 `verified_at`、`source_commit`、复核命令与 `does_not_prove[]`；过期即降级为历史文档。
+- [ ] **反 Reward Hacking 5 项核查（防 Agent 欺骗评测器）**：核查 PR Diff 确认 Agent 没有（1）删改或放宽既有失败测试的断言、（2）偷塞 `# noqa`、`eslint-disable`、`@ts-ignore`、`@ts-nocheck`、`pytest.mark.skip` 或 `--no-verify` 关掉门禁、（3）写删掉业务代码依然绿的同义反复（Tautological）测试、（4）针对测试输入硬编码特判返回值，或（5）伪造浅层日志/产物糊弄格式校验器。
 
 ## 6. 接受任何 Agent 交付前的七个问题
 

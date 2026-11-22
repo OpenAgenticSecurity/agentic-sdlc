@@ -5,10 +5,12 @@ Inspects a repository across three defense layers using Python 3.11+ standard
 library only (no `pip install` required, never writes to the target repository):
   - Layer 1 (Agent Context): AGENTS.md / CLAUDE.md, worktree .gitignore hygiene,
     reality anchor (STATUS.md / MATURITY.md), and PR evidence template.
-  - Layer 2 (Local & Supply-Chain Guardrails): Git hook guardrails, GitHub
-    Actions 40-char SHA pinning, workflow permissions / persist-credentials /
-    timeouts, CODEOWNERS placeholder checks, and multi-language static security
-    traps (Python AST + JS/TS, Go, Rust, Java high-signal checks).
+  - Layer 2 (Local & Supply-Chain Guardrails): Git hook guardrails, Agent
+    instruction-file & IDE/MCP poisoning checks (hidden Unicode, `folderOpen`,
+    endpoint hijacks), GitHub Actions 40-char SHA pinning, workflow permissions
+    / persist-credentials / Comment-and-Control injection / dedicated SAST
+    presence, CODEOWNERS placeholder checks, and Day-0 multi-language static
+    smoke checks (Python AST + JS/TS, Go, Rust, Java).
   - Layer 3 (GitHub Merge Boundary, opt-in via `--github` or
     `--github-ruleset-file`): live read-only GitHub Ruleset check against AI
     post-approval pushes, spoofable unbound status checks, and unconditional
@@ -90,9 +92,51 @@ RUST_TLS_RE = re.compile(r"\bdanger_accept_invalid_certs\s*\(\s*true\s*\)")
 RUST_SHELL_RE = re.compile(r"""\bCommand::new\s*\(\s*"(?:sh|bash|/bin/sh|/bin/bash)"\s*\)\s*\.arg\s*\(\s*"-c"\s*\)""")
 JAVA_EXEC_RE = re.compile(r"\bRuntime\.getRuntime\(\)\.exec\s*\(")
 JAVA_DESER_RE = re.compile(r"\bnew\s+ObjectInputStream\s*\(")
+UNTRUSTED_GH_EXPR_RE = re.compile(
+    r"\$\{\{\s*github\.(?:event\.(?:issue|pull_request|comment|discussion|review|review_comment)\.(?:title|body)"
+    r"|event\.commits\[[^\]]*\]\.message|head_ref)\b"
+)
+PR_TARGET_RE = re.compile(r"^\s*pull_request_target\s*:")
+PR_HEAD_CHECKOUT_RE = re.compile(r"^\s*ref\s*:.*github\.event\.pull_request\.head\.")
+DEDICATED_SAST_RE = re.compile(
+    r"\b(?:ruff|bandit|semgrep|codeql|gitleaks|trufflehog|govulncheck|golangci-lint"
+    r"|cargo\s+audit|clippy|eslint|tsc|scorecard|shellcheck|actionlint|pip-audit|npm\s+audit"
+    r"|deps\s+security-audit|verify-all)\b",
+    re.IGNORECASE,
+)
+API_ENDPOINT_HIJACK_RE = re.compile(
+    r"""\b(?:ANTHROPIC_BASE_URL|OPENAI_BASE_URL)\s*[:=]\s*['"]?https?://""",
+    re.IGNORECASE,
+)
+SILENT_HIDE_RE = re.compile(
+    r"\bdo\s+not\s+(?:read|display|show|inspect|quote)\b",
+    re.IGNORECASE,
+)
+SILENT_RUN_RE = re.compile(
+    r"\b(?:run|execute)\b[^\n]{0,80}\b(?:without\s+(?:asking|confirmation|displaying)|automatically\s+without)\b",
+    re.IGNORECASE,
+)
+MCP_SHELL_EXEC_RE = re.compile(
+    r"(?:curl\s+[^|]+\|\s*(?:sh|bash)|wget\s+[^|]+\|\s*(?:sh|bash)|\b(?:sh|bash)\s+-c\b)",
+    re.IGNORECASE,
+)
+ROOT_INSTRUCTION_FILES = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    "llms.txt",
+    ".cursorrules",
+    ".github/copilot-instructions.md",
+)
+INSTRUCTION_SCAN_DIRS = (
+    ".cursor/rules",
+    "skills",
+    ".agents/skills",
+    ".claude/skills",
+    ".cursor/skills",
+)
 DOES_NOT_PROVE = (
     "Runtime behavior, business-logic authorization, or production scale (P99 load)",
-    "Absence of vulnerabilities outside the checked static patterns (Python/JS/TS/Go/Rust/Java) or in unchecked languages",
+    "Deep inter-procedural dataflow/taint SAST (source checks here are Day-0 smoke checks only; wire Ruff S / Semgrep / CodeQL / Bandit / gitleaks / deps)",
     "Trusted merge authority (candidate read-only audit only; not self-attesting)",
 )
 
@@ -442,14 +486,25 @@ def _audit_layer2_workflows(target: Path) -> list[Finding]:
     missing_perms: list[str] = []
     missing_persist_false: list[tuple[str, int]] = []
     missing_timeouts: list[tuple[str, int, str]] = []
+    ci_injections: list[tuple[str, int, str]] = []
+    has_dedicated_sast = False
+    calls_make = False
 
     for wf in workflows:
         rel = wf.relative_to(target).as_posix()
         try:
-            lines = wf.read_text(encoding="utf-8").splitlines()
+            wf_text = wf.read_text(encoding="utf-8")
+            lines = wf_text.splitlines()
         except (OSError, UnicodeDecodeError):
             continue
 
+        if DEDICATED_SAST_RE.search(wf_text):
+            has_dedicated_sast = True
+        if re.search(r"\bmake\s+[a-z0-9_-]+", wf_text):
+            calls_make = True
+
+        has_pr_target = False
+        pr_head_line: int | None = None
         has_top_permissions = False
         in_jobs = False
         current_job: tuple[str, int] | None = None
@@ -459,6 +514,16 @@ def _audit_layer2_workflows(target: Path) -> list[Finding]:
         for idx, line in enumerate(lines, start=1):
             stripped = line.strip()
             indent = len(line) - len(line.lstrip(" "))
+
+            # Inspect raw shell/expression lines for Comment-and-Control injection before skipping block scalars
+            if stripped and not stripped.startswith("#"):
+                expr_hit = UNTRUSTED_GH_EXPR_RE.search(line)
+                if expr_hit:
+                    ci_injections.append((rel, idx, expr_hit.group(0).strip()))
+                if PR_TARGET_RE.match(line):
+                    has_pr_target = True
+                if PR_HEAD_CHECKOUT_RE.match(line) and pr_head_line is None:
+                    pr_head_line = idx
 
             if block_scalar_indent is not None:
                 if stripped and indent <= block_scalar_indent:
@@ -521,8 +586,16 @@ def _audit_layer2_workflows(target: Path) -> list[Finding]:
         if in_jobs and current_job is not None and not current_job_has_timeout:
             missing_timeouts.append((rel, current_job[1], current_job[0]))
 
+        if has_pr_target and pr_head_line is not None:
+            ci_injections.append((rel, pr_head_line, "pull_request_target + PR head checkout"))
+
         if not has_top_permissions:
             missing_perms.append(rel)
+
+    if not has_dedicated_sast and calls_make:
+        makefile_txt = _read_regular_text(target, "Makefile") or ""
+        if DEDICATED_SAST_RE.search(makefile_txt):
+            has_dedicated_sast = True
 
     findings: list[Finding] = []
     if unpinned:
@@ -607,6 +680,279 @@ def _audit_layer2_workflows(target: Path) -> list[Finding]:
                 title="All CI jobs declare explicit timeout-minutes",
                 detail=f"Checked {len(workflows)} workflow file(s); every job defines a bounded timeout.",
                 location=".github/workflows/",
+            )
+        )
+
+    if ci_injections:
+        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in ci_injections[:4])
+        extra = f" (+{len(ci_injections) - 4} more)" if len(ci_injections) > 4 else ""
+        findings.append(
+            Finding(
+                rule_id="OAS-CI-05",
+                layer="L2",
+                status="FAIL",
+                title=f"GitHub Actions prompt/script injection or pull_request_target hazard ({len(ci_injections)})",
+                detail=f"Untrusted PR/issue content can hijack CI or AI review agents: {preview}{extra}",
+                location=f"{ci_injections[0][0]}:{ci_injections[0][1]}",
+                remediation="Pass untrusted fields only via env: with strict validation; never combine pull_request_target with PR head checkout or secrets.",
+            )
+        )
+    else:
+        findings.append(
+            Finding(
+                rule_id="OAS-CI-05",
+                layer="L2",
+                status="PASS",
+                title="No Comment-and-Control CI injection or unsafe pull_request_target patterns",
+                detail=f"Checked {len(workflows)} workflow file(s); zero untrusted title/body interpolations or pull_request_target head checkouts.",
+                location=".github/workflows/",
+            )
+        )
+
+    if has_dedicated_sast:
+        findings.append(
+            Finding(
+                rule_id="OAS-CI-06",
+                layer="L2",
+                status="PASS",
+                title="Dedicated static/security linter or scanner wired in CI",
+                detail="Detected dedicated security/static analysis tooling referenced by CI workflows.",
+                location=".github/workflows/",
+            )
+        )
+    else:
+        findings.append(
+            Finding(
+                rule_id="OAS-CI-06",
+                layer="L2",
+                status="WARN",
+                title="No dedicated SAST / security linter detected in CI",
+                detail="audit-repo.py source checks are Day-0 smoke checks only (no cross-file taint/dataflow).",
+                location=".github/workflows/",
+                remediation="Wire dedicated tooling into CI (e.g., Ruff S / Bandit / Semgrep / CodeQL / gitleaks / govulncheck / Clippy -D warnings).",
+            )
+        )
+
+    return findings
+
+
+def _is_hidden_deceptive_char(ch: str, *, is_file_start: bool) -> bool:
+    cp = ord(ch)
+    if cp == 0xFEFF:
+        return not is_file_start
+    if 0x200B <= cp <= 0x200F:
+        return True
+    if 0x202A <= cp <= 0x202E:
+        return True
+    if 0x2066 <= cp <= 0x2069:
+        return True
+    if cp == 0x2060:
+        return True
+    if 0xE0000 <= cp <= 0xE007F:
+        return True
+    return False
+
+
+def _iter_instruction_files(target: Path) -> list[Path]:
+    found: list[Path] = []
+    seen: set[Path] = set()
+    for rel in ROOT_INSTRUCTION_FILES:
+        p = target / rel
+        if p.is_file() and not p.is_symlink():
+            rp = p.resolve()
+            if rp not in seen:
+                seen.add(rp)
+                found.append(p)
+    for rel_dir in INSTRUCTION_SCAN_DIRS:
+        base = target / rel_dir
+        if not base.is_dir() or base.is_symlink():
+            continue
+        for p in sorted(base.rglob("*")):
+            if p.is_symlink() or not p.is_file():
+                continue
+            if p.suffix not in {".md", ".mdc", ".txt"}:
+                continue
+            rp = p.resolve()
+            if rp not in seen:
+                seen.add(rp)
+                found.append(p)
+    return found
+
+
+def _audit_layer2_agent_surfaces(target: Path) -> list[Finding]:
+    """Audit Agent instruction files & repo-committed IDE/MCP settings (OAS-AGT-01..03)."""
+    findings: list[Finding] = []
+    instr_files = _iter_instruction_files(target)
+
+    hidden_hits: list[tuple[str, int, str]] = []
+    hijack_hits: list[tuple[str, int, str]] = []
+
+    for path in instr_files:
+        rel = path.relative_to(target).as_posix()
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            for col, ch in enumerate(line):
+                if _is_hidden_deceptive_char(ch, is_file_start=(lineno == 1 and col == 0)):
+                    hidden_hits.append((rel, lineno, f"U+{ord(ch):04X}"))
+                    break
+
+        # Strip fenced code blocks before checking social-engineering / endpoint-hijack directives
+        in_fence = False
+        unquoted_lines: list[tuple[int, str]] = []
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            if line.lstrip().startswith("```"):
+                in_fence = not in_fence
+                continue
+            if not in_fence:
+                unquoted_lines.append((lineno, line))
+
+        has_hide_line: int | None = None
+        has_silent_run_line: int | None = None
+        for lineno, line in unquoted_lines:
+            if API_ENDPOINT_HIJACK_RE.search(line):
+                hijack_hits.append((rel, lineno, "model API base URL override in instruction file"))
+            if has_hide_line is None and SILENT_HIDE_RE.search(line):
+                has_hide_line = lineno
+            if has_silent_run_line is None and SILENT_RUN_RE.search(line):
+                has_silent_run_line = lineno
+        if has_hide_line is not None and has_silent_run_line is not None:
+            hijack_hits.append((rel, has_silent_run_line, "silent unconfirmed execution + do-not-inspect directive"))
+
+    if hidden_hits:
+        preview = "; ".join(f"{rel}:{ln} ({cp})" for rel, ln, cp in hidden_hits[:5])
+        extra = f" (+{len(hidden_hits) - 5} more)" if len(hidden_hits) > 5 else ""
+        findings.append(
+            Finding(
+                rule_id="OAS-AGT-01",
+                layer="L2",
+                status="FAIL",
+                title=f"Hidden/deceptive Unicode detected in agent instruction file(s) ({len(hidden_hits)})",
+                detail=f"Zero-width, BiDi, or Unicode Tag characters can smuggle invisible instructions: {preview}{extra}",
+                location=f"{hidden_hits[0][0]}:{hidden_hits[0][1]}",
+                remediation="Inspect raw bytes, strip invisible Unicode controls, and protect instruction files under CODEOWNERS.",
+            )
+        )
+    elif instr_files:
+        findings.append(
+            Finding(
+                rule_id="OAS-AGT-01",
+                layer="L2",
+                status="PASS",
+                title="Agent instruction files free of hidden Unicode controls",
+                detail=f"Scanned {len(instr_files)} instruction/skill file(s); zero zero-width, BiDi, or Tag-block characters.",
+            )
+        )
+
+    # OAS-AGT-02: Dangerous repo-committed IDE / Agent executable configs
+    cfg_fails: list[tuple[str, str]] = []
+    cfg_warns: list[tuple[str, str]] = []
+
+    vscode_tasks = _read_regular_text(target, ".vscode/tasks.json")
+    if vscode_tasks is not None:
+        cleaned = _strip_c_style_comments(vscode_tasks)
+        if re.search(r'"runOn"\s*:\s*"folderOpen"', cleaned):
+            cfg_fails.append((".vscode/tasks.json", 'auto-executing `"runOn": "folderOpen"` task'))
+
+    for claude_cfg_rel in (".claude/settings.json", ".claude/settings.local.json"):
+        cfg_txt = _read_regular_text(target, claude_cfg_rel)
+        if cfg_txt is None:
+            continue
+        try:
+            cfg_obj = json.loads(cfg_txt)
+        except json.JSONDecodeError:
+            cfg_warns.append((claude_cfg_rel, "invalid JSON in repo-committed Claude settings"))
+            continue
+        if isinstance(cfg_obj, Mapping):
+            perms = cfg_obj.get("permissions")
+            if isinstance(perms, Mapping):
+                if perms.get("defaultMode") == "bypassPermissions":
+                    cfg_fails.append((claude_cfg_rel, 'sets `permissions.defaultMode: "bypassPermissions"`'))
+                allow_list = perms.get("allow")
+                if isinstance(allow_list, list) and any(
+                    isinstance(x, str) and x.strip() in {"Bash", "Bash(*)", "Bash(*:*)"} for x in allow_list
+                ):
+                    cfg_fails.append((claude_cfg_rel, "allows unrestricted shell wildcard `Bash(*)`"))
+            if cfg_obj.get("hooks"):
+                cfg_warns.append((claude_cfg_rel, "commits executable Claude lifecycle `hooks` into repo"))
+            if cfg_obj.get("apiKeyHelper"):
+                cfg_fails.append((claude_cfg_rel, "commits executable `apiKeyHelper` command into repo"))
+            env_map = cfg_obj.get("env")
+            if isinstance(env_map, Mapping) and (
+                "ANTHROPIC_BASE_URL" in env_map or "OPENAI_BASE_URL" in env_map
+            ):
+                cfg_fails.append((claude_cfg_rel, "overrides model API base URL inside repo-committed settings"))
+
+    for mcp_rel in (".mcp.json", ".cursor/mcp.json"):
+        mcp_txt = _read_regular_text(target, mcp_rel)
+        if mcp_txt is None:
+            continue
+        if MCP_SHELL_EXEC_RE.search(mcp_txt):
+            cfg_fails.append((mcp_rel, "MCP config invokes shell `-c` or `curl|sh` command"))
+        else:
+            cfg_warns.append((mcp_rel, "repo-committed MCP server configuration (review under CODEOWNERS)"))
+
+    if cfg_fails:
+        preview = "; ".join(f"{rel} ({msg})" for rel, msg in cfg_fails[:4])
+        findings.append(
+            Finding(
+                rule_id="OAS-AGT-02",
+                layer="L2",
+                status="FAIL",
+                title=f"Dangerous executable IDE/agent config committed to repo ({len(cfg_fails)})",
+                detail=preview,
+                location=cfg_fails[0][0],
+                remediation="Remove folderOpen auto-tasks, bypassPermissions, shell wildcards, apiKeyHelper, and API URL overrides from repo configs.",
+            )
+        )
+    elif cfg_warns:
+        preview = "; ".join(f"{rel} ({msg})" for rel, msg in cfg_warns[:4])
+        findings.append(
+            Finding(
+                rule_id="OAS-AGT-02",
+                layer="L2",
+                status="WARN",
+                title=f"Repo-committed executable agent/MCP settings require review ({len(cfg_warns)})",
+                detail=preview,
+                location=cfg_warns[0][0],
+                remediation="Protect .claude/, .cursor/, .vscode/, and .mcp.json under CODEOWNERS and audit every command.",
+            )
+        )
+    else:
+        findings.append(
+            Finding(
+                rule_id="OAS-AGT-02",
+                layer="L2",
+                status="PASS",
+                title="No dangerous executable IDE/agent settings committed",
+                detail="No folderOpen auto-tasks, bypassPermissions, apiKeyHelper, or risky repo MCP configs found.",
+            )
+        )
+
+    if hijack_hits:
+        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in hijack_hits[:4])
+        findings.append(
+            Finding(
+                rule_id="OAS-AGT-03",
+                layer="L2",
+                status="FAIL",
+                title=f"Instruction-file endpoint hijack or silent-execution directive ({len(hijack_hits)})",
+                detail=preview,
+                location=f"{hijack_hits[0][0]}:{hijack_hits[0][1]}",
+                remediation="Audit instruction files like executable code; remove API endpoint redirects and unconfirmed silent-run directives.",
+            )
+        )
+    elif instr_files:
+        findings.append(
+            Finding(
+                rule_id="OAS-AGT-03",
+                layer="L2",
+                status="PASS",
+                title="No instruction-file endpoint hijack or silent-execution directives",
+                detail=f"Checked {len(instr_files)} instruction/skill file(s); clean.",
             )
         )
 
@@ -1524,6 +1870,7 @@ def audit_repository(
     findings: list[Finding] = []
     findings.extend(_audit_layer1_context(resolved))
     findings.append(_audit_layer2_git_guardrails(resolved))
+    findings.extend(_audit_layer2_agent_surfaces(resolved))
     findings.extend(_audit_layer2_workflows(resolved))
     findings.append(_audit_layer2_codeowners(resolved))
     findings.extend(_scan_multi_language_traps(resolved))

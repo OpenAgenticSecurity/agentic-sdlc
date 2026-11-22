@@ -42,6 +42,7 @@
 - [ ] **Verify every newly added dependency (anti-slopsquatting)**: Confirm package exists, check upstream repository/maintainer, and lock version + hash.
 - [ ] **Pinned CI workflows**: GitHub Actions pinned to 40-char commit SHAs, `permissions: contents: read`, `persist-credentials: false`, `--require-hashes` where supported.
 - [ ] **No runtime network installs**: Container entrypoints and agent tools never run `curl | sh` or unpinned package installs at runtime.
+- [ ] **AI attribution & license compliance**: Every AI-assisted PR names an accountable human owner and records tool/model provenance; verify the agent did not silently inline third-party copyleft snippets or replace an audited security/crypto dependency without approval and SBOM update.
 
 ## 5. Agent & LLM Application Boundaries (If Applicable)
 

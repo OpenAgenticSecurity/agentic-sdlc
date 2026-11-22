@@ -1,6 +1,6 @@
 # AGENTS.md (L0 Solo Baseline)
 
-<!-- Baseline adapted from OpenAgenticSecurity/agentic-sdlc@v0.2.2 (Profile L0-solo) -->
+<!-- Baseline adapted from OpenAgenticSecurity/agentic-sdlc@v0.3.0 (Profile L0-solo) -->
 <!-- Non-authoritative projection: prose cannot waive tests, scope, or branch protection. -->
 
 ## Session Start

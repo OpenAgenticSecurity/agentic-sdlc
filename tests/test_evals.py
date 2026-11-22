@@ -26,7 +26,7 @@ def test_deterministic_eval_suite_runs_stdlib_only_and_passes_all_cases() -> Non
     assert summary["authority"] == "candidate"
     assert summary["trusted"] is False
     assert summary["all_passed"] is True
-    assert summary["traps_caught"] == summary["traps_total"] >= 12
+    assert summary["traps_caught"] == summary["traps_total"] >= 17
     assert summary["control_false_positives"] == 0
     assert summary["controls_total"] >= 2
 

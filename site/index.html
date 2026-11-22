@@ -34,7 +34,7 @@
     <section class="hero">
       <div class="container">
         <div class="meta-line">
-          <span>v0.2.2</span>
+          <span>v0.3.0</span>
           <span>Apache-2.0</span>
           <span data-i18n="meta_zero">Zero Dependencies</span>
           <span data-i18n="meta_langs">Python · TS/JS · Go · Rust · Java</span>
@@ -45,7 +45,7 @@
         <div class="hero-actions">
           <a class="btn-ink btn-lg" href="#quickstart" data-i18n="cta_audit">Run 10-Second Self-Audit</a>
           <a class="btn-outline btn-lg" href="https://github.com/OpenAgenticSecurity/agentic-sdlc/blob/main/docs/ontology.md" target="_blank" rel="noopener noreferrer" data-i18n="cta_ontology">Read the Ontology ↗</a>
-          <a class="btn-text btn-lg" href="https://github.com/OpenAgenticSecurity/agentic-sdlc/releases/tag/v0.2.2" target="_blank" rel="noopener noreferrer" data-i18n="cta_release">v0.2.2 Release ↗</a>
+          <a class="btn-text btn-lg" href="https://github.com/OpenAgenticSecurity/agentic-sdlc/releases/tag/v0.3.0" target="_blank" rel="noopener noreferrer" data-i18n="cta_release">v0.3.0 Release ↗</a>
         </div>
       </div>
     </section>
@@ -219,15 +219,15 @@ python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo
 # 2. Also inspect live GitHub Branch Rulesets read-only (requires `gh` CLI):
 python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo --github
 
-# 3. Run the 14-case polyglot planted-trap evals offline (12/12 traps, 0 false positives):
+# 3. Run the 19-case deterministic trust-boundary evals offline (17/17 traps, 0 false positives):
 python3 -S agentic-sdlc/scripts/run-evals.py</code></pre>
           </div>
 
           <div class="sample-output">
             <div class="sample-label" data-i18n="sample_lbl">Example findings on a typical repository</div>
-            <pre><code><span class="tag-fail">FAIL</span>  OAS-CTX-02  Worktree directories not ignored in .gitignore (.gitignore)
+            <pre><code><span class="tag-fail">FAIL</span>  OAS-AGT-01  Hidden/deceptive Unicode detected in AGENTS.md:4 (U+202E)
 <span class="tag-fail">FAIL</span>  OAS-CI-01   Unpinned GitHub Actions (.github/workflows/ci.yml:7 — actions/checkout@v4)
-<span class="tag-fail">FAIL</span>  OAS-SVC-01  Fail-open silent exception swallowing (src/auth.py:8 — except Exception: pass)
+<span class="tag-fail">FAIL</span>  OAS-CI-05   GitHub Actions prompt/script injection (.github/workflows/ai.yml:14 — github.event.pull_request.title)
 <span class="tag-fail">FAIL</span>  OAS-GH-02   AI agent can push new commits after human approval (require_last_push_approval=false)
 <span class="tag-fail">FAIL</span>  OAS-GH-03   Required status check source is unbound (integration_id: null — spoofable)</code></pre>
           </div>
@@ -382,7 +382,7 @@ python3 agentic-sdlc/scripts/workspace-git.py guardrails --apply</code></pre>
     <div class="container footer-inner">
       <div>
         <strong>OpenAgenticSecurity / agentic-sdlc</strong>
-        <span class="footer-meta"> · v0.2.2 · Apache-2.0</span>
+        <span class="footer-meta"> · v0.3.0 · Apache-2.0</span>
       </div>
       <div class="footer-links">
         <a href="https://github.com/OpenAgenticSecurity/agentic-sdlc" target="_blank" rel="noopener noreferrer">Repository</a>

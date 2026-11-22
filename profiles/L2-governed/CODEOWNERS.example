@@ -7,8 +7,17 @@
 
 /.github/workflows/ @org/security-platform @org/architecture-owners
 /.github/CODEOWNERS @org/security-platform @org/architecture-owners
+/.github/copilot-instructions.md @org/security-platform @org/architecture-owners
 /Makefile @org/security-platform @org/architecture-owners
 /AGENTS.md @org/architecture-owners
 /CLAUDE.md @org/architecture-owners
+/.claude/ @org/security-platform @org/architecture-owners
+/.cursor/ @org/security-platform @org/architecture-owners
+/.vscode/ @org/security-platform @org/architecture-owners
+/.mcp.json @org/security-platform @org/architecture-owners
+/skills/ @org/security-platform @org/architecture-owners
 /scripts/ @org/security-platform @org/architecture-owners
 /standards/ @org/architecture-owners
+# Protect shared IaC/Terraform modules at the same tier as production:
+/terraform/ @org/security-platform @org/architecture-owners
+/infra/ @org/security-platform @org/architecture-owners

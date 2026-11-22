@@ -81,14 +81,14 @@ python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo
 # 2. Also audit your live GitHub Branch Ruleset read-only (requires authenticated `gh` CLI):
 python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo --github
 
-# 3. Run the 14-case polyglot planted-trap eval suite (12 traps caught, 0 false positives):
+# 3. Run the 19-case deterministic trust-boundary eval suite (17 traps caught, 0 false positives):
 python3 -S agentic-sdlc/scripts/run-evals.py
 ```
 
 Or drop the reusable composite Action (`action.yml`) into any repository's CI (pinned to a 40-char commit SHA):
 
 ```yaml
-- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.2.2
+- uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.3.0
   with:
     target: .
 ```
@@ -158,7 +158,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | Where It Lives | What You Put There | Why |
 |---|---|---|
 | **Global Coding Agent** (Claude Code / Cursor / Codex) | Install the 6 **`skills/`** once via `/plugin install` or `npx skills add` | **Language-agnostic** security, PR audit, production-readiness, fake-done dereference & multi-agent Git guardrails (NOT code style/formatting rules). Loaded only on demand with zero permanent context tax. |
-| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.2.2 -->`. |
+| **Your Product Repo** (copied once, adapted to your stack) | One unified **`AGENTS.md`** + thin `@AGENTS.md` **`CLAUDE.md`** + `STATUS.md` + PR/CI template (`scripts/bootstrap.sh`) | Cursor, Codex, and Claude Code all read one root `AGENTS.md` (no duplicate `.mdc` needed). Put your repo's real commands & language conventions in the stack slots, with `<!-- OpenAgenticSecurity/agentic-sdlc@v0.3.0 -->`. |
 | **Local Machine / CI** (run on demand or per PR) | **`scripts/audit-repo.py`** (or 4-line **`action.yml`**) + **`scripts/workspace-git.py guardrails`** | Catches unpinned Actions, multi-language unsafe sinks, `--passWithNoTests`, and direct commits on `main` deterministically. |
 | **PR Reviews & GitHub** | Cite stable Rule IDs (**`OAS-CI-01`**, **`OAS-SVC-01`**, **`OAS-GH-02`**) + **`DoneClaim`** + import `github-ruleset.import.json` | Keeps `standards/` & `checklists/` as human reference (like OWASP ASVS) while enforcing the hard merge boundary on GitHub. |
 
@@ -171,10 +171,10 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | **`llms.txt`** | ~1K-token 1-read routing map for any Coding Agent | [llms.txt](llms.txt) |
 | **`action.yml`** | Zero-dependency Composite GitHub Action running `audit-repo.py` in any repo's CI | [action.yml](action.yml) |
 | **`skills/`** | 6 standalone, zero-overlap, language-agnostic Agent Skills + `.claude-plugin/` / `.cursor-plugin/` / `.codex-plugin/` | [skills/README.md](skills/README.md) ([中文](skills/README.zh.md)) |
-| **`checklists/`** | 8 empirical, security, ops & readiness checklists + `DoneClaim` / `Handoff` templates | [checklists/README.md](checklists/README.md) ([中文](checklists/README.zh.md)) |
+| **`checklists/`** | 10 empirical, security, agent-injection, IaC/DB & readiness checklists + `DoneClaim` / `Handoff` templates | [checklists/README.md](checklists/README.md) ([中文](checklists/README.zh.md)) |
 | **`profiles/`** | Copy-ready **`L0-solo`** (unified `AGENTS.md` + thin `@AGENTS.md` `CLAUDE.md`), **`L1-team`** (Python/TS/Rust/Go/Java fail-closed CI), **`L2-governed`** (importable GitHub Ruleset JSON) | [profiles/README.md](profiles/README.md) ([中文](profiles/README.zh.md)) |
 | **`examples/`** | Runnable backend contract gates (`pytest`) & Playwright 3-layer frontend E2E starter | [examples/README.md](examples/README.md) ([中文](examples/README.zh.md)) |
-| **`evals/`** | 14-case polyglot planted-trap eval harness (`scripts/run-evals.py`) + Skill eval rubrics | [evals/README.md](evals/README.md) ([中文](evals/README.zh.md)) |
+| **`evals/`** | 19-case deterministic trust-boundary eval harness (`scripts/run-evals.py`) + Skill eval rubrics | [evals/README.md](evals/README.md) ([中文](evals/README.zh.md)) |
 | **`standards/`** | 9 concise bilingual standards (incl. Security, Reliability/Performance & Versioning) + 2 closed contracts (`affected-closure`, `enforcement-evidence`) | [standards/README.md](standards/README.md) ([中文](standards/README.zh.md)) |
 | **`scripts/`** | 9 adopter/eval helpers (`audit-repo.py`, `check-change-sync.py`, `run-evals.py`, `bootstrap.sh`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py`, `link-shared-node-deps.mjs`, `check-product-compliance.sh`) + 3 contract/doc checkers | [BOOTSTRAP.md](BOOTSTRAP.md) |
 | **`docs/`** | Agentic SDLC Ontology (9 entities / 5 axioms), workflow integration map, empirical evidence & manifesto | [ontology.md](docs/ontology.md) · [workflow-integration.md](docs/workflow-integration.md) · [empirical-findings.md](docs/empirical-findings.md) · [manifesto.md](docs/manifesto.md) |
@@ -196,7 +196,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 
 | Repository | Role |
 |---|---|
-| **`agentic-sdlc`** (this repo) | Methodology, Secure Vibe Coding rules, 8 checklists, 6 standalone Skills, reusable `action.yml`, L0–L2 kits & Git/Ruleset scripts |
+| **`agentic-sdlc`** (this repo) | Methodology, 9 standards, 10 checklists, 6 standalone Skills, reusable `action.yml`, L0–L2 kits & Git/Ruleset scripts |
 | **`deps`** *(upcoming in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))* | Optional single-binary Rust **engineering carrier** for Layer 2: Tree-sitter `deps context`/`locate`, `deps aac init`/`check`, `deps lineage-audit`, `deps security-audit`/`security-filter`, Claude Code & Codex lifecycle hooks (`deps agent-hook install`), and `deps agent-verify --receipt` |
 | **`sealed-data`** *(upcoming in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))* | Optional Rust CLI that lets agents build and run data pipelines against approved data cards (`sealed-data seal`) without reading the real dataset |
 | **`assurance-contracts`** *(upcoming in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))* | Optional enterprise L2 protocol suite: 18 closed JSON Schemas & candidate checkers for UI Assurance and Code Health retirement ledgers |

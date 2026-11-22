@@ -17,6 +17,7 @@
 - Touches auth / tenant / paths / SSRF / crypto / secrets / dependencies: yes / no
 - Negative security test(s) added or verified (if yes):
 - No hardcoded fallback secrets, fail-open catches, or unpinned actions/deps: [ ] confirmed
+- No weakened/deleted test assertions, lint-disable bypasses, or unapproved third-party snippets: [ ] confirmed
 
 ## Verification (Exact Commands Actually Run)
 

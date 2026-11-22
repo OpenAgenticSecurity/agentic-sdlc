@@ -37,6 +37,7 @@
 - [ ] **核验每个新增依赖（防 Slopsquatting）**：确认包真实存在、维护者与上游仓库可信，并锁定版本与哈希。
 - [ ] **锁定 CI Workflow**：GitHub Actions 锁定到 40 位 commit SHA、`permissions: contents: read`、`persist-credentials: false`、支持时启用 `--require-hashes`。
 - [ ] **禁止运行期联网装包**：容器启动与 Agent 工具绝不在运行时执行 `curl | sh` 或未锁定装包。
+- [ ] **AI 归属与开源片段许可证合规**：每个 AI 辅助 PR 明确唯一人类责任 Owner 并记录工具/模型来源；确认 Agent 未未经审批静默内联第三方 Copyleft（GPL/AGPL）代码片段，也未私自用自写代码替换已审计的加密/安全依赖。
 
 ## 5. Agent / LLM 应用边界（如适用）
 

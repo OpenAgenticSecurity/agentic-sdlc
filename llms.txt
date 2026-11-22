@@ -1,6 +1,6 @@
 # OpenAgenticSecurity / agentic-sdlc
 
-> Lean, agent-native Agentic SDLC standards, Secure Vibe Coding guardrails, 8 empirical & readiness checklists, progressive L0–L2 adoption kits, 6 standalone language-agnostic Agent Skills, reusable `action.yml`, starter gates, and fail-closed verification scripts.
+> Lean, agent-native Agentic SDLC standards, Secure Vibe Coding guardrails, 10 empirical/security/IaC/readiness checklists, progressive L0–L2 kits, 6 standalone language-agnostic Skills, reusable `action.yml`, starter gates, and fail-closed verification scripts.
 > Core thesis: Agent output is an untrusted draft by default. Let Coding Agents carry workflow ergonomics (`skills/`, `profiles/`, `checklists/`); let deterministic hooks, `deps`, and protected GitHub Rulesets carry the trust boundary.
 
 ## Fast Routing Map for Coding Agents
@@ -20,7 +20,7 @@ Read ONLY the file(s) matching your current task:
 
 - **Audit a PR / git diff before merge**:
   - Skill: `skills/audit-pr-diff/SKILL.md`
-  - Checklists: `checklists/vibe-coding-seven-sins.md`, `checklists/frontend-vibe-coding-review.md`, `checklists/backend-performance-review.md`, `profiles/L2-governed/mechanism-review-checklist.md`
+  - Checklists: `checklists/vibe-coding-seven-sins.md`, `checklists/frontend-vibe-coding-review.md`, `checklists/backend-performance-review.md`, `checklists/agent-config-and-ci-injection.md`, `checklists/destructive-ops-and-iac-safety.md`
   - Starter E2E & backend contract gates: `examples/frontend-3layer-gate.spec.ts`, `examples/backend-contract-gates.py`
 
 - **Audit full-repo production readiness (Demo vs Production, 5 dimensions)**:

@@ -75,6 +75,7 @@ Empirical lessons:
 - [ ] AI review outputs start as **candidate findings**; before blocking merge, verify against exact PR-head checkout (`file:line`), callers, Git history, tests, and prior review thread.
 - [ ] High-severity findings undergo **independent counterevidence review** (different evidence source/role actively checking reachability, preconditions, and existing controls).
 - [ ] Architecture/status docs carry `verified_at`, `source_commit`, verification command, and `does_not_prove[]`; stale docs downgrade to historical records.
+- [ ] **Anti-Reward-Hacking check (5 ways agents beat their own graders)**: Inspect the PR diff to confirm the agent did NOT (1) weaken or delete failing assertions in existing tests, (2) inject `# noqa`, `eslint-disable`, `@ts-ignore`, `@ts-nocheck`, `pytest.mark.skip`, or `--no-verify` to silence a gate, (3) write tautological tests that mirror implementation bugs or still pass if the code under test is deleted, (4) hardcode special-case outputs for specific test inputs, or (5) fabricate shallow artifacts/logs to satisfy format-only checkers.
 
 ## 6. Seven Questions Before Accepting Any Agent Delivery
 
