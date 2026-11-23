@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Zero-dependency deterministic evaluation harness for `scripts/audit-repo.py`.
 
-Runs 19 isolated polyglot evaluation cases (17 planted-violation traps + 2 clean
-controls) against `scripts/audit-repo.py` using Python 3.11+ standard library
-only, proving 100% planted-trap recall and 0% false positives on clean controls.
+Runs 21 isolated polyglot evaluation cases (17 planted-violation traps + 4 clean
+and false-positive-resistant controls) against `scripts/audit-repo.py` using
+Python 3.11+ standard library only, proving 100% planted-trap recall and 0%
+false positives on controls.
 """
 
 from __future__ import annotations
@@ -246,6 +247,38 @@ def _build_cases() -> list[EvalCase]:
         (root / "tests/test_fixture.py").write_text("eval('1+1')\n", encoding="utf-8")
         return ["--github-ruleset-file", str(STRONG_RULESET)]
 
+    def control_ci_safe_env_binding(root: Path) -> list[str]:
+        _seed_clean_repo(root)
+        (root / ".github/workflows/ci.yml").write_text(
+            "name: Safe Env\n"
+            "on: [pull_request]\n"
+            "permissions:\n"
+            "  contents: read\n"
+            "jobs:\n"
+            "  check:\n"
+            "    runs-on: ubuntu-24.04\n"
+            "    timeout-minutes: 10\n"
+            "    steps:\n"
+            "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683\n"
+            "        with:\n"
+            "          persist-credentials: false\n"
+            "      - env:\n"
+            "          PR_TITLE: ${{ github.event.pull_request.title }}\n"
+            "        run: python3 -c 'import os; assert \"PR_TITLE\" in os.environ'\n",
+            encoding="utf-8",
+        )
+        return ["--github-ruleset-file", str(STRONG_RULESET)]
+
+    def control_auditable_waiver(root: Path) -> list[str]:
+        _seed_clean_repo(root)
+        (root / "src/dsl.py").write_text("def run_dsl(expr: str) -> object:\n    return eval(expr)\n", encoding="utf-8")
+        return [
+            "--github-ruleset-file",
+            str(STRONG_RULESET),
+            "--waiver",
+            "OAS-SVC-03: isolated worker sandbox tracked in SEC-101",
+        ]
+
     return [
         EvalCase("trap-missing-context", "trap", 2, ("OAS-CTX-01", "OAS-CTX-02"), trap_missing_context),
         EvalCase("trap-unpinned-action", "trap", 2, ("OAS-CI-01", "OAS-CI-02"), trap_unpinned_action),
@@ -266,6 +299,8 @@ def _build_cases() -> list[EvalCase]:
         EvalCase("trap-ci-pr-target-head", "trap", 2, ("OAS-CI-05",), trap_ci_pr_target_head_checkout),
         EvalCase("control-clean-polyglot", "control", 0, (), control_clean_polyglot),
         EvalCase("control-comments-and-tests", "control", 0, (), control_comments_and_tests_ignored),
+        EvalCase("control-ci-safe-env-binding", "control", 0, (), control_ci_safe_env_binding),
+        EvalCase("control-auditable-waiver", "control", 0, (), control_auditable_waiver),
     ]
 
 

@@ -17,15 +17,17 @@ python3 -S scripts/run-evals.py
 make eval-deterministic
 ```
 
-It synthesizes 19 isolated cases — **17 planted-violation traps** (missing
+It synthesizes 21 isolated cases — **17 planted-violation traps** (missing
 context/worktree hygiene, hidden Unicode & endpoint-hijack poisoning in
 `AGENTS.md`/`CLAUDE.md`, `.vscode/tasks.json` `folderOpen` &
 `bypassPermissions`, Comment-and-Control CI prompt injection &
 `pull_request_target` head checkout, unpinned GitHub Actions, missing
 `permissions` / `persist-credentials: false`, `@org/` CODEOWNERS placeholder,
 Python/JS/TS/Go/Rust/Java Day-0 smoke traps, and weak GitHub Rulesets allowing
-post-approval push or unbound `integration_id: null`) plus **2 clean polyglot
-controls** — asserting 100% planted-trap recall and 0% false positives.
+post-approval push or unbound `integration_id: null`) plus **4 clean &
+false-positive-resistant controls** (polyglot clean repo, comment/test sinks,
+safe `env:` PR-title binding, and auditable `--waiver`) — asserting 100%
+planted-trap recall and 0% false positives.
 
 ## 2. Agent Skill Evals (`evals/skills/`)
 
@@ -40,7 +42,7 @@ evaluations (e.g. `claude plugin eval`):
 
 ## 3. Evaluation Boundaries (`pass@k` vs `pass^k` & Holdouts)
 
-- **Never equate `19/19` deterministic cases with general agent reliability**: Track 1
+- **Never equate `21/21` deterministic cases with general agent reliability**: Track 1
   proves our deterministic checkers reject specific planted patterns with zero
   false positives on clean controls — it does not measure probabilistic agent
   success on open-ended tasks or replace deep dataflow SAST.

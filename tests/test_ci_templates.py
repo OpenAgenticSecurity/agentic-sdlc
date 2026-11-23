@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 import shlex
+import shutil
 import subprocess
 import sys
 
@@ -10,6 +12,12 @@ import yaml
 
 REPO = Path(__file__).resolve().parents[1]
 PYTHON_TEMPLATE = REPO / "profiles/L1-team/workflows/ci-python.yml"
+
+
+def _ruff_cmd() -> list[str]:
+    if importlib.util.find_spec("ruff") is not None:
+        return [sys.executable, "-m", "ruff"]
+    return [shutil.which("ruff") or "ruff"]
 
 
 def _template_ruff_argv() -> list[str]:
@@ -24,7 +32,7 @@ def _template_ruff_argv() -> list[str]:
     ]
     assert len(commands) == 1, f"expected exactly one ruff command in {PYTHON_TEMPLATE.name}: {commands}"
     argv = shlex.split(commands[0])
-    return [sys.executable, "-m", "ruff", *argv[1:], "--no-cache"]
+    return [*_ruff_cmd(), *argv[1:], "--no-cache"]
 
 
 def _run(argv: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -61,5 +69,14 @@ def test_python_template_lint_rejects_planted_security_bugs(tmp_path: Path) -> N
 
 
 def test_repository_passes_its_own_lint_baseline() -> None:
-    proc = _run([sys.executable, "-m", "ruff", "check", "--no-cache", "."], REPO)
+    proc = _run([*_ruff_cmd(), "check", "--no-cache", "."], REPO)
     assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_ruff_cmd_falls_back_to_path_binary_when_module_absent(monkeypatch) -> None:
+    import importlib.util
+    import shutil
+
+    monkeypatch.setattr(importlib.util, "find_spec", lambda _name: None)
+    monkeypatch.setattr(shutil, "which", lambda _name: "/usr/local/bin/ruff")
+    assert _ruff_cmd() == ["/usr/local/bin/ruff"]

@@ -43,6 +43,7 @@ required_files = [
     ".github/ISSUE_TEMPLATE/bug-report.yml",
     ".github/ISSUE_TEMPLATE/proposal.yml",
     ".gitattributes",
+    ".agentic-sync.json",
     "requirements-test.in",
     "requirements-test.txt",
     ".github/CODEOWNERS",

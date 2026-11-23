@@ -157,3 +157,39 @@ def test_rejects_unsafe_refs_and_missing_git(tmp_path: Path) -> None:
     no_git = _run_referee("--repo", str(repo), "--base", "HEAD", "--head", "HEAD", "--git-bin", "nonexistent-git-bin")
     assert no_git.returncode == 1
     assert "NOT_RUN" in no_git.stderr
+
+
+def test_rust_lifetimes_and_comment_apostrophes_do_not_break_assertions_or_hide_suppressions(tmp_path: Path) -> None:
+    repo = _init_repo(tmp_path)
+    (repo / "tests/auth_test.rs").write_text(
+        '#[test]\nfn check() {\n    let x: &str = "ok"; assert_eq!(x, "ok");\n}\n',
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add rust test")
+
+    # 1. Refactoring &str -> &'static str on an assertion line must NOT be flagged as assertion deletion
+    (repo / "tests/auth_test.rs").write_text(
+        '#[test]\nfn check() {\n    let x: &\'static str = "ok"; assert_eq!(x, "ok");\n}\n',
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add static lifetime")
+
+    ok = _run_referee("--repo", str(repo), "--base", "HEAD~1", "--head", "HEAD", "--format", "json")
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+    assert {f["rule_id"]: f for f in json.loads(ok.stdout)["findings"]}["OAS-DIFF-02"]["status"] == "PASS"
+
+    # 2. A trailing suppression after a Rust lifetime or Python comment apostrophe MUST still be caught
+    nolint_tag = "// " + "nolint"
+    noqa_tag = "noqa: F401"
+    (repo / "src/lib.rs").write_text(f'pub fn f() {{ let x: &\'static str = "ok"; }} {nolint_tag}\n', encoding="utf-8")
+    (repo / "src/calc.py").write_text(f"import os  # don't remove; {noqa_tag}\n", encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "sneak suppressions after single quotes")
+
+    caught = _run_referee("--repo", str(repo), "--base", "HEAD~1", "--head", "HEAD", "--format", "json")
+    assert caught.returncode == 2, caught.stdout + caught.stderr
+    items = "\n".join({f["rule_id"]: f for f in json.loads(caught.stdout)["findings"]}["OAS-DIFF-02"]["items"])
+    assert "src/lib.rs" in items
+    assert "src/calc.py" in items

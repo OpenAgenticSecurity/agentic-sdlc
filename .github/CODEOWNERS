@@ -12,6 +12,7 @@
 /.codex-plugin/ @mylamour
 /Makefile @mylamour
 /action.yml @mylamour
+/.agentic-sync.json @mylamour
 /pyproject.toml @mylamour
 /requirements-test* @mylamour
 /AGENTS.md @mylamour

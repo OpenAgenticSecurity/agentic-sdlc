@@ -153,11 +153,33 @@ class AuditNotRunError(RuntimeError):
 class Finding:
     rule_id: str
     layer: str
-    status: str  # PASS | WARN | FAIL | NOT_RUN | NOT_APPLICABLE
+    status: str  # PASS | WARN | FAIL | WAIVED | NOT_RUN | NOT_APPLICABLE
     title: str
     detail: str
     location: str = ""
     remediation: str = ""
+    waiver_reason: str = ""
+
+
+RULE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+
+
+def _parse_waivers(raw_waivers: Sequence[str]) -> dict[str, str]:
+    waivers: dict[str, str] = {}
+    for entry in raw_waivers:
+        if not entry.strip():
+            continue
+        if ":" not in entry:
+            raise AuditInputError(f"waiver must use 'RULE_ID: non-empty reason' format: {entry!r}")
+        rule_id, reason = entry.split(":", 1)
+        rule_id = rule_id.strip()
+        reason = reason.strip()
+        if not RULE_ID_RE.fullmatch(rule_id):
+            raise AuditInputError(f"invalid waiver rule_id: {rule_id!r}")
+        if len(reason) < 5:
+            raise AuditInputError(f"waiver reason for {rule_id!r} must be at least 5 characters")
+        waivers[rule_id] = reason
+    return waivers
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -576,29 +598,44 @@ def _audit_layer2_workflows(target: Path, *, profile: str | None = None) -> list
         current_job: tuple[str, int] | None = None
         current_job_has_timeout = False
         block_scalar_indent: int | None = None
+        env_map_indent: int | None = None
+        with_map_indent: int | None = None
 
         for idx, line in enumerate(lines, start=1):
             stripped = line.strip()
             indent = len(line) - len(line.lstrip(" "))
 
-            # Inspect raw shell/expression lines for Comment-and-Control injection before skipping block scalars
             if stripped and not stripped.startswith("#"):
-                expr_hit = UNTRUSTED_GH_EXPR_RE.search(line)
-                if expr_hit:
-                    ci_injections.append((rel, idx, expr_hit.group(0).strip()))
+                if block_scalar_indent is not None and indent <= block_scalar_indent:
+                    block_scalar_indent = None
+                if env_map_indent is not None and indent <= env_map_indent:
+                    env_map_indent = None
+                if with_map_indent is not None and indent <= with_map_indent:
+                    with_map_indent = None
+
+                # Passing untrusted fields into `env:` is GitHub's official injection-safe pattern;
+                # flag untrusted interpolations everywhere outside `env:` (e.g. `run:` and `with:`).
+                if env_map_indent is None:
+                    expr_hit = UNTRUSTED_GH_EXPR_RE.search(line)
+                    if expr_hit:
+                        ci_injections.append((rel, idx, expr_hit.group(0).strip()))
                 if PR_TARGET_RE.match(line):
                     has_pr_target = True
                 if PR_HEAD_CHECKOUT_RE.match(line) and pr_head_line is None:
                     pr_head_line = idx
 
             if block_scalar_indent is not None:
-                if stripped and indent <= block_scalar_indent:
-                    block_scalar_indent = None
-                else:
-                    continue
+                continue
 
             if not stripped or stripped.startswith("#"):
                 continue
+
+            with_hdr = re.match(r"^(?P<pre>\s*(?:-\s+)?)with\s*:\s*(?:#.*)?$", line)
+            env_hdr = re.match(r"^(?P<pre>\s*(?:-\s+)?)env\s*:\s*(?:#.*)?$", line)
+            if with_map_indent is None and with_hdr is not None:
+                with_map_indent = len(with_hdr.group("pre"))
+            elif with_map_indent is None and env_hdr is not None:
+                env_map_indent = len(env_hdr.group("pre"))
 
             if indent == 0:
                 if re.match(r"^permissions\s*:", line):
@@ -1923,6 +1960,7 @@ def audit_repository(
     target: Path,
     *,
     profile: str | None = None,
+    waivers: Mapping[str, str] | None = None,
     use_github: bool = False,
     ruleset_file: Path | None = None,
     repo_arg: str | None = None,
@@ -1935,6 +1973,7 @@ def audit_repository(
     if profile is not None and profile not in {"L0", "L1", "L2"}:
         raise AuditInputError(f"profile must be L0, L1, or L2, got {profile!r}")
     resolved = target.resolve()
+    waiver_map = dict(waivers or {})
 
     findings: list[Finding] = []
     findings.extend(_audit_layer1_context(resolved, profile=profile))
@@ -1955,11 +1994,32 @@ def audit_repository(
         )
     )
 
+    if waiver_map:
+        findings = [
+            Finding(
+                rule_id=f.rule_id,
+                layer=f.layer,
+                status="WAIVED",
+                title=f.title,
+                detail=f.detail,
+                location=f.location,
+                remediation=f.remediation,
+                waiver_reason=waiver_map[f.rule_id],
+            )
+            if f.status == "FAIL" and f.rule_id in waiver_map
+            else f
+            for f in findings
+        ]
+
     counts = {
         status: sum(1 for item in findings if item.status == status)
-        for status in ("PASS", "WARN", "FAIL", "NOT_RUN", "NOT_APPLICABLE")
+        for status in ("PASS", "WARN", "FAIL", "WAIVED", "NOT_RUN", "NOT_APPLICABLE")
     }
-    derived_status = "FAIL" if counts["FAIL"] > 0 else ("PARTIAL" if counts["NOT_RUN"] > 0 else "PASS")
+    derived_status = (
+        "FAIL"
+        if counts["FAIL"] > 0
+        else ("PARTIAL" if counts["NOT_RUN"] > 0 else ("WAIVED" if counts["WAIVED"] > 0 else "PASS"))
+    )
 
     return {
         "schema_version": "openagenticsecurity.audit.repo-self-check.v1",
@@ -1984,7 +2044,7 @@ def _render_text(report: Mapping[str, object]) -> str:
         f"Authority : {report['authority']} (trusted={str(report['trusted']).lower()}; read-only, not self-attesting)",
         (
             f"Summary   : derived={report['derived_status']} | "
-            f"FAIL={counts['FAIL']}  WARN={counts['WARN']}  PASS={counts['PASS']}  "
+            f"FAIL={counts['FAIL']}  WARN={counts['WARN']}  WAIVED={counts.get('WAIVED', 0)}  PASS={counts['PASS']}  "
             f"NOT_RUN={counts['NOT_RUN']}  N/A={counts['NOT_APPLICABLE']}"
         ),
         "",
@@ -2002,9 +2062,11 @@ def _render_text(report: Mapping[str, object]) -> str:
         for item in layer_items:
             loc = f" ({item['location']})" if item["location"] else ""
             lines.append(f"  {item['status']:<14} {item['rule_id']:<13} {item['title']}{loc}")
-            if item["status"] in {"FAIL", "WARN", "NOT_RUN"}:
+            if item["status"] in {"FAIL", "WARN", "WAIVED", "NOT_RUN"}:
                 lines.append(f"                 -> {item['detail']}")
-                if item["remediation"]:
+                if item.get("waiver_reason"):
+                    lines.append(f"                 waiver: {item['waiver_reason']}")
+                elif item["remediation"]:
                     lines.append(f"                 fix: {item['remediation']}")
         lines.append("")
 
@@ -2049,6 +2111,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Expected default branch name (default: queried from GitHub in --github mode, or 'main').",
     )
     parser.add_argument(
+        "--waiver",
+        action="append",
+        default=[],
+        help="Explicit auditable waiver in 'RULE_ID: reason' format turning FAIL into WAIVED (repeatable).",
+    )
+    parser.add_argument(
         "--format",
         choices=("text", "json"),
         default="text",
@@ -2078,9 +2146,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
 
     try:
+        waivers = _parse_waivers(args.waiver)
         report = audit_repository(
             args.target,
             profile=args.profile,
+            waivers=waivers,
             use_github=args.github,
             ruleset_file=args.github_ruleset_file,
             repo_arg=args.repo,

@@ -23,7 +23,11 @@ agent-governance-test:
 	$(PYTHON) -m pytest -q tests
 
 lint:
-	$(PYTHON) -m ruff check --no-cache .
+	@if $(PYTHON) -c "import ruff" >/dev/null 2>&1; then \
+		$(PYTHON) -m ruff check --no-cache .; \
+	else \
+		ruff check --no-cache .; \
+	fi
 
 static-analysis:
 	docker run --rm -v "$(CURDIR):/mnt:ro" -w /mnt $(SHELLCHECK_IMAGE) $(SHELL_SCRIPTS)

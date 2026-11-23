@@ -1,0 +1,70 @@
+{
+  "schema_version": "openagenticsecurity.sync.change-sync-config.v1",
+  "rules": [
+    {
+      "id": "SYNC-BILINGUAL-STANDARDS",
+      "description": "English and Chinese core standards and testing contracts stay synchronized",
+      "when_changed": [
+        "standards/*.md",
+        "standards/testing-strategy/*.md"
+      ],
+      "require_mirror": {
+        "from_suffix": ".md",
+        "to_suffix": ".zh.md",
+        "bidirectional": true
+      }
+    },
+    {
+      "id": "SYNC-BILINGUAL-CHECKLISTS",
+      "description": "English and Chinese review checklists stay synchronized",
+      "when_changed": [
+        "checklists/*.md"
+      ],
+      "exclude": [
+        "checklists/*.template.md"
+      ],
+      "require_mirror": {
+        "from_suffix": ".md",
+        "to_suffix": ".zh.md",
+        "bidirectional": true
+      }
+    },
+    {
+      "id": "SYNC-BILINGUAL-CORE-DOCS",
+      "description": "English and Chinese entrypoints, bootstrap, maturity, and architecture docs stay synchronized",
+      "when_changed": [
+        "README*.md",
+        "BOOTSTRAP*.md",
+        "MATURITY*.md",
+        "docs/ontology*.md",
+        "docs/empirical-findings*.md",
+        "docs/workflow-integration*.md",
+        "skills/README*.md",
+        "profiles/README*.md",
+        "examples/README*.md",
+        "evals/README*.md"
+      ],
+      "require_mirror": {
+        "from_suffix": ".md",
+        "to_suffix": ".zh.md",
+        "bidirectional": true
+      }
+    },
+    {
+      "id": "SYNC-SCRIPTS-TESTS",
+      "description": "Changes to adopter or contract scripts must accompany automated tests",
+      "when_changed": [
+        "scripts/*.py",
+        "scripts/*.sh",
+        "scripts/*.mjs"
+      ],
+      "exclude": [
+        "scripts/check-docs.sh",
+        "scripts/run-evals.py"
+      ],
+      "require_any": [
+        "tests/**"
+      ]
+    }
+  ]
+}

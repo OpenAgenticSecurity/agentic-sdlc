@@ -356,3 +356,86 @@ def test_catches_agent_instruction_poisoning_dangerous_configs_and_ci_injection(
     assert by_rule["OAS-AGT-03"]["status"] == "FAIL"
     assert by_rule["OAS-CI-05"]["status"] == "FAIL"
     assert by_rule["OAS-CI-06"]["status"] == "WARN"
+
+
+def test_oas_ci_05_allows_safe_env_binding_and_catches_with_or_run_injection(tmp_path: Path) -> None:
+    _write_clean_repo(tmp_path)
+    (tmp_path / ".github/workflows/ci.yml").write_text(
+        "name: Safe Env Binding\n"
+        "on: [pull_request]\n"
+        "permissions:\n"
+        "  contents: read\n"
+        "env:\n"
+        "  WF_HEAD_REF: ${{ github.head_ref }}\n"
+        "jobs:\n"
+        "  triage:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    timeout-minutes: 10\n"
+        "    env:\n"
+        "      JOB_PR_TITLE: ${{ github.event.pull_request.title }}\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683\n"
+        "        with:\n"
+        "          persist-credentials: false\n"
+        "      - name: Validate title safely via env\n"
+        "        env:\n"
+        "          STEP_PR_BODY: ${{ github.event.pull_request.body }}\n"
+        "        run: |\n"
+        "          python3 -c 'import os; assert len(os.environ[\"JOB_PR_TITLE\"]) >= 0'\n",
+        encoding="utf-8",
+    )
+    safe_proc = _run_audit(str(tmp_path), "--format", "json", isolated=True)
+    assert safe_proc.returncode == 0, safe_proc.stdout + safe_proc.stderr
+    safe_rules = {item["rule_id"]: item for item in json.loads(safe_proc.stdout)["findings"]}
+    assert safe_rules["OAS-CI-05"]["status"] == "PASS"
+
+    # Passing untrusted body into an AI action's `with:` input must still FAIL OAS-CI-05
+    (tmp_path / ".github/workflows/unsafe-with.yml").write_text(
+        "name: Unsafe Prompt Input\n"
+        "on: [issue_comment]\n"
+        "permissions:\n"
+        "  contents: read\n"
+        "jobs:\n"
+        "  bot:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    timeout-minutes: 10\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683\n"
+        "        with:\n"
+        "          persist-credentials: false\n"
+        "      - uses: acme/ai-bot@11bd71901bbe5b1630ceea73d27597364c9af683\n"
+        "        with:\n"
+        "          prompt: ${{ github.event.comment.body }}\n",
+        encoding="utf-8",
+    )
+    unsafe_proc = _run_audit(str(tmp_path), "--format", "json", isolated=True)
+    assert unsafe_proc.returncode == 2
+    unsafe_rules = {item["rule_id"]: item for item in json.loads(unsafe_proc.stdout)["findings"]}
+    assert unsafe_rules["OAS-CI-05"]["status"] == "FAIL"
+
+
+def test_audit_repo_supports_auditable_waivers_without_collapsing_to_pass(tmp_path: Path) -> None:
+    _write_clean_repo(tmp_path)
+    (tmp_path / "src/legacy.py").write_text("def run_expr(x: str) -> object:\n    return eval(x)\n", encoding="utf-8")
+
+    unwaived = _run_audit(str(tmp_path), "--format", "json", isolated=True)
+    assert unwaived.returncode == 2
+
+    waived = _run_audit(
+        str(tmp_path),
+        "--github-ruleset-file",
+        str(STRONG_RULESET),
+        "--waiver",
+        "OAS-SVC-03: sandboxed DSL evaluator tracked in SEC-142 until v2 parser lands",
+        "--format",
+        "json",
+        isolated=True,
+    )
+    assert waived.returncode == 0, waived.stdout + waived.stderr
+    report = json.loads(waived.stdout)
+    assert report["counts"]["FAIL"] == 0
+    assert report["counts"]["WAIVED"] == 1
+    assert report["derived_status"] == "WAIVED"
+    by_rule = {item["rule_id"]: item for item in report["findings"]}
+    assert by_rule["OAS-SVC-03"]["status"] == "WAIVED"
+    assert "SEC-142" in by_rule["OAS-SVC-03"]["waiver_reason"]

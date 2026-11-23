@@ -81,11 +81,11 @@ python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo
 # 2. Also audit your live GitHub Branch Ruleset read-only (requires authenticated `gh` CLI):
 python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo --github
 
-# 3. Run the 19-case deterministic trust-boundary eval suite (17 traps caught, 0 false positives):
+# 3. Run the 21-case deterministic trust-boundary eval suite (17 traps caught, 0 false positives):
 python3 -S agentic-sdlc/scripts/run-evals.py
 ```
 
-Or drop the reusable composite Action (`action.yml`) into any repository's CI (pinned to a 40-char commit SHA):
+Or drop the reusable composite Action (`action.yml`) into any repository's CI (pinned to a 40-char commit SHA; ensure `actions/checkout` sets `fetch-depth: 0` so PR-diff referee can resolve `base..head`):
 
 ```yaml
 - uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.4.0
@@ -174,7 +174,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | **`checklists/`** | 10 empirical, security, agent-injection, IaC/DB & readiness checklists + `DoneClaim` / `Handoff` / `Incident-to-Gate` templates | [checklists/README.md](checklists/README.md) ([中文](checklists/README.zh.md)) |
 | **`profiles/`** | Copy-ready **`L0-solo`** (unified `AGENTS.md` + thin `@AGENTS.md` `CLAUDE.md`), **`L1-team`** (Python/TS/Rust/Go/Java fail-closed CI), **`L2-governed`** (importable GitHub Ruleset JSON) | [profiles/README.md](profiles/README.md) ([中文](profiles/README.zh.md)) |
 | **`examples/`** | Runnable backend contract gates (`pytest`) & Playwright 3-layer frontend E2E starter | [examples/README.md](examples/README.md) ([中文](examples/README.zh.md)) |
-| **`evals/`** | 19-case deterministic trust-boundary eval harness (`scripts/run-evals.py`) + Skill eval rubrics | [evals/README.md](evals/README.md) ([中文](evals/README.zh.md)) |
+| **`evals/`** | 21-case deterministic trust-boundary eval harness (`scripts/run-evals.py`) + Skill eval rubrics | [evals/README.md](evals/README.md) ([中文](evals/README.zh.md)) |
 | **`standards/`** | 9 concise bilingual standards (Dual-Loop SDLC, Security, Reliability/Performance & Versioning) + 2 closed contracts | [standards/README.md](standards/README.md) ([中文](standards/README.zh.md)) |
 | **`scripts/`** | 9 adopter/eval helpers (`audit-repo.py`, `audit-pr-diff.py`, `check-change-sync.py`, `run-evals.py`, `bootstrap.sh`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py`, `link-shared-node-deps.mjs`) + 3 contract/doc checkers | [BOOTSTRAP.md](BOOTSTRAP.md) |
 | **`docs/`** | Agentic SDLC Ontology (9 entities / 5 axioms), workflow integration map, empirical evidence & manifesto | [ontology.md](docs/ontology.md) · [workflow-integration.md](docs/workflow-integration.md) · [empirical-findings.md](docs/empirical-findings.md) · [manifesto.md](docs/manifesto.md) |

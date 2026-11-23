@@ -15,7 +15,7 @@ python3 -S scripts/run-evals.py
 make eval-deterministic
 ```
 
-评测动态构造 19 个隔离用例——**17 个植入违规陷阱**（缺失上下文/Worktree 忽略、`AGENTS.md`/`CLAUDE.md` 隐藏 Unicode 与端点劫持/静默执行投毒、`.vscode/tasks.json` `folderOpen` 与 `bypassPermissions`、Comment-and-Control CI 注入与 `pull_request_target` 检出 PR Head、未锁 40 位 SHA 的 GitHub Actions、缺失 `permissions` / `persist-credentials: false`、`@org/` 占位符 CODEOWNERS、Python/JS/TS/Go/Rust/Java Day-0 冒烟陷阱，以及允许批准后推提交或 `integration_id: null` 的弱 GitHub Ruleset）加 **2 个干净多语言对照组**——断言 100% 陷阱召回率与 0% 误报率。
+评测动态构造 21 个隔离用例——**17 个植入违规陷阱**（缺失上下文/Worktree 忽略、`AGENTS.md`/`CLAUDE.md` 隐藏 Unicode 与端点劫持/静默执行投毒、`.vscode/tasks.json` `folderOpen` 与 `bypassPermissions`、Comment-and-Control CI 注入与 `pull_request_target` 检出 PR Head、未锁 40 位 SHA 的 GitHub Actions、缺失 `permissions` / `persist-credentials: false`、`@org/` 占位符 CODEOWNERS、Python/JS/TS/Go/Rust/Java Day-0 冒烟陷阱，以及允许批准后推提交或 `integration_id: null` 的弱 GitHub Ruleset）加 **4 个干净与防误报对照组**（多语言干净仓库、注释/测试代码排除、安全 `env:` PR 标题绑定与可审计 `--waiver`）——断言 100% 陷阱召回率与 0% 误报率。
 
 ## 2. Agent Skill 评测集（`evals/skills/`）
 
@@ -29,5 +29,5 @@ make eval-deterministic
 
 ## 3. 评测边界（区分 `pass@k` 与 `pass^k` 及 Holdout 集）
 
-- **绝不把 `19/19` 确定性评测等同于“通用 Agent 可靠性”**：轨道一证明的是确定性检查器在植入反例上 100% 变红且对照组 0 误报，不代表概率性 Agent 在开放任务上无错，也不替代深度数据流 SAST。
+- **绝不把 `21/21` 确定性评测等同于“通用 Agent 可靠性”**：轨道一证明的是确定性检查器在植入反例上 100% 变红且对照组 0 误报，不代表概率性 Agent 在开放任务上无错，也不替代深度数据流 SAST。
 - **区分单次碰运气（`pass@k`）与多次稳定一致（`pass^k`）**：运行端到端 Agent 评测时，记录多轮重复一致性（`pass^k`），保留不参与 Prompt 调优的 Holdout 测试集，基于最终真实状态/副作用而非纯对话稿评分，且严禁产码 Agent 修改自己的验收 Oracle。

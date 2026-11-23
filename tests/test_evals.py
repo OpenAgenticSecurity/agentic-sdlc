@@ -70,6 +70,69 @@ def test_composite_github_action_manifest_is_valid_and_safe() -> None:
         assert "${{ inputs." not in run_block, "action.yml must pass inputs via env:, not raw shell interpolation"
 
 
+def test_composite_action_fails_closed_not_run_on_shallow_pr_checkout(tmp_path: Path) -> None:
+    import os
+
+    parsed = yaml.safe_load((REPO / "action.yml").read_text(encoding="utf-8"))
+    run_script = parsed["runs"]["steps"][0]["run"]
+
+    # Create a repo with two commits, then a shallow clone (depth=1) missing base_sha
+    origin = tmp_path / "origin"
+    origin.mkdir()
+    for args in (
+        ["init", "-q", "-b", "main"],
+        ["config", "user.email", "example@example.com"],
+        ["config", "user.name", "Example"],
+    ):
+        subprocess.run(["git", "-C", str(origin), *args], check=True)
+    (origin / "AGENTS.md").write_text("# AGENTS\n", encoding="utf-8")
+    (origin / "CLAUDE.md").write_text("@AGENTS.md\n", encoding="utf-8")
+    (origin / ".gitignore").write_text(
+        ".worktrees/\n.claude/worktrees/\n.cursor/worktrees/\n.codex/worktrees/\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(origin), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(origin), "commit", "-q", "-m", "base"], check=True)
+    base_sha = subprocess.check_output(["git", "-C", str(origin), "rev-parse", "HEAD"], text=True).strip()
+
+    (origin / "README.md").write_text("# Next\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(origin), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(origin), "commit", "-q", "-m", "head"], check=True)
+    head_sha = subprocess.check_output(["git", "-C", str(origin), "rev-parse", "HEAD"], text=True).strip()
+
+    shallow = tmp_path / "shallow"
+    subprocess.run(
+        ["git", "clone", "-q", "--depth", "1", f"file://{origin}", str(shallow)],
+        check=True,
+    )
+
+    env = {
+        **os.environ,
+        "OAS_ACTION_PATH": str(REPO),
+        "OAS_TARGET": str(shallow),
+        "OAS_FORMAT": "text",
+        "OAS_RULESET_FILE": "",
+        "OAS_BASE_SHA": "",
+        "OAS_HEAD_SHA": "",
+        "OAS_EVENT_BASE_SHA": base_sha,
+        "OAS_EVENT_HEAD_SHA": head_sha,
+        "OAS_SYNC_CONFIG": "",
+        "OAS_DIFF_WAIVERS": "",
+        "OAS_REPO_WAIVERS": "",
+        "OAS_FAIL_ON_FINDINGS": "true",
+    }
+    proc = subprocess.run(
+        ["bash", "-c", run_script],
+        cwd=shallow,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert proc.returncode == 1, f"expected NOT_RUN exit 1 on shallow PR checkout, got {proc.returncode}:\n{proc.stdout}\n{proc.stderr}"
+    assert "NOT_RUN" in proc.stderr and "fetch-depth: 0" in proc.stderr
+
+
 def test_static_pages_site_has_zero_external_trackers_or_unsafe_dom_sinks() -> None:
     html = (REPO / "site/index.html").read_text(encoding="utf-8")
     css = (REPO / "site/styles.css").read_text(encoding="utf-8")
@@ -81,3 +144,10 @@ def test_static_pages_site_has_zero_external_trackers_or_unsafe_dom_sinks() -> N
     assert 'src="http' not in html and 'href="http' not in html.split("<body", 1)[0]
     for sink in ("innerHTML", "outerHTML", "document.write", "eval(", "new Function("):
         assert sink not in js, f"site/app.js must not use unsafe sink {sink!r}"
+    # No stale pre-v0.4.0 version pins on the landing site, SVG chart labels carry data-i18n,
+    # and app.js constructs <code> nodes safely via createElement("code") instead of wiping them.
+    for stale in ("v0.2.0", "v0.3.0", "5728fb1d97035785b501293491f4059113d0ffaf"):
+        assert stale not in html, f"site/index.html contains stale version reference: {stale}"
+        assert stale not in js, f"site/app.js contains stale version reference: {stale}"
+    assert 'createElement("code")' in js, "site/app.js must preserve inline <code> tags across language toggles"
+    assert 'data-i18n="svg_fe_1"' in html, "SVG chart labels in site/index.html must carry data-i18n attributes"

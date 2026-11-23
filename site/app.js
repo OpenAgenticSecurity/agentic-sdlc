@@ -30,15 +30,23 @@
     c1_sub: "基于 321 个明确归因的 React/TypeScript 缺陷样本",
     c2_title: "规模相变临界点与上下文悬崖",
     c2_sub: "基于 443 次追踪会话 / 84 亿 Token 专项样本集",
-    on_kicker: "02 · AGENTIC SDLC 本体论（v0.2.0 新增）",
+    svg_fe_1: "跨层边界缺少断言（前后端/权限不一致）",
+    svg_fe_2: "仅在小数据量 / P50 Demo 下成立",
+    svg_fe_3: "就近复制补丁（未收口至共享层）",
+    svg_fe_4: "似是而非的假兜底（?? 0 / || []）",
+    svg_sc_1: "<5K 行可丢弃原型自主成功率",
+    svg_sc_2: ">10K 行无结构 Vibe Coding 成功率",
+    svg_sc_3: "早期会话失败率（<60 条消息）",
+    svg_sc_4: "超长会话失败率（200+ 条消息后）",
+    on_kicker: "02 · AGENTIC SDLC 本体论",
     on_title: "五条公理，从根源消除 Agent 本体混淆",
     on_desc: "Agent 反复翻车很少是因为漏看清单文字，而是把会话记忆混成代码现实、把单文件修改混成耦合完成、把总结混成证据。",
     a1_t: "公理 1 · 事实压倒记忆（Reality > Memory）",
-    a1_d: "新鲜拉取的 origin/main、真实调用链与构造点、STATUS.md 以及只读运行态探针无条件压倒会话记忆与过时文档。",
+    a1_d: "新鲜拉取的 `origin/main`、真实调用链与构造点、`STATUS.md` 以及只读运行态探针无条件压倒会话记忆与过时文档。",
     a2_t: "公理 2 · 耦合变更闭包（ArtifactGraph）",
-    a2_d: "修改源码、API 或 Schema 后，在耦合的单测、契约、文档与 STATUS.md 全部同步前，状态只能是 PARTIAL——由 scripts/check-change-sync.py 强制守门。",
+    a2_d: "修改源码、API 或 Schema 后，在耦合的单测、契约、文档与 `STATUS.md` 全部同步前，状态只能是 `PARTIAL`——由 `scripts/check-change-sync.py` 强制守门。",
     a3_t: "公理 3 · 状态不可有损折叠",
-    a3_d: "NOT_RUN、UNKNOWN、RESULT_UNKNOWN、CONFLICT 与 ERROR 是一等互斥状态；严禁压缩成布尔 true 或假默认值（?? 0 / || []）。",
+    a3_d: "`NOT_RUN`、`UNKNOWN`、`RESULT_UNKNOWN`、`CONFLICT` 与 `ERROR` 是一等互斥状态；严禁压缩成布尔 `true` 或假默认值（`?? 0`、`|| []`）。",
     a4_t: "公理 4 · 主体与裁判分离（Non-Self-Attestation）",
     a4_d: "产出 Patch 的执行主体永不具备认证自身 Gate 变更的权威；受保护 GitHub Ruleset 与独立机制审查掌握最终合并边界。",
     a5_t: "公理 5 · 不对称知识演化",
@@ -49,7 +57,7 @@
     t_audit: "10 秒自检",
     t_sync: "耦合同步门禁",
     t_skills: "6 个 Skills",
-    t_action: "4 行 CI Action",
+    t_action: "CI Action",
     t_boot: "一键落地 L0–L2",
     copy: "复制",
     sample_lbl: "典型仓库的真实拦截输出示例",
@@ -57,34 +65,68 @@
     wf_title: "不换现有工具，卡住 5 个高危交接点",
     wf_desc: "继续用 Claude Code、Cursor、Codex 与 superpowers 写代码，只把确定性护栏套在最容易翻车的 5 个节点上。",
     w1_t: "接单开工",
-    w1_d: "统一读根目录 AGENTS.md 与 STATUS.md，开隔离 Worktree，并用 workspace-git.py 物理拦住直提交 main。",
+    w1_d: "统一读根目录 `AGENTS.md` 与 `STATUS.md`，开隔离 Worktree，并用 `workspace-git.py` 物理拦住直提交 `main`。",
     w2_t: "规划与写码",
-    w2_d: "执行非平凡任务阈值（>3 文件 / >50 行）、secure-vibe-coding 及写码前可靠性与性能不变量。",
+    w2_d: "执行非平凡任务阈值（>3 文件 / >50 行）、`secure-vibe-coding` 及写码前可靠性与性能不变量。",
     w3_t: "喊“完成”前",
-    w3_d: "跑 check-change-sync.py、done-claim-verify 与 audit-pr-diff，输出带 does_not_prove[] 的 DoneClaim。",
+    w3_d: "跑 `check-change-sync.py`、`done-claim-verify` 与 `audit-pr-diff`，输出带 `does_not_prove[]` 的 `DoneClaim`。",
     w4_t: "开 PR 与 CI",
-    w4_d: "运行 40 位 SHA 锁定的多语言 Fail-Closed CI 与 4 行 action.yml，评审直接引用 OAS-* 规则编号。",
+    w4_d: "运行 40 位 SHA 锁定的多语言 Fail-Closed CI 与 `action.yml`，评审直接引用 `OAS-*` 规则编号。",
     w5_t: "合并与上线",
-    w5_d: "启用不可自证 GitHub Ruleset 与 CODEOWNERS；发版前运行五维 audit-production-readiness（H1/H2 裁决）。",
+    w5_d: "启用不可自证 GitHub Ruleset 与 `CODEOWNERS`；发版前运行五维 `audit-production-readiness`（H1/H2 裁决）。",
     sk_kicker: "05 · 6 个独立 Skills 与 9 篇标准",
     sk_title: "脱离具体编程语言，按需加载零常态负担",
     sk_desc: "Skills 沉淀的是跨语言安全、可靠、审计与 Git 不变量（不包含格式/代码风格规则），且全部显式声明自身非权威。",
-    s1: "探测目标仓库真实技术栈，安全落地统一 AGENTS.md、极薄 @AGENTS.md CLAUDE.md、STATUS.md、PR 模板与 Fail-Closed CI。",
-    s2: "强制默认拒绝鉴权/租户隔离、安全 Sink、SSRF 169.254.169.254 防护、默认 mutating 工具白名单、防只读外泄与反向安全单测。",
-    s3: "基于 file:line 取证审查 diff，覆盖七宗罪、安全红线、前端 454 Bug、后端 8 类性能陷阱与门禁面变更审查。",
+    s1: "探测目标仓库真实技术栈，安全落地统一 `AGENTS.md`、极薄 `@AGENTS.md` `CLAUDE.md`、`STATUS.md`、PR 模板与 Fail-Closed CI。",
+    s2: "强制默认拒绝鉴权/租户隔离、安全 Sink、SSRF `169.254.169.254` 防护、默认 mutating 工具白名单、防只读外泄与反向安全单测。",
+    s3: "基于 `file:line` 取证审查 diff，覆盖七宗罪、安全红线、前端 454 Bug、后端 8 类性能陷阱与门禁面变更审查。",
     s4: "整仓五维审计，落实 7 条证据纪律、三层默认值、数据活性、发版前运维红线、自学习不对称与 H1/H2 裁决。",
-    s5: "拒绝裸布尔 done=true；保留非绿状态、解引用 4 个假完成断点、校验耦合同步并强制声明 does_not_prove[]。",
+    s5: "拒绝裸布尔 `\"done\": true`；保留非绿状态、解引用 4 个假完成断点、校验耦合同步并强制声明 `does_not_prove[]`。",
     s6: "以远端基线刷新、隔离 Worktree、Managed Issue Claim、跨会话契约交接、禁 Stacked PR 与安全清理协调多 Agent 并发。",
     lim_h: "诚实边界（does_not_prove）",
     lim_p: "Markdown 规则与 Skills 只是易用性投影，绝不构成合并权威。PR 受控 CI 与本地自检始终属于 candidate / advisory；支付、鉴权、运行期语义与 P99 负载仍需真实集成测试、受保护 GitHub Ruleset 与人类工程判断。"
   };
+
+  function serializeWithBackticks(node) {
+    var parts = [];
+    for (var i = 0; i < node.childNodes.length; i++) {
+      var child = node.childNodes[i];
+      if (child.nodeType === 1 && child.tagName && child.tagName.toLowerCase() === "code") {
+        parts.push("`" + (child.textContent || "") + "`");
+      } else {
+        parts.push(child.textContent || "");
+      }
+    }
+    return parts.join("");
+  }
+
+  function renderRichText(node, raw) {
+    if (node.namespaceURI === "http://www.w3.org/2000/svg" || raw.indexOf("`") === -1) {
+      node.textContent = raw;
+      return;
+    }
+    node.textContent = "";
+    var segments = raw.split(/`([^`]+)`/g);
+    for (var i = 0; i < segments.length; i++) {
+      if (!segments[i]) {
+        continue;
+      }
+      if (i % 2 === 1) {
+        var code = document.createElement("code");
+        code.textContent = segments[i];
+        node.appendChild(code);
+      } else {
+        node.appendChild(document.createTextNode(segments[i]));
+      }
+    }
+  }
 
   var COPY_EN = {};
   var nodes = document.querySelectorAll("[data-i18n]");
   for (var i = 0; i < nodes.length; i++) {
     var key = nodes[i].getAttribute("data-i18n");
     if (key) {
-      COPY_EN[key] = nodes[i].textContent;
+      COPY_EN[key] = serializeWithBackticks(nodes[i]);
     }
   }
 
@@ -94,7 +136,7 @@
     for (var j = 0; j < nodes.length; j++) {
       var k = nodes[j].getAttribute("data-i18n");
       if (k && Object.prototype.hasOwnProperty.call(dict, k)) {
-        nodes[j].textContent = dict[k];
+        renderRichText(nodes[j], dict[k]);
       }
     }
     var btn = document.getElementById("lang-toggle");

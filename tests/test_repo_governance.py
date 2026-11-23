@@ -289,6 +289,46 @@ def test_every_shipped_workflow_pins_actions_to_full_commit_sha() -> None:
                 assert sha_pin_re.fullmatch(step["uses"]), (
                     f"{wf_path.name}/{job_name}: action must be pinned to 40-char SHA: {step['uses']}"
                 )
+    # Every L1 PR template checkout must set fetch-depth: 0 so PR-diff referee (action.yml / audit-pr-diff.py) can resolve base..head
+    for wf_path in TEMPLATE_WORKFLOWS:
+        checkout_steps = [
+            step
+            for _job, step in _workflow_steps(wf_path)
+            if str(step.get("uses", "")).startswith("actions/checkout@")
+        ]
+        assert checkout_steps, f"{wf_path.name}: missing actions/checkout step"
+        for step in checkout_steps:
+            assert step.get("with", {}).get("fetch-depth") == 0, (
+                f"{wf_path.name}: actions/checkout must set fetch-depth: 0 so PR-diff referee can inspect base..head"
+            )
+
+
+def test_repository_dogfoods_its_own_agentic_sync_config() -> None:
+    import subprocess
+    import sys
+
+    sync_cfg = REPO / ".agentic-sync.json"
+    assert sync_cfg.is_file(), "repository must dogfood its own root .agentic-sync.json"
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-S",
+            str(REPO / "scripts/check-change-sync.py"),
+            "--config",
+            str(sync_cfg),
+            "--changed",
+            "standards/sdlc.md",
+            "--format",
+            "json",
+        ],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert proc.returncode == 2, f"editing standards/sdlc.md without standards/sdlc.zh.md must fail sync: {proc.stdout}"
+    payload = json.loads(proc.stdout)
+    assert payload["derived_status"] == "FAIL"
 
 
 def test_own_workflows_only_call_existing_make_targets_and_input_files() -> None:

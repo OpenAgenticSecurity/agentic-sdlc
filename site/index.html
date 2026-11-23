@@ -87,22 +87,22 @@
             <p class="cell-meta" data-i18n="c1_sub">Share of 321 root-caused React/TypeScript defects</p>
             <svg class="chart-svg" viewBox="0 0 500 184" role="img" aria-label="Frontend bug root causes">
               <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5">
-                <text x="0" y="16" fill="#111110">Unasserted cross-layer edge</text>
+                <text x="0" y="16" fill="#111110" data-i18n="svg_fe_1">Unasserted cross-layer edge</text>
                 <text x="498" y="16" text-anchor="end" fill="#c8372d" font-weight="600">39%</text>
                 <rect x="0" y="24" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="24" width="390" height="6" fill="#c8372d"/>
 
-                <text x="0" y="62" fill="#111110">Holds only at small scale / P50 demo</text>
+                <text x="0" y="62" fill="#111110" data-i18n="svg_fe_2">Holds only at small scale / P50 demo</text>
                 <text x="498" y="62" text-anchor="end" fill="#111110" font-weight="600">18%</text>
                 <rect x="0" y="70" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="70" width="180" height="6" fill="#111110"/>
 
-                <text x="0" y="108" fill="#111110">Copied from nearby (no shared-layer fix)</text>
+                <text x="0" y="108" fill="#111110" data-i18n="svg_fe_3">Copied from nearby (no shared-layer fix)</text>
                 <text x="498" y="108" text-anchor="end" fill="#111110" font-weight="600">16%</text>
                 <rect x="0" y="116" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="116" width="160" height="6" fill="#111110"/>
 
-                <text x="0" y="154" fill="#111110">Plausible fake fallback (?? 0 / || [])</text>
+                <text x="0" y="154" fill="#111110" data-i18n="svg_fe_4">Plausible fake fallback (?? 0 / || [])</text>
                 <text x="498" y="154" text-anchor="end" fill="#111110" font-weight="600">11%</text>
                 <rect x="0" y="162" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="162" width="110" height="6" fill="#575751"/>
@@ -115,22 +115,22 @@
             <p class="cell-meta" data-i18n="c2_sub">443 tracked sessions / 8.4B-token study sample</p>
             <svg class="chart-svg" viewBox="0 0 500 184" role="img" aria-label="Session phase transition and failure rate">
               <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5">
-                <text x="0" y="16" fill="#111110">&lt;5K LOC disposable mode success</text>
+                <text x="0" y="16" fill="#111110" data-i18n="svg_sc_1">&lt;5K LOC disposable mode success</text>
                 <text x="498" y="16" text-anchor="end" fill="#111110" font-weight="600">~100%</text>
                 <rect x="0" y="24" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="24" width="492" height="6" fill="#111110"/>
 
-                <text x="0" y="62" fill="#111110">&gt;10K LOC unstructured vibe coding</text>
+                <text x="0" y="62" fill="#111110" data-i18n="svg_sc_2">&gt;10K LOC unstructured vibe coding</text>
                 <text x="498" y="62" text-anchor="end" fill="#575751" font-weight="600">~55%</text>
                 <rect x="0" y="70" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="70" width="275" height="6" fill="#575751"/>
 
-                <text x="0" y="108" fill="#111110">Failure rate · early session (&lt;60 msgs)</text>
+                <text x="0" y="108" fill="#111110" data-i18n="svg_sc_3">Failure rate · early session (&lt;60 msgs)</text>
                 <text x="498" y="108" text-anchor="end" fill="#575751" font-weight="600">&lt;10%</text>
                 <rect x="0" y="116" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="116" width="50" height="6" fill="#575751"/>
 
-                <text x="0" y="154" fill="#111110">Failure rate · past 200+ messages</text>
+                <text x="0" y="154" fill="#111110" data-i18n="svg_sc_4">Failure rate · past 200+ messages</text>
                 <text x="498" y="154" text-anchor="end" fill="#c8372d" font-weight="600">35.7%</text>
                 <rect x="0" y="162" width="500" height="6" fill="#e8e8e3"/>
                 <rect x="0" y="162" width="179" height="6" fill="#c8372d"/>
@@ -144,7 +144,7 @@
     <section id="ontology" class="band">
       <div class="container">
         <div class="section-header">
-          <p class="kicker" data-i18n="on_kicker">02 · AGENTIC SDLC ONTOLOGY (NEW IN v0.2.0)</p>
+          <p class="kicker" data-i18n="on_kicker">02 · AGENTIC SDLC ONTOLOGY</p>
           <h2 data-i18n="on_title">Five axioms that eliminate category errors</h2>
           <p class="section-desc" data-i18n="on_desc">Agents rarely fail from missing prose steps; they fail by conflating session memory with code truth, single edits with coupled changes, or summaries with evidence.</p>
         </div>
@@ -219,7 +219,7 @@ python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo
 # 2. Also inspect live GitHub Branch Rulesets read-only (requires `gh` CLI):
 python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo --github
 
-# 3. Run the 19-case deterministic trust-boundary evals offline (17/17 traps, 0 false positives):
+# 3. Run the 21-case deterministic trust-boundary evals offline (17/17 traps, 0 false positives):
 python3 -S agentic-sdlc/scripts/run-evals.py</code></pre>
           </div>
 
@@ -273,8 +273,14 @@ npx skills add OpenAgenticSecurity/agentic-sdlc</code></pre>
               <span>.github/workflows/agentic-audit.yml · pin to full 40-char commit SHA</span>
               <button class="copy-btn" type="button" data-copy="cmd-action" data-i18n="copy">Copy</button>
             </div>
-            <pre><code id="cmd-action">- name: OpenAgenticSecurity candidate self-audit
-  uses: OpenAgenticSecurity/agentic-sdlc@5728fb1d97035785b501293491f4059113d0ffaf # v0.2.0
+            <pre><code id="cmd-action">- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  with:
+    persist-credentials: false
+    fetch-depth: 0
+    ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+- name: OpenAgenticSecurity candidate self-audit &amp; PR referee
+  uses: OpenAgenticSecurity/agentic-sdlc@3f979857689522c49d82c54d9b35acdaada6542b # v0.4.0
   with:
     target: .
     fail-on-findings: "true"</code></pre>

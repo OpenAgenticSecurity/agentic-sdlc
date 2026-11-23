@@ -80,11 +80,11 @@ python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo
 # 2. 同时只读审计你仓库线上的 GitHub Branch Ruleset（需已登录 `gh` CLI）：
 python3 agentic-sdlc/scripts/audit-repo.py /path/to/your-repo --github
 
-# 3. 实跑 19 用例确定性信任边界评测集（17/17 陷阱拦截，0 误报）：
+# 3. 实跑 21 用例确定性信任边界评测集（17/17 陷阱拦截，0 误报）：
 python3 -S agentic-sdlc/scripts/run-evals.py
 ```
 
-也可以在任意仓库 CI 里直接接入 4 行可复用 GitHub Action（`action.yml`，按 40 位 SHA 锁定）：
+也可以在任意仓库 CI 里直接接入可复用 GitHub Action（`action.yml`，按 40 位 SHA 锁定；请确保 `actions/checkout` 配置 `fetch-depth: 0` 以便 PR-Diff 裁判读取 `base..head`）：
 
 ```yaml
 - uses: OpenAgenticSecurity/agentic-sdlc@<40-char-commit-sha> # v0.4.0
@@ -173,7 +173,7 @@ make verify-all
 | **`checklists/`** | 10 套实证、安全、指令/CI 注入、IaC/DB 与生产就绪清单 + `DoneClaim` / `Handoff` / `Incident-to-Gate` 模板 | [checklists/README.zh.md](checklists/README.zh.md)（[English](checklists/README.md)） |
 | **`profiles/`** | **`L0-solo`**（统一 `AGENTS.md` + 极薄 `@AGENTS.md` `CLAUDE.md`）、**`L1-team`**（Python/TS/Rust/Go/Java Fail-Closed CI）、**`L2-governed`**（可导入 GitHub Ruleset JSON） | [profiles/README.zh.md](profiles/README.zh.md)（[English](profiles/README.md)） |
 | **`examples/`** | 可直接运行的后端契约门禁（`pytest`）与 Playwright 三层前端 E2E 骨架 | [examples/README.zh.md](examples/README.zh.md)（[English](examples/README.md)） |
-| **`evals/`** | 19 用例确定性信任边界评测（`scripts/run-evals.py`）+ Skill 评测集 | [evals/README.zh.md](evals/README.zh.md)（[English](evals/README.md)） |
+| **`evals/`** | 21 用例确定性信任边界评测（`scripts/run-evals.py`）+ Skill 评测集 | [evals/README.zh.md](evals/README.zh.md)（[English](evals/README.md)） |
 | **`standards/`** | 9 篇双语核心标准（双环 SDLC、安全、可靠/性能与版本发布标准）+ 2 套闭合契约 | [standards/README.zh.md](standards/README.zh.md)（[English](standards/README.md)） |
 | **`scripts/`** | 9 个接入/评测脚本（`audit-repo.py`、`audit-pr-diff.py`、`check-change-sync.py`、`run-evals.py`、`bootstrap.sh`、`workspace-git.py`、`agent-claim.py`、`observe-github-ruleset.py`、`link-shared-node-deps.mjs`）+ 3 个契约/文档校验器 | [BOOTSTRAP.zh.md](BOOTSTRAP.zh.md) |
 | **`docs/`** | Agentic SDLC 本体论（9 实体 / 5 公理）、工作流嵌入全景、实证数据与安全工程总纲宣言 | [ontology.zh.md](docs/ontology.zh.md) · [workflow-integration.zh.md](docs/workflow-integration.zh.md) · [empirical-findings.zh.md](docs/empirical-findings.zh.md) · [manifesto.zh.md](docs/manifesto.zh.md) |

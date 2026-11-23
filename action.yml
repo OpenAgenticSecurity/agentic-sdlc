@@ -30,6 +30,10 @@ inputs:
     description: "Optional newline-separated 'RULE_ID: reason' waivers for audit-pr-diff.py."
     required: false
     default: ""
+  repo-waivers:
+    description: "Optional newline-separated 'RULE_ID: reason' waivers for audit-repo.py."
+    required: false
+    default: ""
   fail-on-findings:
     description: "Exit non-zero when FAIL findings are detected (true or false)."
     required: false
@@ -51,6 +55,7 @@ runs:
         OAS_EVENT_HEAD_SHA: ${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha || '' }}
         OAS_SYNC_CONFIG: ${{ inputs.sync-config }}
         OAS_DIFF_WAIVERS: ${{ inputs.diff-waivers }}
+        OAS_REPO_WAIVERS: ${{ inputs.repo-waivers }}
         OAS_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
       run: |
         set -euo pipefail
@@ -67,9 +72,14 @@ runs:
         if [ -n "$OAS_RULESET_FILE" ]; then
           args+=("--github-ruleset-file" "$OAS_RULESET_FILE")
         fi
+        if [ -n "${OAS_REPO_WAIVERS:-}" ]; then
+          while IFS= read -r rwline; do
+            [ -n "$rwline" ] && args+=("--waiver" "$rwline")
+          done <<< "$OAS_REPO_WAIVERS"
+        fi
 
         set +e
-        python3 "$OAS_ACTION_PATH/scripts/audit-repo.py" "${args[@]}"
+        python3 -S "$OAS_ACTION_PATH/scripts/audit-repo.py" "${args[@]}"
         repo_rc=$?
         set -e
         if [ "$repo_rc" -eq 1 ]; then
@@ -95,14 +105,14 @@ runs:
               done <<< "$OAS_DIFF_WAIVERS"
             fi
             set +e
-            python3 "$OAS_ACTION_PATH/scripts/audit-pr-diff.py" "${diff_args[@]}"
+            python3 -S "$OAS_ACTION_PATH/scripts/audit-pr-diff.py" "${diff_args[@]}"
             diff_rc=$?
             set -e
             if [ "$diff_rc" -eq 1 ]; then
               exit 1
             fi
-          elif [ -n "$OAS_BASE_SHA" ]; then
-            echo "NOT_RUN: explicit base-sha/head-sha commit not present in checkout (set fetch-depth: 0)." >&2
+          else
+            echo "NOT_RUN: PR base/head commit (${effective_base}..${effective_head}) not present in checkout (set fetch-depth: 0 on actions/checkout)." >&2
             exit 1
           fi
         fi
