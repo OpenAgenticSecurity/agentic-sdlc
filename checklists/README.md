@@ -30,6 +30,7 @@ and deterministic checkers in [scripts/](../scripts/).
 | [agent-config-and-ci-injection.md](agent-config-and-ci-injection.md) ([中文](agent-config-and-ci-injection.zh.md)) | Instruction-file poisoning (hidden Unicode, silent-run social engineering, API hijack), `.vscode/tasks.json` `folderOpen`, `.claude/settings.json`, CI Comment-and-Control (`pull_request_target`) | Agent config review, CI hardening (`L0`–`L2`) | [`scripts/audit-repo.py`](../scripts/audit-repo.py) (`OAS-AGT-01..03`, `OAS-CI-05`) |
 | [destructive-ops-and-iac-safety.md](destructive-ops-and-iac-safety.md) ([中文](destructive-ops-and-iac-safety.zh.md)) | Prod DB credential isolation, shared IaC module `CODEOWNERS` parity, `prevent_destroy`, staging bake windows & agent-unreachable backups | DB migrations, Terraform/K8s/infra PRs (`L1`–`L2`) | 2026 public production incident patterns & [`profiles/L2-governed/CODEOWNERS.example`](../profiles/L2-governed/CODEOWNERS.example) |
 | [handoff.template.md](handoff.template.md) | Cross-session / cross-layer API, schema & 3-layer config contract handoff | Session compaction (`60`-msg cliff), frontend/backend handoff (`L0`–`L2`) | [`skills/multi-agent-git-flow/SKILL.md`](../skills/multi-agent-git-flow/SKILL.md) |
+| [incident-to-gate.template.md](incident-to-gate.template.md) | Asymmetric postmortem card graduating escaped bugs into failing negative tests & gates | Post-incident & 2nd-occurrence review (`L1`–`L2`) | [`standards/sdlc.md`](../standards/sdlc.md) & [`docs/ontology.md`](../docs/ontology.md) |
 
 ## Operating Rule
 

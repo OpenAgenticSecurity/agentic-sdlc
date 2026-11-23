@@ -82,10 +82,17 @@ def _load_strict_json(path: Path, label: str) -> object:
         raise SyncInputError(f"{label}: invalid JSON ({exc.msg})") from exc
 
 
+def _strip_dot_slash(value: str) -> str:
+    res = value.strip().replace("\\", "/")
+    while res.startswith("./"):
+        res = res[2:]
+    return res
+
+
 def _compile_glob(pattern: str) -> re.Pattern[str]:
     """Compile a POSIX glob supporting `*`, `?`, and `**` deterministically."""
     _require(isinstance(pattern, str) and bool(pattern.strip()), "glob pattern must be a non-empty string")
-    pat = pattern.strip().lstrip("./")
+    pat = _strip_dot_slash(pattern).lstrip("/")
     out: list[str] = ["^"]
     i = 0
     n = len(pat)
@@ -119,10 +126,14 @@ def _matches_any(rel_path: str, compiled: Sequence[re.Pattern[str]]) -> bool:
 def _normalize_changed_paths(raw_paths: Sequence[str]) -> list[str]:
     cleaned: set[str] = set()
     for item in raw_paths:
-        norm = item.strip().replace("\\", "/").lstrip("./")
+        raw = item.strip().replace("\\", "/")
+        if not raw:
+            continue
+        _require(not raw.startswith("/"), f"unsafe changed path: {item!r}")
+        norm = _strip_dot_slash(raw)
         if not norm:
             continue
-        _require(".." not in norm.split("/") and not norm.startswith("/"), f"unsafe changed path: {item!r}")
+        _require(".." not in norm.split("/"), f"unsafe changed path: {item!r}")
         cleaned.add(norm)
     return sorted(cleaned)
 

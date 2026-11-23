@@ -73,6 +73,7 @@ required_files = [
     "evals/README.zh.md",
     "scripts/bootstrap.sh",
     "scripts/audit-repo.py",
+    "scripts/audit-pr-diff.py",
     "scripts/check-change-sync.py",
     "scripts/run-evals.py",
     "site/index.html",

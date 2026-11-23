@@ -127,6 +127,7 @@ def test_empirical_checklists_and_done_claim_templates_exist() -> None:
         "checklists/done-claim.template.md",
         "checklists/done-claim.example.json",
         "checklists/handoff.template.md",
+        "checklists/incident-to-gate.template.md",
     ):
         assert (REPO / rel).is_file(), f"missing checklist/template asset: {rel}"
     assert (REPO / "scripts/link-shared-node-deps.mjs").is_file()

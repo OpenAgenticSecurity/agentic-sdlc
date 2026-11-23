@@ -24,6 +24,7 @@
 | [agent-config-and-ci-injection.zh.md](agent-config-and-ci-injection.zh.md) ([English](agent-config-and-ci-injection.md)) | 指令文件隐藏 Unicode/社工静默执行/API 劫持、`.vscode/tasks.json` `folderOpen`、`.claude/settings.json` 与 CI Comment-and-Control（`pull_request_target`） | Agent 配置审查、CI 注入防护（`L0`–`L2`） | [`scripts/audit-repo.py`](../scripts/audit-repo.py)（`OAS-AGT-01..03`、`OAS-CI-05`） |
 | [destructive-ops-and-iac-safety.zh.md](destructive-ops-and-iac-safety.zh.md) ([English](destructive-ops-and-iac-safety.md)) | 生产库凭据物理隔离、共享 IaC 模块同等 `CODEOWNERS`、`prevent_destroy`、Staging 观察期与 Agent 不可达备份 | 数据库迁移、Terraform/K8s/基础设施 PR（`L1`–`L2`） | 2026 公开生产事故模式与 [`profiles/L2-governed/CODEOWNERS.example`](../profiles/L2-governed/CODEOWNERS.example) |
 | [handoff.template.md](handoff.template.md) | 跨会话 / 跨前后端 API、Schema 与三层配置契约交接单 | 60 条消息压缩前交接、前后端/跨仓切换（`L0`–`L2`） | [`skills/multi-agent-git-flow/SKILL.md`](../skills/multi-agent-git-flow/SKILL.md) |
+| [incident-to-gate.template.md](incident-to-gate.template.md) | 将逃逸缺陷或二次重复问题升级为必红负向测试与门禁的不对称复盘卡 | 事故复盘、二次缺陷下沉门禁（`L1`–`L2`） | [`standards/sdlc.zh.md`](../standards/sdlc.zh.md) 与 [`docs/ontology.zh.md`](../docs/ontology.zh.md) |
 
 ## 升级铁律
 

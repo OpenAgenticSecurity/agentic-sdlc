@@ -1,4 +1,4 @@
-.PHONY: check lint static-analysis affected-test-closure-check governance-enforcement-evidence-check agent-governance-test eval-deterministic verify-all agent-check demo-catch-bugs audit-repo product-compliance
+.PHONY: check lint static-analysis affected-test-closure-check governance-enforcement-evidence-check agent-governance-test eval-deterministic verify-all agent-check demo-catch-bugs audit-repo audit-pr-diff product-compliance
 
 PYTHON ?= python3
 PROFILE ?= L1
@@ -57,6 +57,10 @@ demo-catch-bugs:
 audit-repo:
 	@test -n "$(REPO)" || (echo "Usage: make audit-repo REPO=/path/to/repo [AUDIT_ARGS='--github']" && exit 1)
 	$(PYTHON) scripts/audit-repo.py "$(REPO)" $(AUDIT_ARGS)
+
+audit-pr-diff:
+	@test -n "$(BASE)" -a -n "$(HEAD)" || (echo "Usage: make audit-pr-diff BASE=origin/main HEAD=HEAD [REPO=.]" && exit 1)
+	$(PYTHON) -S scripts/audit-pr-diff.py --repo "$${REPO:-.}" --base "$(BASE)" --head "$(HEAD)" $(DIFF_ARGS)
 
 product-compliance:
 	@test -n "$(REPO)" || (echo "Usage: make product-compliance REPO=/path/to/repo [PROFILE=L0|L1|L2]" && exit 1)

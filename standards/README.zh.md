@@ -10,7 +10,7 @@
 
 | 文件 | 用途 |
 |------|------|
-| [sdlc.zh.md](sdlc.zh.md) | 生命周期、单调交付门（`A0`–`A5`）与 Definition of Done |
+| [sdlc.zh.md](sdlc.zh.md) | 双环 Agentic SDLC 模型、五层工程质变、双轨安全治理、单调交付门（`A0`–`A5`）与事故到门禁闭环 |
 | [secure-vibe-coding.zh.md](secure-vibe-coding.zh.md) | Secure Vibe Coding 安全编码不变量（鉴权/防 Fail-Open、注入/SSRF/路径/ReDoS、密钥与密码学运营、供应链、Agent 边界、反向安全单测与 `deps` 工程承载） |
 | [reliable-and-performant-coding.zh.md](reliable-and-performant-coding.zh.md) | 写码前可靠性、稳定性与高性能不变量（资源生命周期、`RESULT_UNKNOWN` 与爆炸半径、异步/连接池/超时总账、Schema 单一权威、模型升级回归、隔离式多 Agent 与 Tool Harness） |
 | [ai-coding-context.zh.md](ai-coding-context.zh.md) | `AGENTS.md`、`CLAUDE.md`、`VIBE_CODING_CONTEXT.md` 与 `STATUS.md` 事实源规范 |

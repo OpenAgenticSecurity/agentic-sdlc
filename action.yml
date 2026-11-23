@@ -1,5 +1,5 @@
-name: "OpenAgenticSecurity — Agentic SDLC Self-Audit"
-description: "Zero-dependency, read-only candidate audit for AI coding guardrails, CI Action SHA pinning, multi-language security traps, and GitHub Rulesets."
+name: "OpenAgenticSecurity — Agentic SDLC Self-Audit & PR Referee"
+description: "Zero-dependency candidate audit for AI coding guardrails, CI injection, reward-hacking PR diffs, coupled sync, and GitHub Rulesets."
 
 inputs:
   target:
@@ -14,6 +14,22 @@ inputs:
     description: "Optional path to an offline raw GitHub Ruleset JSON payload to evaluate."
     required: false
     default: ""
+  base-sha:
+    description: "Optional base commit SHA for PR-diff referee (auto-detected on pull_request events when available in git history)."
+    required: false
+    default: ""
+  head-sha:
+    description: "Optional head commit SHA for PR-diff referee (auto-detected on pull_request / merge_group events)."
+    required: false
+    default: ""
+  sync-config:
+    description: "Optional path to .agentic-sync.json coupled-change rules."
+    required: false
+    default: ""
+  diff-waivers:
+    description: "Optional newline-separated 'RULE_ID: reason' waivers for audit-pr-diff.py."
+    required: false
+    default: ""
   fail-on-findings:
     description: "Exit non-zero when FAIL findings are detected (true or false)."
     required: false
@@ -22,13 +38,19 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Run zero-dependency candidate self-audit
+    - name: Run zero-dependency candidate repository & PR-diff audit
       shell: bash
       env:
         OAS_ACTION_PATH: ${{ github.action_path }}
         OAS_TARGET: ${{ inputs.target }}
         OAS_FORMAT: ${{ inputs.format }}
         OAS_RULESET_FILE: ${{ inputs.github-ruleset-file }}
+        OAS_BASE_SHA: ${{ inputs.base-sha }}
+        OAS_HEAD_SHA: ${{ inputs.head-sha }}
+        OAS_EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || '' }}
+        OAS_EVENT_HEAD_SHA: ${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha || '' }}
+        OAS_SYNC_CONFIG: ${{ inputs.sync-config }}
+        OAS_DIFF_WAIVERS: ${{ inputs.diff-waivers }}
         OAS_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
       run: |
         set -euo pipefail
@@ -48,11 +70,48 @@ runs:
 
         set +e
         python3 "$OAS_ACTION_PATH/scripts/audit-repo.py" "${args[@]}"
-        rc=$?
+        repo_rc=$?
         set -e
-
-        if [ "$rc" -eq 2 ] && [ "$OAS_FAIL_ON_FINDINGS" = "false" ]; then
-          echo "OpenAgenticSecurity candidate audit found FAIL items (advisory mode: fail-on-findings=false)." >&2
-          exit 0
+        if [ "$repo_rc" -eq 1 ]; then
+          exit 1
         fi
-        exit "$rc"
+
+        diff_rc=0
+        effective_base="${OAS_BASE_SHA:-$OAS_EVENT_BASE_SHA}"
+        effective_head="${OAS_HEAD_SHA:-$OAS_EVENT_HEAD_SHA}"
+        if [ -n "$effective_base" ] && [ -n "$effective_head" ]; then
+          if git -C "$OAS_TARGET" cat-file -e "${effective_base}^{commit}" 2>/dev/null && \
+             git -C "$OAS_TARGET" cat-file -e "${effective_head}^{commit}" 2>/dev/null; then
+            diff_args=("--repo" "$OAS_TARGET" "--base" "$effective_base" "--head" "$effective_head" "--format" "$OAS_FORMAT")
+            if [ -n "$OAS_SYNC_CONFIG" ]; then
+              diff_args+=("--sync-config" "$OAS_SYNC_CONFIG")
+            fi
+            if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+              diff_args+=("--summary-file" "$GITHUB_STEP_SUMMARY")
+            fi
+            if [ -n "$OAS_DIFF_WAIVERS" ]; then
+              while IFS= read -r wline; do
+                [ -n "$wline" ] && diff_args+=("--waiver" "$wline")
+              done <<< "$OAS_DIFF_WAIVERS"
+            fi
+            set +e
+            python3 "$OAS_ACTION_PATH/scripts/audit-pr-diff.py" "${diff_args[@]}"
+            diff_rc=$?
+            set -e
+            if [ "$diff_rc" -eq 1 ]; then
+              exit 1
+            fi
+          elif [ -n "$OAS_BASE_SHA" ]; then
+            echo "NOT_RUN: explicit base-sha/head-sha commit not present in checkout (set fetch-depth: 0)." >&2
+            exit 1
+          fi
+        fi
+
+        if [ "$repo_rc" -eq 2 ] || [ "$diff_rc" -eq 2 ]; then
+          if [ "$OAS_FAIL_ON_FINDINGS" = "false" ]; then
+            echo "OpenAgenticSecurity candidate audit found FAIL items (advisory mode: fail-on-findings=false)." >&2
+            exit 0
+          fi
+          exit 2
+        fi
+        exit 0

@@ -34,7 +34,7 @@
     <section class="hero">
       <div class="container">
         <div class="meta-line">
-          <span>v0.3.0</span>
+          <span>v0.4.0</span>
           <span>Apache-2.0</span>
           <span data-i18n="meta_zero">Zero Dependencies</span>
           <span data-i18n="meta_langs">Python · TS/JS · Go · Rust · Java</span>
@@ -45,7 +45,7 @@
         <div class="hero-actions">
           <a class="btn-ink btn-lg" href="#quickstart" data-i18n="cta_audit">Run 10-Second Self-Audit</a>
           <a class="btn-outline btn-lg" href="https://github.com/OpenAgenticSecurity/agentic-sdlc/blob/main/docs/ontology.md" target="_blank" rel="noopener noreferrer" data-i18n="cta_ontology">Read the Ontology ↗</a>
-          <a class="btn-text btn-lg" href="https://github.com/OpenAgenticSecurity/agentic-sdlc/releases/tag/v0.3.0" target="_blank" rel="noopener noreferrer" data-i18n="cta_release">v0.3.0 Release ↗</a>
+          <a class="btn-text btn-lg" href="https://github.com/OpenAgenticSecurity/agentic-sdlc/releases/tag/v0.4.0" target="_blank" rel="noopener noreferrer" data-i18n="cta_release">v0.4.0 Release ↗</a>
         </div>
       </div>
     </section>
@@ -239,13 +239,16 @@ python3 -S agentic-sdlc/scripts/run-evals.py</code></pre>
               <span>bash · Axiom 2 coupled-change gate (tests / docs / bilingual mirrors)</span>
               <button class="copy-btn" type="button" data-copy="cmd-sync" data-i18n="copy">Copy</button>
             </div>
-            <pre><code id="cmd-sync"># Enforce that code/API/migration edits update coupled tests, docs, or STATUS.md:
-python3 -S agentic-sdlc/scripts/check-change-sync.py \
-  --config agentic-sdlc/profiles/L1-team/agentic-sync.example.json \
+            <pre><code id="cmd-sync"># Enforce PR-diff anti-reward-hacking, non-self-attestation banner & coupled sync:
+python3 -S agentic-sdlc/scripts/audit-pr-diff.py \
   --repo /path/to/your-repo \
   --base origin/main --head HEAD
 
-# Explicit auditable waiver (recorded as WAIVED, never PASS):
+# Or run standalone coupled-change sync with an explicit auditable waiver:
+python3 -S agentic-sdlc/scripts/check-change-sync.py \
+  --config agentic-sdlc/profiles/L1-team/agentic-sync.example.json \
+  --repo /path/to/your-repo \
+  --base origin/main --head HEAD \
   --waiver "SYNC-TESTS: pure comment refactor verified by existing suite"</code></pre>
           </div>
         </div>
@@ -382,7 +385,7 @@ python3 agentic-sdlc/scripts/workspace-git.py guardrails --apply</code></pre>
     <div class="container footer-inner">
       <div>
         <strong>OpenAgenticSecurity / agentic-sdlc</strong>
-        <span class="footer-meta"> · v0.3.0 · Apache-2.0</span>
+        <span class="footer-meta"> · v0.4.0 · Apache-2.0</span>
       </div>
       <div class="footer-links">
         <a href="https://github.com/OpenAgenticSecurity/agentic-sdlc" target="_blank" rel="noopener noreferrer">Repository</a>

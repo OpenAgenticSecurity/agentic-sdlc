@@ -11,7 +11,7 @@ JSON Schema contracts directly runnable in any repository.
 
 | File | Purpose |
 |------|---------|
-| [sdlc.md](sdlc.md) | Lifecycle, monotonic gates (`A0`–`A5`), and Definition of Done |
+| [sdlc.md](sdlc.md) | Dual-Loop Agentic SDLC model, 5-layer transformation, 2-track security, monotonic gates (`A0`–`A5`) & Incident-to-Gate loop |
 | [secure-vibe-coding.md](secure-vibe-coding.md) | Secure-by-default AI coding invariants (auth/fail-closed, injection/SSRF/path/ReDoS, secrets & crypto, supply chain, agent boundaries, negative security tests, `deps` carrier) |
 | [reliable-and-performant-coding.md](reliable-and-performant-coding.md) | Pre-coding reliability, stability & performance invariants (resource lifecycles, `RESULT_UNKNOWN` & blast-radius control, async/pool/timeout ledgers, schema authority, model-upgrade discipline, isolated multi-agent harnesses) |
 | [ai-coding-context.md](ai-coding-context.md) | `AGENTS.md`, `CLAUDE.md`, `VIBE_CODING_CONTEXT.md`, and `STATUS.md` truth rules |
