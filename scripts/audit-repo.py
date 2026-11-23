@@ -29,8 +29,9 @@ from __future__ import annotations
 
 import argparse
 import ast
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -162,24 +163,118 @@ class Finding:
 
 
 RULE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+UNTIL_RE = re.compile(r"\[until=(\d{4}-\d{2}-\d{2})\]")
 
 
-def _parse_waivers(raw_waivers: Sequence[str]) -> dict[str, str]:
-    waivers: dict[str, str] = {}
+@dataclass(frozen=True)
+class WaiverSpec:
+    rule_id: str
+    path_rx: re.Pattern[str] | None
+    reason: str
+
+
+def _compile_glob(pattern: str) -> re.Pattern[str]:
+    pat = pattern.strip().replace("\\", "/").lstrip("./")
+    if not pat or ".." in pat.split("/"):
+        raise AuditInputError(f"unsafe waiver path glob: {pattern!r}")
+    out = ["^"]
+    i, n = 0, len(pat)
+    while i < n:
+        ch = pat[i]
+        if ch == "*":
+            if i + 1 < n and pat[i + 1] == "*":
+                if i + 2 < n and pat[i + 2] == "/":
+                    out.append("(?:.*/)?")
+                    i += 3
+                else:
+                    out.append(".*")
+                    i += 2
+            else:
+                out.append("[^/]*")
+                i += 1
+        elif ch == "?":
+            out.append("[^/]")
+            i += 1
+        else:
+            out.append(re.escape(ch))
+            i += 1
+    out.append("$")
+    return re.compile("".join(out))
+
+
+def _parse_waivers(raw_waivers: Sequence[str]) -> list[WaiverSpec]:
+    specs: list[WaiverSpec] = []
+    today = datetime.now(timezone.utc).date()
     for entry in raw_waivers:
         if not entry.strip():
             continue
         if ":" not in entry:
-            raise AuditInputError(f"waiver must use 'RULE_ID: non-empty reason' format: {entry!r}")
-        rule_id, reason = entry.split(":", 1)
-        rule_id = rule_id.strip()
-        reason = reason.strip()
+            raise AuditInputError(f"waiver must use 'RULE_ID[@glob]: reason' format: {entry!r}")
+        lhs, reason = entry.split(":", 1)
+        rule_id, _, raw_glob = lhs.strip().partition("@")
+        rule_id, raw_glob, reason = rule_id.strip(), raw_glob.strip(), reason.strip()
         if not RULE_ID_RE.fullmatch(rule_id):
             raise AuditInputError(f"invalid waiver rule_id: {rule_id!r}")
         if len(reason) < 5:
             raise AuditInputError(f"waiver reason for {rule_id!r} must be at least 5 characters")
-        waivers[rule_id] = reason
-    return waivers
+        until_m = UNTIL_RE.search(reason)
+        if until_m is not None:
+            try:
+                exp = date.fromisoformat(until_m.group(1))
+            except ValueError as exc:
+                raise AuditInputError(f"invalid [until=YYYY-MM-DD] date in waiver: {until_m.group(1)!r}") from exc
+            if exp < today:
+                raise AuditInputError(f"waiver for {rule_id!r} expired on {until_m.group(1)}")
+        specs.append(WaiverSpec(rule_id, _compile_glob(raw_glob) if raw_glob else None, reason))
+    return specs
+
+
+def _match_waiver(waivers: Sequence[WaiverSpec], rule_id: str, rel_path: str) -> str | None:
+    clean_rel = rel_path.split(":", 1)[0].strip()
+    for w in waivers:
+        if w.rule_id != rule_id:
+            continue
+        if w.path_rx is None or (clean_rel and w.path_rx.match(clean_rel) is not None):
+            return w.reason
+    return None
+
+
+def _build_hit_finding(
+    *,
+    rule_id: str,
+    layer: str,
+    title_fn: Callable[[int], str],
+    hits: Sequence[tuple[str, int, str]],
+    remediation: str,
+    waivers: Sequence[WaiverSpec],
+    detail_prefix: str = "",
+    limit: int = 4,
+) -> Finding:
+    active: list[tuple[str, int, str]] = []
+    waived: list[tuple[str, int, str]] = []
+    reasons: list[str] = []
+    for item in hits:
+        w_reason = _match_waiver(waivers, rule_id, item[0])
+        if w_reason is not None:
+            waived.append(item)
+            if w_reason not in reasons:
+                reasons.append(w_reason)
+        else:
+            active.append(item)
+    chosen = active if active else waived
+    preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in chosen[:limit])
+    extra = f" (+{len(chosen) - limit} more)" if len(chosen) > limit else ""
+    loc = f"{chosen[0][0]}:{chosen[0][1]}" if chosen[0][1] > 0 else chosen[0][0]
+    return Finding(
+        rule_id=rule_id,
+        layer=layer,
+        status="FAIL" if active else "WAIVED",
+        title=title_fn(len(chosen)),
+        detail=f"{detail_prefix}{preview}{extra}",
+        location=loc,
+        remediation="" if not active else remediation,
+        waiver_reason="" if active else "; ".join(reasons),
+    )
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -536,7 +631,12 @@ def _is_pinned_action_ref(ref: str) -> bool:
     return bool(SHA_PIN_RE.fullmatch(ref))
 
 
-def _audit_layer2_workflows(target: Path, *, profile: str | None = None) -> list[Finding]:
+def _audit_layer2_workflows(
+    target: Path,
+    *,
+    profile: str | None = None,
+    waivers: Sequence[WaiverSpec] = (),
+) -> list[Finding]:
     wf_dir = target / ".github" / "workflows"
     missing_wf_status = "FAIL" if profile in {"L1", "L2"} else "WARN"
     if not wf_dir.is_dir() or wf_dir.is_symlink():
@@ -615,7 +715,11 @@ def _audit_layer2_workflows(target: Path, *, profile: str | None = None) -> list
 
                 # Passing untrusted fields into `env:` is GitHub's official injection-safe pattern;
                 # flag untrusted interpolations everywhere outside `env:` (e.g. `run:` and `with:`).
-                if env_map_indent is None:
+                is_inline_env = (
+                    with_map_indent is None
+                    and re.match(r"^\s*(?:-\s+)?env\s*:\s*\{.*\}\s*(?:#.*)?$", line) is not None
+                )
+                if env_map_indent is None and not is_inline_env:
                     expr_hit = UNTRUSTED_GH_EXPR_RE.search(line)
                     if expr_hit:
                         ci_injections.append((rel, idx, expr_hit.group(0).strip()))
@@ -702,17 +806,16 @@ def _audit_layer2_workflows(target: Path, *, profile: str | None = None) -> list
 
     findings: list[Finding] = []
     if unpinned:
-        preview = "; ".join(f"{rel}:{ln} ({ref})" for rel, ln, ref in unpinned[:5])
-        extra = f" (+{len(unpinned) - 5} more)" if len(unpinned) > 5 else ""
         findings.append(
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-CI-01",
                 layer="L2",
-                status="FAIL",
-                title=f"Unpinned GitHub Actions ({len(unpinned)} occurrence(s))",
-                detail=f"Mutable tags/branches can be silently retargeted in supply-chain attacks: {preview}{extra}",
-                location=f"{unpinned[0][0]}:{unpinned[0][1]}",
+                title_fn=lambda n: f"Unpinned GitHub Actions ({n} occurrence(s))",
+                detail_prefix="Mutable tags/branches can be silently retargeted in supply-chain attacks: ",
+                hits=unpinned,
                 remediation="Pin every external Action to a full 40-char commit SHA (see profiles/L1-team/workflows/).",
+                waivers=waivers,
+                limit=5,
             )
         )
     else:
@@ -787,17 +890,15 @@ def _audit_layer2_workflows(target: Path, *, profile: str | None = None) -> list
         )
 
     if ci_injections:
-        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in ci_injections[:4])
-        extra = f" (+{len(ci_injections) - 4} more)" if len(ci_injections) > 4 else ""
         findings.append(
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-CI-05",
                 layer="L2",
-                status="FAIL",
-                title=f"GitHub Actions prompt/script injection or pull_request_target hazard ({len(ci_injections)})",
-                detail=f"Untrusted PR/issue content can hijack CI or AI review agents: {preview}{extra}",
-                location=f"{ci_injections[0][0]}:{ci_injections[0][1]}",
+                title_fn=lambda n: f"GitHub Actions prompt/script injection or pull_request_target hazard ({n})",
+                detail_prefix="Untrusted PR/issue content can hijack CI or AI review agents: ",
+                hits=ci_injections,
                 remediation="Pass untrusted fields only via env: with strict validation; never combine pull_request_target with PR head checkout or secrets.",
+                waivers=waivers,
             )
         )
     else:
@@ -882,7 +983,7 @@ def _iter_instruction_files(target: Path) -> list[Path]:
     return found
 
 
-def _audit_layer2_agent_surfaces(target: Path) -> list[Finding]:
+def _audit_layer2_agent_surfaces(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
     """Audit Agent instruction files & repo-committed IDE/MCP settings (OAS-AGT-01..03)."""
     findings: list[Finding] = []
     instr_files = _iter_instruction_files(target)
@@ -926,17 +1027,16 @@ def _audit_layer2_agent_surfaces(target: Path) -> list[Finding]:
             hijack_hits.append((rel, has_silent_run_line, "silent unconfirmed execution + do-not-inspect directive"))
 
     if hidden_hits:
-        preview = "; ".join(f"{rel}:{ln} ({cp})" for rel, ln, cp in hidden_hits[:5])
-        extra = f" (+{len(hidden_hits) - 5} more)" if len(hidden_hits) > 5 else ""
         findings.append(
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-AGT-01",
                 layer="L2",
-                status="FAIL",
-                title=f"Hidden/deceptive Unicode detected in agent instruction file(s) ({len(hidden_hits)})",
-                detail=f"Zero-width, BiDi, or Unicode Tag characters can smuggle invisible instructions: {preview}{extra}",
-                location=f"{hidden_hits[0][0]}:{hidden_hits[0][1]}",
+                title_fn=lambda n: f"Hidden/deceptive Unicode detected in agent instruction file(s) ({n})",
+                detail_prefix="Zero-width, BiDi, or Unicode Tag characters can smuggle invisible instructions: ",
+                hits=hidden_hits,
                 remediation="Inspect raw bytes, strip invisible Unicode controls, and protect instruction files under CODEOWNERS.",
+                waivers=waivers,
+                limit=5,
             )
         )
     elif instr_files:
@@ -999,16 +1099,14 @@ def _audit_layer2_agent_surfaces(target: Path) -> list[Finding]:
             cfg_warns.append((mcp_rel, "repo-committed MCP server configuration (review under CODEOWNERS)"))
 
     if cfg_fails:
-        preview = "; ".join(f"{rel} ({msg})" for rel, msg in cfg_fails[:4])
         findings.append(
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-AGT-02",
                 layer="L2",
-                status="FAIL",
-                title=f"Dangerous executable IDE/agent config committed to repo ({len(cfg_fails)})",
-                detail=preview,
-                location=cfg_fails[0][0],
+                title_fn=lambda n: f"Dangerous executable IDE/agent config committed to repo ({n})",
+                hits=[(rel, 0, msg) for rel, msg in cfg_fails],
                 remediation="Remove folderOpen auto-tasks, bypassPermissions, shell wildcards, apiKeyHelper, and API URL overrides from repo configs.",
+                waivers=waivers,
             )
         )
     elif cfg_warns:
@@ -1036,16 +1134,14 @@ def _audit_layer2_agent_surfaces(target: Path) -> list[Finding]:
         )
 
     if hijack_hits:
-        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in hijack_hits[:4])
         findings.append(
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-AGT-03",
                 layer="L2",
-                status="FAIL",
-                title=f"Instruction-file endpoint hijack or silent-execution directive ({len(hijack_hits)})",
-                detail=preview,
-                location=f"{hijack_hits[0][0]}:{hijack_hits[0][1]}",
+                title_fn=lambda n: f"Instruction-file endpoint hijack or silent-execution directive ({n})",
+                hits=hijack_hits,
                 remediation="Audit instruction files like executable code; remove API endpoint redirects and unconfirmed silent-run directives.",
+                waivers=waivers,
             )
         )
     elif instr_files:
@@ -1158,7 +1254,7 @@ def _is_broad_exception(handler: ast.ExceptHandler) -> bool:
     return False
 
 
-def _scan_python_ast(target: Path) -> list[Finding]:
+def _scan_python_ast(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
     py_files = _iter_non_test_python_files(target)
     if not py_files:
         return []
@@ -1269,17 +1365,14 @@ def _scan_python_ast(target: Path) -> list[Finding]:
         rule_hits = hits[rule_id]
         if rule_hits:
             any_hit = True
-            preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in rule_hits[:4])
-            extra = f" (+{len(rule_hits) - 4} more)" if len(rule_hits) > 4 else ""
             findings.append(
-                Finding(
+                _build_hit_finding(
                     rule_id=rule_id,
                     layer="L2",
-                    status="FAIL",
-                    title=f"{title} ({len(rule_hits)} candidate hit(s))",
-                    detail=preview + extra,
-                    location=f"{rule_hits[0][0]}:{rule_hits[0][1]}",
+                    title_fn=lambda n, t=title: f"{t} ({n} candidate hit(s))",
+                    hits=rule_hits,
                     remediation=remediation,
+                    waivers=waivers,
                 )
             )
 
@@ -1379,7 +1472,7 @@ def _iter_source_files(target: Path, suffixes: frozenset[str], *, skip_file_fn) 
     return sorted(files)
 
 
-def _scan_js_ts(target: Path) -> list[Finding]:
+def _scan_js_ts(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
     def _is_js_test(name: str) -> bool:
         return (
             name.endswith(".d.ts")
@@ -1408,17 +1501,14 @@ def _scan_js_ts(target: Path) -> list[Finding]:
                 sink_hits.append((rel, lineno, match.group(0).strip()))
 
     if sink_hits:
-        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in sink_hits[:4])
-        extra = f" (+{len(sink_hits) - 4} more)" if len(sink_hits) > 4 else ""
         findings.append(
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-JS-01",
                 layer="L2",
-                status="FAIL",
-                title=f"JS/TS unsafe HTML/code execution sink ({len(sink_hits)} candidate hit(s))",
-                detail=preview + extra,
-                location=f"{sink_hits[0][0]}:{sink_hits[0][1]}",
+                title_fn=lambda n: f"JS/TS unsafe HTML/code execution sink ({n} candidate hit(s))",
+                hits=sink_hits,
                 remediation="Avoid dangerouslySetInnerHTML, eval(), and new Function() on dynamic inputs; sanitize or use structured rendering.",
+                waivers=waivers,
             )
         )
 
@@ -1474,7 +1564,7 @@ def _scan_js_ts(target: Path) -> list[Finding]:
     return findings
 
 
-def _scan_go(target: Path) -> list[Finding]:
+def _scan_go(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
     go_files = _iter_source_files(target, frozenset({".go"}), skip_file_fn=lambda name: name.endswith("_test.go"))
     if not go_files:
         return []
@@ -1491,17 +1581,14 @@ def _scan_go(target: Path) -> list[Finding]:
             if GO_SHELL_RE.search(line):
                 hits.append((rel, lineno, "exec.Command shell -c"))
     if hits:
-        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in hits[:4])
-        extra = f" (+{len(hits) - 4} more)" if len(hits) > 4 else ""
         return [
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-GO-01",
                 layer="L2",
-                status="FAIL",
-                title=f"Go TLS-disable or shell-interpolation sink ({len(hits)} candidate hit(s))",
-                detail=preview + extra,
-                location=f"{hits[0][0]}:{hits[0][1]}",
+                title_fn=lambda n: f"Go TLS-disable or shell-interpolation sink ({n} candidate hit(s))",
+                hits=hits,
                 remediation="Keep TLS verification enabled and pass explicit argv slices to exec.Command without sh -c.",
+                waivers=waivers,
             )
         ]
     return [
@@ -1515,7 +1602,7 @@ def _scan_go(target: Path) -> list[Finding]:
     ]
 
 
-def _scan_rust(target: Path) -> list[Finding]:
+def _scan_rust(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
     rs_files = _iter_source_files(target, frozenset({".rs"}), skip_file_fn=lambda name: name.endswith("_test.rs"))
     if not rs_files:
         return []
@@ -1532,17 +1619,14 @@ def _scan_rust(target: Path) -> list[Finding]:
             if RUST_SHELL_RE.search(line):
                 hits.append((rel, lineno, 'Command::new("sh").arg("-c")'))
     if hits:
-        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in hits[:4])
-        extra = f" (+{len(hits) - 4} more)" if len(hits) > 4 else ""
         return [
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-RS-01",
                 layer="L2",
-                status="FAIL",
-                title=f"Rust TLS-disable or shell-interpolation sink ({len(hits)} candidate hit(s))",
-                detail=preview + extra,
-                location=f"{hits[0][0]}:{hits[0][1]}",
+                title_fn=lambda n: f"Rust TLS-disable or shell-interpolation sink ({n} candidate hit(s))",
+                hits=hits,
                 remediation="Do not disable TLS certificate checks and pass explicit args to Command::new without sh -c.",
+                waivers=waivers,
             )
         ]
     return [
@@ -1556,7 +1640,7 @@ def _scan_rust(target: Path) -> list[Finding]:
     ]
 
 
-def _scan_java(target: Path) -> list[Finding]:
+def _scan_java(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
     java_files = _iter_source_files(
         target,
         frozenset({".java"}),
@@ -1577,17 +1661,14 @@ def _scan_java(target: Path) -> list[Finding]:
             if JAVA_DESER_RE.search(line):
                 hits.append((rel, lineno, "new ObjectInputStream(...)"))
     if hits:
-        preview = "; ".join(f"{rel}:{ln} ({desc})" for rel, ln, desc in hits[:4])
-        extra = f" (+{len(hits) - 4} more)" if len(hits) > 4 else ""
         return [
-            Finding(
+            _build_hit_finding(
                 rule_id="OAS-JV-01",
                 layer="L2",
-                status="FAIL",
-                title=f"Java command-exec or unsafe deserialization sink ({len(hits)} candidate hit(s))",
-                detail=preview + extra,
-                location=f"{hits[0][0]}:{hits[0][1]}",
+                title_fn=lambda n: f"Java command-exec or unsafe deserialization sink ({n} candidate hit(s))",
+                hits=hits,
                 remediation="Use ProcessBuilder with explicit argument lists and safe JSON/Protobuf serialization instead of ObjectInputStream.",
+                waivers=waivers,
             )
         ]
     return [
@@ -1601,13 +1682,13 @@ def _scan_java(target: Path) -> list[Finding]:
     ]
 
 
-def _scan_multi_language_traps(target: Path) -> list[Finding]:
+def _scan_multi_language_traps(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
     findings: list[Finding] = []
-    findings.extend(_scan_python_ast(target))
-    findings.extend(_scan_js_ts(target))
-    findings.extend(_scan_go(target))
-    findings.extend(_scan_rust(target))
-    findings.extend(_scan_java(target))
+    findings.extend(_scan_python_ast(target, waivers=waivers))
+    findings.extend(_scan_js_ts(target, waivers=waivers))
+    findings.extend(_scan_go(target, waivers=waivers))
+    findings.extend(_scan_rust(target, waivers=waivers))
+    findings.extend(_scan_java(target, waivers=waivers))
     if not findings:
         return [
             Finding(
@@ -1960,7 +2041,7 @@ def audit_repository(
     target: Path,
     *,
     profile: str | None = None,
-    waivers: Mapping[str, str] | None = None,
+    waivers: Sequence[WaiverSpec] = (),
     use_github: bool = False,
     ruleset_file: Path | None = None,
     repo_arg: str | None = None,
@@ -1973,15 +2054,15 @@ def audit_repository(
     if profile is not None and profile not in {"L0", "L1", "L2"}:
         raise AuditInputError(f"profile must be L0, L1, or L2, got {profile!r}")
     resolved = target.resolve()
-    waiver_map = dict(waivers or {})
+    waiver_list = tuple(waivers)
 
     findings: list[Finding] = []
     findings.extend(_audit_layer1_context(resolved, profile=profile))
     findings.append(_audit_layer2_git_guardrails(resolved))
-    findings.extend(_audit_layer2_agent_surfaces(resolved))
-    findings.extend(_audit_layer2_workflows(resolved, profile=profile))
+    findings.extend(_audit_layer2_agent_surfaces(resolved, waivers=waiver_list))
+    findings.extend(_audit_layer2_workflows(resolved, profile=profile, waivers=waiver_list))
     findings.append(_audit_layer2_codeowners(resolved, profile=profile))
-    findings.extend(_scan_multi_language_traps(resolved))
+    findings.extend(_scan_multi_language_traps(resolved, waivers=waiver_list))
     findings.extend(
         _audit_layer3_github(
             target=resolved,
@@ -1994,22 +2075,27 @@ def audit_repository(
         )
     )
 
-    if waiver_map:
-        findings = [
-            Finding(
-                rule_id=f.rule_id,
-                layer=f.layer,
-                status="WAIVED",
-                title=f.title,
-                detail=f.detail,
-                location=f.location,
-                remediation=f.remediation,
-                waiver_reason=waiver_map[f.rule_id],
-            )
-            if f.status == "FAIL" and f.rule_id in waiver_map
-            else f
-            for f in findings
-        ]
+    if waiver_list:
+        updated: list[Finding] = []
+        for f in findings:
+            if f.status == "FAIL":
+                w_reason = _match_waiver(waiver_list, f.rule_id, f.location)
+                if w_reason is not None:
+                    updated.append(
+                        Finding(
+                            rule_id=f.rule_id,
+                            layer=f.layer,
+                            status="WAIVED",
+                            title=f.title,
+                            detail=f.detail,
+                            location=f.location,
+                            remediation="",
+                            waiver_reason=w_reason,
+                        )
+                    )
+                    continue
+            updated.append(f)
+        findings = updated
 
     counts = {
         status: sum(1 for item in findings if item.status == status)
@@ -2080,6 +2166,48 @@ def _render_text(report: Mapping[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _render_sarif(report: Mapping[str, object]) -> str:
+    findings = report["findings"]
+    assert isinstance(findings, list)
+    rules: dict[str, dict[str, object]] = {}
+    results: list[dict[str, object]] = []
+    for item in findings:
+        if item["status"] not in {"FAIL", "WARN"}:
+            continue
+        rid = str(item["rule_id"])
+        rules.setdefault(rid, {"id": rid, "shortDescription": {"text": str(item["title"])}})
+        entry: dict[str, object] = {
+            "ruleId": rid,
+            "level": "error" if item["status"] == "FAIL" else "warning",
+            "message": {"text": f"{item['title']} — {item['detail']}"},
+        }
+        loc = str(item.get("location", "")).strip()
+        if loc and not loc.startswith("repos/"):
+            uri, _, line_part = loc.partition(":")
+            phys: dict[str, object] = {"artifactLocation": {"uri": uri}}
+            if line_part.isdigit() and int(line_part) >= 1:
+                phys["region"] = {"startLine": int(line_part)}
+            entry["locations"] = [{"physicalLocation": phys}]
+        results.append(entry)
+    sarif = {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "OpenAgenticSecurity audit-repo",
+                        "informationUri": "https://github.com/OpenAgenticSecurity/agentic-sdlc",
+                        "rules": [rules[k] for k in sorted(rules)],
+                    }
+                },
+                "results": results,
+            }
+        ],
+    }
+    return json.dumps(sarif, indent=2, ensure_ascii=True, sort_keys=True) + "\n"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -2114,11 +2242,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--waiver",
         action="append",
         default=[],
-        help="Explicit auditable waiver in 'RULE_ID: reason' format turning FAIL into WAIVED (repeatable).",
+        help="Explicit auditable waiver in 'RULE_ID[@path/glob]: reason [until=YYYY-MM-DD]' format (repeatable).",
     )
     parser.add_argument(
         "--format",
-        choices=("text", "json"),
+        choices=("text", "json", "sarif"),
         default="text",
         help="Output format (default: text).",
     )
@@ -2167,6 +2295,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.format == "json":
         sys.stdout.write(json.dumps(report, indent=2, ensure_ascii=True, sort_keys=True) + "\n")
+    elif args.format == "sarif":
+        sys.stdout.write(_render_sarif(report))
     else:
         sys.stdout.write(_render_text(report))
 

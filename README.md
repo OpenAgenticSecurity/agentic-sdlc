@@ -116,9 +116,8 @@ make verify-all
 │   skills/ (6 standalone Skills) · llms.txt · unified AGENTS.md (+ @CLAUDE) │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ Layer 2 · Local Deterministic Guardrails (Default-On; Bypassable via Hook) │
-│   audit-repo.py (polyglot) · workspace-git.py (pre-commit/pre-push hooks)  │
-│   deps (AaC ratchet · dependency-pin guard · secret audit · agent hooks)   │
-│   link-shared-node-deps.mjs · sealed-data (cards only, never raw data)     │
+│   audit-repo.py (polyglot) · audit-pr-diff.py · check-change-sync.py       │
+│   workspace-git.py (Git hooks) · link-shared-node-deps.mjs                 │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ Layer 3 · GitHub Merge Boundary (Non-Self-Attesting External Enforcement)  │
 │   L1 Fail-Closed CI (Python/TS/Rust/Go/Java) · Reusable action.yml         │

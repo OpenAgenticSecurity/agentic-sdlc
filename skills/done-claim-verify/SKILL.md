@@ -51,8 +51,7 @@ downstream stages `not reached`.
 
 ## 3. Emit a Grounded `DoneClaim`
 
-If `deps` is installed locally, attach the replayable receipt from
-`deps agent-verify . --receipt .deps/receipt.json`:
+Attach reproducible command outputs and exact commit SHAs:
 
 ```markdown
 ## DoneClaim

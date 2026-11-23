@@ -166,20 +166,14 @@ deserialization, or agent tool boundaries **must** satisfy:
    fixtures, data cards, or sealed execution sandboxes instead of raw
    production databases or secret files.
 
-## 7. Engineering Carrier: Enforcing This Standard with `deps`
+## 7. Deterministic Enforcement Carriers
 
-This standard defines **what** must hold; **`deps`** (under
-[OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))
-serves as the local Rust **engineering carrier** that enforces key boundaries in
-milliseconds inside the coding-agent loop:
-
-| Security Need in `agentic-sdlc` | Enforced Deterministically by `deps` |
-|---|---|
-| Keep real datasets & PII out of coding-agent context | **`sealed-data seal`** + MCP `sealed_data_card` / `sealed_data_run` from the sibling project `sealed-data` (writes Claude deny rules & OS-sandbox `denyRead`; agents code against approved data cards and de-valued results) |
-| Catch secret literals, Vault ref misuse & prompt-injection patterns | **`deps security-audit`** / **`deps security-filter`** (validates secret references without reading or returning secret values; deterministic injection filter) |
-| Prevent unapproved cross-boundary imports & silent architecture drift | **`deps aac check`** / **`deps aac reconcile --strict`** (Tree-sitter AST conformance in milliseconds) |
-| Verify API route/call, topic & SQL/ORM lineage against expectations | **`deps lineage`** / **`deps lineage-audit`** (exact evidence-bound `deps.semantic-lineage.v1` IR) |
-| Produce replayable, non-self-attesting delivery receipts | **`deps agent-verify --receipt`** (explicit `PASS`/`FAIL`/`NOT_RUN`/`CONFLICT`, `does_not_prove[]`, SHA-256 `receipt_digest`) |
+Enforce this standard outside the prompt window with `scripts/audit-repo.py`
+(polyglot sink/CI/Unicode smoke scan), `scripts/audit-pr-diff.py`
+(anti-reward-hacking diff referee), dedicated CI SAST/secret linters (Ruff `S`,
+Semgrep, CodeQL, gitleaks), and — once published under
+[OpenAgenticSecurity](https://github.com/OpenAgenticSecurity) — the optional
+`deps` (AaC ratchet, secret-ref audit, agent hooks) and `sealed-data` CLIs.
 
 ## Related Documents
 

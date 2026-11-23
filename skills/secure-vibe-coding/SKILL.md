@@ -49,9 +49,8 @@ description: Use when writing or reviewing code that touches authentication, aut
    - When debugging env/secret issues, check **existence only**
      (`[ -n "${VAR:-}" ] && echo present`) — never echo/print secret values;
      isolate tests with `env -u VAR`.
-   - Use synthetic fixtures or sealed data workflows (`sealed-data seal` for
-     datasets, `deps security-audit` for secret literals, when those tools are
-     installed) instead of reading raw production datasets or secret files.
+   - Use synthetic fixtures or approved schema-only data cards instead of
+     reading raw production datasets or secret files.
 7. **Defend agent tool boundaries**: Default every tool to `mutating` (never
    classify read-only by name substring like `read`/`get`/`check`), bind high-
    risk approvals atomically to `(actor, task, tool, target, canonical_args_hash,

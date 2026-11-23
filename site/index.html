@@ -280,7 +280,7 @@ npx skills add OpenAgenticSecurity/agentic-sdlc</code></pre>
     ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
 - name: OpenAgenticSecurity candidate self-audit &amp; PR referee
-  uses: OpenAgenticSecurity/agentic-sdlc@3f979857689522c49d82c54d9b35acdaada6542b # v0.4.0
+  uses: OpenAgenticSecurity/agentic-sdlc@&lt;40-char-commit-sha&gt; # v0.4.0
   with:
     target: .
     fail-on-findings: "true"</code></pre>

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://openagenticsecurity.github.io/schemas/governance/enforcement-evidence.v1.json",
+  "$id": "https://openagenticsecurity.github.io/agentic-sdlc/schemas/governance/enforcement-evidence.v1.json",
   "title": "GovernanceEnforcementEvidence v1",
   "type": "object",
   "additionalProperties": false,

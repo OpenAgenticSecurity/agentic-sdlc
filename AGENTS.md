@@ -48,6 +48,7 @@ skills/**
 .claude-plugin/**
 .cursor-plugin/**
 .codex-plugin/**
+.agentic-sync.json
 llms.txt
 requirements-test*
 pyproject.toml

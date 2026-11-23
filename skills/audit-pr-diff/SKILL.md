@@ -95,8 +95,7 @@ description: Use when asked to review, audit or sanity-check a branch diff or pu
 
 ## Step 3 — Optional Local Tools & Grounded Report
 
-- If `deps` is installed locally, run `deps security-audit .` and
-  `deps agent-verify . --receipt .deps/receipt.json`.
+- When available in the repo, run `python3 -S scripts/audit-pr-diff.py --base origin/main --head HEAD` and `python3 -S scripts/audit-repo.py .` as deterministic pre-checks.
 - Report every finding with exact `file:line`, separating **Fact confidence**
   (verified code) from **Impact confidence** (reachability under real controls),
   and explicitly list what was `NOT_RUN` / `does_not_prove`.

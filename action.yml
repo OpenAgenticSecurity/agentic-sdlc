@@ -7,7 +7,7 @@ inputs:
     required: false
     default: "."
   format:
-    description: "Output format: text or json."
+    description: "Output format: text, json, or sarif."
     required: false
     default: "text"
   github-ruleset-file:
@@ -60,8 +60,8 @@ runs:
       run: |
         set -euo pipefail
         case "$OAS_FORMAT" in
-          text|json) ;;
-          *) echo "audit-repo action error: format must be 'text' or 'json'" >&2; exit 1 ;;
+          text|json|sarif) ;;
+          *) echo "audit-repo action error: format must be 'text', 'json', or 'sarif'" >&2; exit 1 ;;
         esac
         case "$OAS_FAIL_ON_FINDINGS" in
           true|false) ;;
@@ -92,7 +92,9 @@ runs:
         if [ -n "$effective_base" ] && [ -n "$effective_head" ]; then
           if git -C "$OAS_TARGET" cat-file -e "${effective_base}^{commit}" 2>/dev/null && \
              git -C "$OAS_TARGET" cat-file -e "${effective_head}^{commit}" 2>/dev/null; then
-            diff_args=("--repo" "$OAS_TARGET" "--base" "$effective_base" "--head" "$effective_head" "--format" "$OAS_FORMAT")
+            diff_fmt="$OAS_FORMAT"
+            [ "$diff_fmt" = "sarif" ] && diff_fmt="text"
+            diff_args=("--repo" "$OAS_TARGET" "--base" "$effective_base" "--head" "$effective_head" "--format" "$diff_fmt")
             if [ -n "$OAS_SYNC_CONFIG" ]; then
               diff_args+=("--sync-config" "$OAS_SYNC_CONFIG")
             fi
@@ -105,7 +107,11 @@ runs:
               done <<< "$OAS_DIFF_WAIVERS"
             fi
             set +e
-            python3 -S "$OAS_ACTION_PATH/scripts/audit-pr-diff.py" "${diff_args[@]}"
+            if [ "$OAS_FORMAT" = "sarif" ]; then
+              python3 -S "$OAS_ACTION_PATH/scripts/audit-pr-diff.py" "${diff_args[@]}" >&2
+            else
+              python3 -S "$OAS_ACTION_PATH/scripts/audit-pr-diff.py" "${diff_args[@]}"
+            fi
             diff_rc=$?
             set -e
             if [ "$diff_rc" -eq 1 ]; then

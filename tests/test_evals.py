@@ -146,8 +146,8 @@ def test_static_pages_site_has_zero_external_trackers_or_unsafe_dom_sinks() -> N
         assert sink not in js, f"site/app.js must not use unsafe sink {sink!r}"
     # No stale pre-v0.4.0 version pins on the landing site, SVG chart labels carry data-i18n,
     # and app.js constructs <code> nodes safely via createElement("code") instead of wiping them.
-    for stale in ("v0.2.0", "v0.3.0", "5728fb1d97035785b501293491f4059113d0ffaf"):
-        assert stale not in html, f"site/index.html contains stale version reference: {stale}"
+    for stale in ("v0.2.0", "v0.3.0", "5728fb1d97035785b501293491f4059113d0ffaf", "3f979857689522c49d82c54d9b35acdaada6542b"):
+        assert stale not in html, f"site/index.html contains stale or pre-fix commit reference: {stale}"
         assert stale not in js, f"site/app.js contains stale version reference: {stale}"
     assert 'createElement("code")' in js, "site/app.js must preserve inline <code> tags across language toggles"
     assert 'data-i18n="svg_fe_1"' in html, "SVG chart labels in site/index.html must carry data-i18n attributes"

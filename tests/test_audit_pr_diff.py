@@ -182,9 +182,9 @@ def test_rust_lifetimes_and_comment_apostrophes_do_not_break_assertions_or_hide_
 
     # 2. A trailing suppression after a Rust lifetime or Python comment apostrophe MUST still be caught
     nolint_tag = "// " + "nolint"
-    noqa_tag = "noqa: F401"
+    noqa_tag = "#" + " noqa: F401"
     (repo / "src/lib.rs").write_text(f'pub fn f() {{ let x: &\'static str = "ok"; }} {nolint_tag}\n', encoding="utf-8")
-    (repo / "src/calc.py").write_text(f"import os  # don't remove; {noqa_tag}\n", encoding="utf-8")
+    (repo / "src/calc.py").write_text(f"import os  # don't remove  {noqa_tag}\n", encoding="utf-8")
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "sneak suppressions after single quotes")
 
@@ -193,3 +193,30 @@ def test_rust_lifetimes_and_comment_apostrophes_do_not_break_assertions_or_hide_
     items = "\n".join({f["rule_id"]: f for f in json.loads(caught.stdout)["findings"]}["OAS-DIFF-02"]["items"])
     assert "src/lib.rs" in items
     assert "src/calc.py" in items
+
+
+def test_multiline_docstrings_and_template_literals_do_not_false_positive(tmp_path: Path) -> None:
+    repo = _init_repo(tmp_path)
+    doc_noqa = "#" + " noqa: F401"
+    (repo / "tests/test_doc.py").write_text(
+        'def helper() -> int:\n    """Doc:\n    assert x == 1\n    """\n    return 1\n\n\ndef test_h() -> None:\n    assert helper() == 1\n',
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "init doc test")
+
+    # Deleting a docstring line containing `assert` and adding a docstring mentioning `noqa` must both PASS
+    (repo / "tests/test_doc.py").write_text(
+        'def helper() -> int:\n    return 1\n\n\ndef test_h() -> None:\n    assert helper() == 1\n',
+        encoding="utf-8",
+    )
+    (repo / "src/calc.py").write_text(
+        f'def add(a: int, b: int) -> int:\n    """Example:\n    {doc_noqa}\n    """\n    return a + b\n',
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "edit multiline docstrings")
+
+    proc = _run_referee("--repo", str(repo), "--base", "HEAD~1", "--head", "HEAD", "--format", "json")
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert {f["rule_id"]: f for f in json.loads(proc.stdout)["findings"]}["OAS-DIFF-02"]["status"] == "PASS"

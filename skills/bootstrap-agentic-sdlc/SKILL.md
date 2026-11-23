@@ -84,11 +84,7 @@ description: Use when a repository has no AGENTS.md, STATUS.md, pull request tem
   enforcement surfaces), code-owner review, `dismiss_stale_reviews_on_push`,
   `require_last_push_approval`, exact `required_status_checks`, and zero
   unconditional (`always` / `exempt`) bypass actors.
-- **Optional local carrier (`deps`)**: If the `deps` CLI is installed, offer to
-  run `deps aac init .`, `deps agent-hook install . --host claude --host-version
-  "$(claude --version)" --enforce` (Codex: `--host codex --with-mcp`),
-  `deps security-audit .`, and `deps agent-verify . --receipt .deps/receipt.json`.
-  For sensitive datasets, offer `sealed-data seal` if `sealed-data` is installed.
+- **Local Git guardrails**: Offer `python3 scripts/workspace-git.py guardrails --apply` to block direct commits/pushes on `main`.
 
 ## Mandatory 4-Point Post-Bootstrap Verification
 

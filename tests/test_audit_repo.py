@@ -439,3 +439,67 @@ def test_audit_repo_supports_auditable_waivers_without_collapsing_to_pass(tmp_pa
     by_rule = {item["rule_id"]: item for item in report["findings"]}
     assert by_rule["OAS-SVC-03"]["status"] == "WAIVED"
     assert "SEC-142" in by_rule["OAS-SVC-03"]["waiver_reason"]
+
+
+def test_path_scoped_and_expiring_waivers_plus_sarif_and_inline_env(tmp_path: Path) -> None:
+    _write_clean_repo(tmp_path)
+    (tmp_path / ".github/workflows/inline-env.yml").write_text(
+        "name: Inline Env\n"
+        "on: [pull_request]\n"
+        "permissions:\n"
+        "  contents: read\n"
+        "jobs:\n"
+        "  t:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683\n"
+        "        with:\n"
+        "          persist-credentials: false\n"
+        "      - env: { PR_TITLE: \"${{ github.event.pull_request.title }}\" }\n"
+        "        run: echo ok\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "src/legacy.py").write_text("def a(x: str) -> object:\n    return eval(x)\n", encoding="utf-8")
+    (tmp_path / "src/new_bad.py").write_text("def b(x: str) -> object:\n    return eval(x)\n", encoding="utf-8")
+
+    # 1. Path-scoped ratchet: waiving src/legacy.py still FAILS on src/new_bad.py
+    partial = _run_audit(
+        str(tmp_path),
+        "--waiver",
+        "OAS-SVC-03@src/legacy.py: legacy evaluator [until=2099-01-01]",
+        "--format",
+        "sarif",
+        isolated=True,
+    )
+    assert partial.returncode == 2, partial.stdout + partial.stderr
+    sarif = json.loads(partial.stdout)
+    assert sarif["version"] == "2.1.0"
+    results = sarif["runs"][0]["results"]
+    assert any(r["ruleId"] == "OAS-SVC-03" and "src/new_bad.py" in r["message"]["text"] for r in results)
+    assert not any(r["ruleId"] == "OAS-CI-05" for r in results)
+
+    # 2. Once unwaived src/new_bad.py is removed, path-scoped waiver passes cleanly
+    (tmp_path / "src/new_bad.py").unlink()
+    clean_scoped = _run_audit(
+        str(tmp_path),
+        "--github-ruleset-file",
+        str(STRONG_RULESET),
+        "--waiver",
+        "OAS-SVC-03@src/legacy.py: legacy evaluator [until=2099-01-01]",
+        "--format",
+        "json",
+        isolated=True,
+    )
+    assert clean_scoped.returncode == 0, clean_scoped.stdout + clean_scoped.stderr
+    assert json.loads(clean_scoped.stdout)["derived_status"] == "WAIVED"
+
+    # 3. Expired [until=YYYY-MM-DD] waiver fails closed (exit 1)
+    expired = _run_audit(
+        str(tmp_path),
+        "--waiver",
+        "OAS-SVC-03@src/legacy.py: legacy evaluator [until=2020-01-01]",
+        isolated=True,
+    )
+    assert expired.returncode == 1
+    assert "expired" in expired.stderr

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://openagenticsecurity.github.io/schemas/testing/affected-closure-report.v1.json",
+  "$id": "https://openagenticsecurity.github.io/agentic-sdlc/schemas/testing/affected-closure-report.v1.json",
   "title": "AffectedTestClosureReport v1",
   "type": "object",
   "additionalProperties": false,

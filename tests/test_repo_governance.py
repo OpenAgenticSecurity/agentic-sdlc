@@ -97,11 +97,14 @@ def test_agents_and_claude_behavioral_parity() -> None:
         ".claude-plugin/**",
         ".cursor-plugin/**",
         ".codex-plugin/**",
+        ".agentic-sync.json",
         "llms.txt",
         "not self-attesting",
     ):
         assert token in agents, f"AGENTS.md missing {token!r}"
-        assert token in claude, f"CLAUDE.md missing {token!r}"
+    assert "@AGENTS.md" in claude, "CLAUDE.md must use thin @AGENTS.md pointer"
+    assert "not self-attesting" in claude and "make verify-all" in claude
+    assert len(claude.splitlines()) <= 20, f"CLAUDE.md should stay thin (<=20 lines), got {len(claude.splitlines())}"
 
 
 def test_zero_personal_user_paths() -> None:
@@ -388,7 +391,7 @@ def test_no_internal_workspace_branding_leaks_into_published_files() -> None:
 
 
 WIRE_NAMESPACE = "openagenticsecurity."
-SCHEMA_ID_BASE = "https://openagenticsecurity.github.io/schemas/"
+SCHEMA_ID_BASE = "https://openagenticsecurity.github.io/agentic-sdlc/schemas/"
 
 
 def test_wire_contract_identifiers_share_one_public_namespace() -> None:

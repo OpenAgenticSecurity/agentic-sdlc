@@ -115,9 +115,8 @@ make verify-all
 │   skills/（6 个独立 Skills）· llms.txt · 统一 AGENTS.md（+ @CLAUDE 指针）  │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ 第二层 · 本地确定性护栏（默认生效，可用 --no-verify 绕过；硬边界在第三层） │
-│   audit-repo.py（多语言）· workspace-git.py（pre-commit/pre-push 钩子）    │
-│   deps（AaC 棘轮 · 依赖版本 API 守卫 · 密钥审计 · Agent 生命周期钩子）     │
-│   link-shared-node-deps.mjs · sealed-data（只看 Data Card，不碰真数据）    │
+│   audit-repo.py（多语言）· audit-pr-diff.py · check-change-sync.py         │
+│   workspace-git.py（Git 钩子）· link-shared-node-deps.mjs                  │
 ├────────────────────────────────────────────────────────────────────────────┤
 │ 第三层 · GitHub 合并边界（不可自证的外部强制）                             │
 │   L1 Fail-Closed CI（Python/TS/Rust/Go/Java）· 可复用 action.yml           │

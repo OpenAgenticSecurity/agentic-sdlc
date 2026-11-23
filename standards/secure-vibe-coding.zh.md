@@ -68,17 +68,9 @@ Vibe Coding 极大加快了代码生成速度，也同样加快了可预测安�
 2. **确定性静态与密钥扫描**：合入前运行语言安全检查（如 Ruff `S` 规则 / Bandit / Semgrep / ESLint 安全规则）与密钥扫描——缺少工具必须非零退出（`NOT_RUN`），严禁绿色跳过。
 3. **禁止把生产真实敏感数据喂给 Coding Agent**：使用脱敏 Fixture、Data Card 或密封数据沙箱，绝不让 Agent 直接读取生产库或真实密钥文件。
 
-## 7. 工程承载：如何用 `deps` 在本地强制落地本标准
+## 7. 确定性强制承载
 
-本标准定义**“必须守住什么”**；Rust 工具 **`deps`** 作为 `agentic-sdlc` 的本地**工程承载（Engineering Carrier）**，在毫秒级开发循环里把关键安全边界变成确定性门禁：
-
-| `agentic-sdlc` 中的安全要求 | `deps` 提供的确定性工程承载 |
-|---|---|
-| 禁止真实敏感数据集 / PII 进入 Coding Agent 上下文 | 兄弟项目 `sealed-data` 的 **`sealed-data seal`** + MCP `sealed_data_card` / `sealed_data_run`（写入 Claude deny 规则与 OS 沙箱 `denyRead`，让 Agent 只看审批后的 Data Card 与脱敏结果编程） |
-| 拦截密钥字面量、Vault 引用错误与 Prompt Injection | **`deps security-audit`** / **`deps security-filter`**（不读取也不回显密钥明文，校验 Vault 引用与确定性注入拦截） |
-| 阻止未授权跨边界依赖与架构漂移 | **`deps aac check`** / **`deps aac reconcile --strict`**（Tree-sitter 毫秒级本地架构合规编译） |
-| 核对 API 路由/调用、消息队列与 SQL/ORM 语义血缘 | **`deps lineage`** / **`deps lineage-audit`**（基于源码证据的 `deps.semantic-lineage.v1` IR 审计） |
-| 生成不可自证、可复验的交付回执 | **`deps agent-verify --receipt`**（显式 `PASS`/`FAIL`/`NOT_RUN`/`CONFLICT`、`does_not_prove[]` 与 SHA-256 `receipt_digest`） |
+在提示词窗口之外，使用 `scripts/audit-repo.py`（多语言危险 Sink / CI / 隐藏 Unicode 自检）、`scripts/audit-pr-diff.py`（防测试弱化与抑制注释裁判）、CI 专用 SAST/密钥扫描（Ruff `S`、Semgrep、CodeQL、gitleaks），以及 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity) 后续发布的可选 `deps`（AaC 棘轮、密钥引用审计、生命周期钩子）与 `sealed-data` CLI 将本标准落为硬门禁。
 
 ## 相关文档
 
