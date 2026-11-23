@@ -3,7 +3,7 @@
 **Status**: accepted baseline
 **Updated**: 2026-11-20
 **Chinese**: [multi-agent-git-gates.zh.md](multi-agent-git-gates.zh.md)
-**Sources**: [Multi-Agent Git Workflow](https://fz.cool/Multi-Agent-Git-Workflow/) & [Agentic Assurance Engineering](https://fz.cool/agentic-software-engineering-real-sdlc/)
+**Empirical Basis**: [Empirical Findings](../docs/empirical-findings.md) & [docs/ontology.md](../docs/ontology.md)
 **Authoritative Standards & CLI**: [standards/multi-ai-git-workflow.md](../standards/multi-ai-git-workflow.md), [`scripts/workspace-git.py`](../scripts/workspace-git.py), [`scripts/agent-claim.py`](../scripts/agent-claim.py)
 
 > **Core Rule**: The faster AI writes code, the slower destructive Git actions

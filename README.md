@@ -176,7 +176,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | **`examples/`** | Runnable backend contract gates (`pytest`) & Playwright 3-layer frontend E2E starter | [examples/README.md](examples/README.md) ([中文](examples/README.zh.md)) |
 | **`evals/`** | 19-case deterministic trust-boundary eval harness (`scripts/run-evals.py`) + Skill eval rubrics | [evals/README.md](evals/README.md) ([中文](evals/README.zh.md)) |
 | **`standards/`** | 9 concise bilingual standards (Dual-Loop SDLC, Security, Reliability/Performance & Versioning) + 2 closed contracts | [standards/README.md](standards/README.md) ([中文](standards/README.zh.md)) |
-| **`scripts/`** | 10 adopter/eval helpers (`audit-repo.py`, `audit-pr-diff.py`, `check-change-sync.py`, `run-evals.py`, `bootstrap.sh`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py`, `link-shared-node-deps.mjs`, `check-product-compliance.sh`) + 3 contract/doc checkers | [BOOTSTRAP.md](BOOTSTRAP.md) |
+| **`scripts/`** | 9 adopter/eval helpers (`audit-repo.py`, `audit-pr-diff.py`, `check-change-sync.py`, `run-evals.py`, `bootstrap.sh`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py`, `link-shared-node-deps.mjs`) + 3 contract/doc checkers | [BOOTSTRAP.md](BOOTSTRAP.md) |
 | **`docs/`** | Agentic SDLC Ontology (9 entities / 5 axioms), workflow integration map, empirical evidence & manifesto | [ontology.md](docs/ontology.md) · [workflow-integration.md](docs/workflow-integration.md) · [empirical-findings.md](docs/empirical-findings.md) · [manifesto.md](docs/manifesto.md) |
 | **`site/`** | Zero-dependency bilingual GitHub Pages site + canonical JSON schema hosting | [site/index.html](site/index.html) · [Live Site](https://openagenticsecurity.github.io/agentic-sdlc/) |
 
@@ -185,7 +185,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | To Use | You Need |
 |---|---|
 | Skills, checklists, profiles, standards | Nothing — plain Markdown, YAML and JSON |
-| `bootstrap.sh`, `check-product-compliance.sh` | Bash 3.2+ and Git on macOS or Linux (Windows is untested; use WSL) |
+| `bootstrap.sh` | Bash 3.2+ and Git on macOS or Linux (Windows is untested; use WSL) |
 | `audit-repo.py`, `audit-pr-diff.py`, `check-change-sync.py`, `workspace-git.py`, `agent-claim.py`, `observe-github-ruleset.py` | Python 3.11+ standard library; the `gh` CLI for `--github`, `--live`, and `publish` |
 | `observe-github-ruleset.py --validate`, `make verify-all` | The hash-locked packages in `requirements-test.txt` |
 | `link-shared-node-deps.mjs` | Node.js 18.3+ and npm |

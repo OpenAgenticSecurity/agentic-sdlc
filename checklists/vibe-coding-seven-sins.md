@@ -3,7 +3,7 @@
 **Status**: accepted baseline
 **Updated**: 2026-11-20
 **Chinese**: [vibe-coding-seven-sins.zh.md](vibe-coding-seven-sins.zh.md)
-**Source**: [Vibe Coding Survival Guide](https://fz.cool/vibe-coding-complete-guide/) (443 real sessions, 8.4B tokens across multi-repo production projects)
+**Empirical Basis**: [Empirical Findings §2](../docs/empirical-findings.md) (443 real sessions, 8.4B tokens across multi-repo production projects)
 
 > **Core Finding**: Structure is not the enemy of speed — structure is the
 > prerequisite for speed. Small disposable projects (`<5K` LOC, 1–6 sessions)

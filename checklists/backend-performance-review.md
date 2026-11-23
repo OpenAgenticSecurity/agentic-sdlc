@@ -3,7 +3,7 @@
 **Status**: accepted baseline
 **Updated**: 2026-11-20
 **Chinese**: [backend-performance-review.zh.md](backend-performance-review.zh.md)
-**Source**: [Vibe Coding Application Performance: Runs vs. Holds Up](https://fz.cool/vibe-coding-backend-performance/) (100+ real performance fixes across ~380K LOC FastAPI + SQLAlchemy + Celery + K8s backend; only 16% proactive, 5% caught by CI)
+**Empirical Basis**: [Empirical Findings §4](../docs/empirical-findings.md) (100+ real performance fixes across ~380K LOC FastAPI + SQLAlchemy + Celery + K8s backend; only 16% proactive, 5% caught by CI)
 
 > **Core Reality**: Frontend bugs draw a normal-looking wrong page; backend
 > performance bugs leave tasks stuck in `running` forever — and in an Agent

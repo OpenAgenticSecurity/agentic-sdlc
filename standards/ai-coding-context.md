@@ -116,44 +116,13 @@ Agents reliably re-read only the instruction file that the tool loads on every s
 
 Prefer the second whenever the rule can be checked mechanically; prose loses to a deadline. Where registration is required (routes, feature flags, UI surfaces, API clients), prefer a registry plus a positive assertion over it, or a scaffold that generates the registration, over asking each new file to remember a manual step.
 
-## Structured Authorized Context Rule
-
-Natural-language `AGENTS.md` and `CLAUDE.md` guidance is a projection for agent
-usability, not an enforcement identity. Where UI Assurance is enabled,
-deterministic enforcement consumes a sealed `CodingTaskManifest`, an immutable
-`AuthorizedDevContextSnapshot`, and actual repository state.
-
-The structured context binds repository, base revision, worktree, allowed and
-protected surfaces, policy, registry, toolchain, dependency lock, admitted
-waivers, risk floor, validation categories, classification, and validity
-interval. A prompt projection may explain these fields but cannot override them.
-Missing, stale, wrong-repository, wrong-base, or digest-mismatched context stops
-the governed task; PR prose must not silently repair it.
-
 ## Cross-Repository Reference Rule
 
 When a repository participates in multi-repository work, its `CLAUDE.md` or
 `AGENTS.md` should link to the organization's shared architecture/contract
 docs and relevant Agentic SDLC standards (`sdlc.md`,
-`vibe-coding-collaboration.md`, `multi-ai-git-workflow.md`,
-`testing-strategy.md`, and `ui-assurance/README.md` when applicable).
-
-## Code Health context projection
-
-When a repository adopts the Code Health candidate contract, its context may
-project the current component, public-surface, runtime-path, flag, hotspot, and
-retirement IDs needed for the task. The F2 projection binds the exact base/head
-revision, policy/schema digests, evaluator closure digest, and candidate
-coverage results. Policy and baseline bytes are read from the exact evaluated
-trees; a product registry revision is provenance and must be an ancestor of the
-evaluated revision. It is explanatory only: actual diff, compiled obligations,
-waivers, baselines, and trusted receipts remain outside agent authority.
-Generic Git/registry metrics may be evaluated, while language-specific route,
-schema, generated-client, migration, duplicate/dead-code, and arbitrary plugin
-adapters must remain explicitly `NOT_EVALUATED` until a real adapter is adopted.
-Use focused frontend/backend tests only when the affected closure permits it;
-shared contract or uncertain/security/release changes use both sides and a
-browser/API journey.
+`vibe-coding-collaboration.md`, `multi-ai-git-workflow.md`, and
+`testing-strategy.md`).
 
 ## Debt Learning Loop
 

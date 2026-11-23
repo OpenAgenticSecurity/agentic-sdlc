@@ -177,7 +177,7 @@ Do not wait for an enterprise platform before adopting Agentic SDLC controls:
   affected-test closure contracts, non-writing drift checks, candidate CI.
 - **L2 Governed / High-Assurance**: independent ruleset enforcement evidence,
   two-reviewer non-self-attestation boundaries, content-addressed policy
-  bundles, sealed `CodingTaskManifest` & `ValidationReceipt`, short-lived
+  bundles, digest-bound `DoneClaim` & verification receipts, short-lived
   workload identity, and immutable artifact promotion.
 
 When infrastructure is missing, **shrink agent permissions rather than using

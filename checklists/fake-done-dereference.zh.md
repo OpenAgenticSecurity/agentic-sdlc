@@ -3,7 +3,7 @@
 **状态**: accepted baseline
 **更新日期**: 2026-11-20
 **English**: [fake-done-dereference.md](fake-done-dereference.md)
-**实证来源**: [《Agentic Assurance Engineering》](https://fz.cool/agentic-software-engineering-real-sdlc/)、[《Agent 是如何失败的：“假完成”的验证断点》](https://fz.cool/agentic-fake-done-breakpoints/)
+**实证依据**: [实证发现 §5](../docs/empirical-findings.zh.md)、[standards/testing-strategy.zh.md](../standards/testing-strategy.zh.md)
 **配套模板**: [done-claim.template.md](done-claim.template.md) | [done-claim.example.json](done-claim.example.json)
 
 > **核心原则**：Agent 交出来的东西，默认只是一份不可信草稿。验收时绝不停留在绿色标签（`active`、`v2`、`HTTP 200`、`all tests pass`）上，而是**顺着标签解引用（dereference）回真实对象、精确版本、用户性质、运行包络与一手来源**。

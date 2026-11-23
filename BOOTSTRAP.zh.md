@@ -80,7 +80,7 @@ bash /path/to/agentic-sdlc/scripts/bootstrap.sh \
 
 # 只读检查仓库是否具备完整的 Agentic SDLC 入口信号。--profile 要与初始化时一致；
 # 脚本结束时会原样打印这条命令：
-bash /path/to/agentic-sdlc/scripts/check-product-compliance.sh --profile L1 /path/to/your-repo
+python3 /path/to/agentic-sdlc/scripts/audit-repo.py --profile L1 /path/to/your-repo
 ```
 
 脚本跑完之后你会得到：
@@ -127,29 +127,10 @@ python3 /path/to/agentic-sdlc/scripts/workspace-git.py guardrails \
 
 ## 可选进阶：用 `deps` 与 `sealed-data` 做本地确定性强制
 
-`L0`–`L2` 提供的是规则、模板与 GitHub 合并边界。[OpenAgenticSecurity](https://github.com/OpenAgenticSecurity) 的另外两个可选兄弟项目（即将陆续公开）负责在开发者本机、Agent 自己的编辑循环里做强制：
+`L0`–`L2` 提供的是规则、模板、本地自检脚本与 GitHub 合并边界。[OpenAgenticSecurity](https://github.com/OpenAgenticSecurity) 下两个即将公开的可选同级 CLI 在发布后可进一步补齐编辑内环强制：
 
-- **`deps`**：单二进制 Rust CLI（`agentic-sdlc` 的工程承载），提供 Architecture-as-Code 棘轮、依赖版本 API 守卫、密钥卫生审计、面向 **Claude Code 与 Codex** 的生命周期钩子，以及供其他支持 MCP 的 Agent 使用的固定配置 stdio MCP 服务（`deps mcp`）。
-- **`sealed-data`**：让 Agent 只基于审批后的 Data Card 开发和运行数据管道，不读取真实数据集。
-
-```bash
-# 安装 `deps` 后在目标仓库运行：
-cd /path/to/your-repo
-
-# 1. 以当前模块耦合为基线；此后新增的跨边界 import 会失败：
-deps aac init .
-git add .deps/architecture.bundle.json
-
-# 2. 为你使用的 Agent 安装编辑前钩子与 Stop 钩子：
-deps agent-hook install . --host claude --host-version "$(claude --version)" --enforce
-deps agent-hook install . --host codex --with-mcp
-
-# 3. 在本地或 CI 运行同一套门禁，并保留可复验回执：
-deps security-audit .
-deps agent-verify . --receipt .deps/receipt.json --remediate
-```
-
-安装 `sealed-data` 后，运行 `sealed-data seal` 与 `sealed-data hook install .` 即可让真实数据集不进入 Agent 上下文。
+- **`deps`** *（即将发布）*：单二进制 Rust 工程承载，覆盖 Architecture-as-Code 棘轮（`deps aac`）、密钥引用审计（`deps security-audit`）、Agent 生命周期钩子（`deps agent-hook`）与可复验回执（`deps agent-verify`）。
+- **`sealed-data`** *（即将发布）*：让 Agent 仅基于审批后的 Data Card（`sealed-data seal`）开发和运行数据管道，不读取真实数据集。
 
 ---
 
@@ -160,7 +141,7 @@ deps agent-verify . --receipt .deps/receipt.json --remediate
    - 如果启用了 GitHub **Merge Queue**，需在 `on:` 下额外添加 `merge_group:` 并将检出 SHA 改为 `${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha || github.sha }}`（默认模板仅配置 `pull_request`）。
    - PR 侧 CI 明确标为 **candidate / advisory**，绝不自证。
 2. **门禁表面 `CODEOWNERS`（`L2`）**：
-   - 将 `.github/`、`Makefile`、`AGENTS.md`、`CLAUDE.md`、Schema 与校验脚本纳入 `.github/CODEOWNERS` 审查边界（见 `profiles/L2-governed/CODEOWNERS.example`）。务必把 `@org/...` 占位符替换为真实 team/用户 handle——`check-product-compliance.sh --profile L2` 发现 `@org/` 会直接 fail closed（GitHub 会静默跳过无效所有者）。
+   - 将 `.github/`、`Makefile`、`AGENTS.md`、`CLAUDE.md`、Schema 与校验脚本纳入 `.github/CODEOWNERS` 审查边界（见 `profiles/L2-governed/CODEOWNERS.example`）。务必把 `@org/...` 占位符替换为真实 team/用户 handle——`audit-repo.py --profile L2` 发现 `@org/` 会直接 fail closed（GitHub 会静默跳过无效所有者）。
 3. **配置 GitHub `main` 分支 Ruleset（`L2`）**：
    直接在 GitHub 页面导入 `profiles/L2-governed/github-ruleset.import.json`（**Settings -> Rules -> Rulesets -> New ruleset -> Import a ruleset**），把其中的 `agent-check` / `security-scan` 替换为你的真实 CI job 名（如未使用 GitHub Actions，请同步替换 `integration_id: 15368`）——默认强制开启 `~DEFAULT_BRANCH`、`>=2` 审批、`require_code_owner_review`、`dismiss_stale_reviews_on_push`、`require_last_push_approval`、绑定来源的 `required_status_checks`，并禁止任何无条件（`always`/`exempt`）或未列入白名单（`allowed_pull_request_bypass_actors`）的 `pull_request` bypass 主体。
 4. **只读体检你的线上 Ruleset**：

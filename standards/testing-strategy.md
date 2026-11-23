@@ -40,8 +40,8 @@ boundaries—not mechanically from whether a path is under `frontend` or
   do not alter a public contract/API, schema, generated client, auth/permission
   rule, feature flag, shared state, serialization format, WebSocket contract,
   SSR/BFF behavior, or shared build configuration, run frontend lint/type
-  checks, focused unit/component tests, and applicable UI Assurance obligations.
-  A full backend unit suite is not required by directory label alone.
+  checks and focused unit/component tests. A full backend unit suite is not
+  required by directory label alone.
 - For backend-only internal implementation changes that do not alter any of
   those shared boundaries, run focused backend unit tests and relevant backend
   integration tests. A full frontend suite is not required by directory label
@@ -115,41 +115,6 @@ full suites. Product repositories must add their own real Git-diff and suite
 entrypoint wiring proof; the platform checker does not duplicate those
 selectors.
 
-## Code Health candidate layer
-
-The Code Health candidate contract is a separate assurance domain from UI
-Assurance and Product Architecture.  `make code-health-test` runs the shared
-primitive characterization tests and the closed schema/semantic fixture suite
-with ambient pytest options and plugin autoload disabled;
-`make code-health-check` is the non-writing bundle-drift and mutation gate.
-`bundle-generate` is a maintainer operation and is not a pass/fail CI shortcut.
-
-The F1 checker proves canonical identity, closed records, explicit runtime-path
-and feature-flag lifecycles, append-only retirement/waiver chains, and derived
-receipt summaries. F2 adds a bounded exact base/head Git observer, exact-tree
-policy/baseline loading, product-owned registry loading, typed impact and
-obligation compilation, candidate-receipt replay checks, and a deterministic
-module-context projection. It emits `authority=candidate` and `trusted=false`.
-It does not provide a trusted baseline, product adapter, required status,
-merge/release authority, or permission to skip periodic/full/release suites.
-Generic Git/registry observations are evaluated, but Python/TypeScript route and
-schema adapters, generated-client analysis, migrations, duplicate/dead-code
-discovery, and arbitrary plugin loading remain explicit adapter gaps and must be
-`NOT_EVALUATED`, never an empty green result. Missing adapter, dependency,
-browser, fixture service, or other mandatory prerequisite remains a non-green
-result.
-
-For a pure backend internal implementation change with no public contract,
-schema, generated client, auth/permission, feature flag, shared state,
-serialization, WebSocket, SSR/BFF, or shared build impact, focused backend unit
-and relevant integration tests are sufficient; a full frontend suite is not
-mechanically required.  The symmetric frontend rule applies to presentation-only
-changes.  Touching any shared boundary, or uncertainty/security/release scope,
-forms one frontend/backend affected closure and requires producer/consumer
-contracts, backend parser/service tests, frontend consumer tests, and at least
-one browser/API journey (or both complete affected suites when closure cannot be
-bounded).
-
 Docs-only changes use `make check` and do not mechanically
 run complete frontend or backend suites. If the documentation change edits a
 schema, generated contract, architecture/enforcement surface, shared build, or
@@ -169,33 +134,6 @@ the same closure rule.
 | Security-sensitive change | relevant auth, isolation, redaction, or permission tests |
 | Release candidate | full test suite plus release smoke checks |
 
-## UI Assurance Risk and Evidence Contract
-
-UI Assurance compiles minimum evidence from the actual diff, dependency
-closure, registered surfaces, and the greater of declared and derived risk:
-
-| Risk | Minimum candidate categories |
-|---|---|
-| `C0` | scope diff plus applicable repository lint/type checks |
-| `C1` | `C0` plus focused unit or component presentation checks |
-| `C2` | positive structure, component states, browser journey, visual assertion, accessibility, and keyboard/focus where applicable |
-| `C3` | `C2` plus critical journeys and feature flag, role, permission, tenant, and license visibility matrices |
-| `C4` | full affected closure plus violating and legal-control mutations, exact-head independent mechanism review, and an independently pinned or protected evaluator |
-
-Every compiled obligation records exactly one of `PASS`, `FAIL`, `NOT_RUN`,
-`FLAKY`, `ERROR`, or `NOT_APPLICABLE`. Only `PASS` satisfies a mandatory
-obligation. A missing dependency, browser, fixture service, or environment is
-`NOT_RUN` and must produce a non-zero candidate command; it is not a successful
-skip. `NOT_APPLICABLE` is owned by the deterministic compiler, not the agent or
-an existing obligation result.
-
-A new structural rule must fail a representative violating case and pass
-adjacent legal controls. Source substring checks, failure screenshots,
-automated axe output, and one green run are not independently sufficient.
-Visual baseline changes require exact-diff review and cannot be approved by the
-candidate producer. Release admission binds the same immutable artifact digest
-that was tested; rebuilding from the same Git revision is not equivalent.
-
 ## Gate Integrity
 
 A gate that exists but does not run, does not cover the changed files, or can
@@ -207,7 +145,8 @@ rules to their own lint, type, test, and budget gates:
   red result blocks merge.
 - A new or changed gate is proven by a planted violation that turns it red and
   an adjacent legal case that stays green. Zero collected tests, an all-skipped
-  run, or a job that did not trigger is not a pass.
+  run, or a job that did not trigger is not a pass; never collapse `NOT_RUN`,
+  `FLAKY`, `ERROR`, or `UNKNOWN` into `PASS`.
 - Budgets, baselines, and suppression lists only decrease. Do not downgrade a
   rule's severity to get a change through. Raising a budget is its own PR with a
   reason and an owner, never a side effect of a feature PR.

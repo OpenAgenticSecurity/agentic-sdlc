@@ -79,39 +79,6 @@ Human reviewers should check:
 - whether docs were updated in the right authority location
 - whether generated prose overclaims maturity
 
-## Output Conformance and Authority
-
-For repositories that adopt UI Assurance, the target governed chain is
-`CodingTaskManifest -> AuthorizedDevContextSnapshot -> actual diff and
-dependency closure -> ValidationObligationSet -> ValidationReceipt`. The coding
-agent owns only the candidate patch and `AgentCandidateReport`.
-
-Scope expansion, derived risk, waiver approval, trusted Receipt issuance,
-merge, and release remain outside the agent's authority. Agent prose, a local
-success, author self-review, or green candidate CI cannot replace structured
-identity checks or protected admission. The actual repository diff may increase
-scope and obligations even when the agent declared UI out of scope.
-
-## Code Health candidate boundary
-
-Code Health is a separate candidate assurance domain for public surfaces,
-runtime paths, flags, hotspots, and retirement. Agents may propose change
-intent and evidence, but cannot remove an obligation, edit a trusted baseline,
-approve a waiver, or issue a trusted receipt. F2 evaluates only an exact
-base/head pair, reads policy/baseline from exact trees, and binds a product
-registry revision as an ancestor provenance. Generic Git/registry observations
-are candidate evidence; unsupported language adapters must be `NOT_EVALUATED`,
-not an empty green result. Use the real `make code-health-test` and
-`make code-health-check` entrypoints; a green candidate result is not merge or
-release authority.
-
-Docs-only changes use the lightweight documentation gate. Pure frontend
-presentation or pure backend internal changes may use focused suites when the
-shared-contract closure is unchanged; API/schema/generated-client/auth/flag/
-state/serialization/WebSocket/SSR-BFF/shared-build changes require the full
-frontend/backend affected closure and a browser/API journey. Uncertainty or a
-security/release boundary fails closed to both complete affected suites.
-
 ## Forbidden Patterns
 
 - duplicating product-local runbooks into a shared standards repo

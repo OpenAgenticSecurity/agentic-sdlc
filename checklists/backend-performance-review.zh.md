@@ -3,7 +3,7 @@
 **状态**: accepted baseline
 **更新日期**: 2026-11-20
 **English**: [backend-performance-review.md](backend-performance-review.md)
-**实证来源**: [《Vibe Coding 应用性能：能跑和扛得住》](https://fz.cool/vibe-coding-backend-performance/)（~38 万行 FastAPI + SQLAlchemy + Celery + K8s 后端 100+ 项真实性能优化；主动发现仅 16%，CI 发现仅 5%）
+**实证依据**: [实证发现 §4](../docs/empirical-findings.zh.md)（~38 万行 FastAPI + SQLAlchemy + Celery + K8s 后端 100+ 项真实性能优化；主动发现仅 16%，CI 发现仅 5%）
 
 > **残酷现实**：前端出错会给你一个看起来正常的假页面；后端变慢会给你一个永远停在 `running` 的任务——在 Agent 平台里，后台循环和慢任务烧的还是真金白银的 Token 费用。Agent 验收的世界是 **P50**（6 个事件、38 条资产、23 秒跑完）；真实线上炸在 **P99 尾部**（上千事件、十万资产、90+ 分钟长任务）以及任何单个 diff 都看不见的**跨层乘积**上。
 

@@ -116,35 +116,9 @@ Agent 能稳定重读的只有工具每次 session 都会加载的指令文件�
 
 能机械检查的规则优先用第二种；文字规则在赶工时会输。需要登记的场景（路由、feature flag、UI surface、API client），优先用 registry 加针对 registry 的正向断言，或用脚手架自动生成登记，而不是要求每个新文件记住一个手动步骤。
 
-## 结构化 Authorized Context 规则
-
-自然语言 `AGENTS.md` 与 `CLAUDE.md` 只是面向 Agent 易用性的 projection，不是 enforcement
-identity。启用 UI Assurance 后，确定性 enforcement 消费密封的 `CodingTaskManifest`、
-不可变 `AuthorizedDevContextSnapshot` 与实际 repository state。
-
-结构化 context 绑定 repository、base revision、worktree、allowed/protected surfaces、
-policy、registry、toolchain、dependency lock、admitted waiver、risk floor、validation
-categories、classification 与 validity interval。Prompt projection 可以解释这些字段，
-但不能覆盖它们。Context 缺失、过期、repository/base 错误或 digest 不匹配时，governed
-task 必须停止；不得用 PR prose 静默修复。
-
 ## 跨仓库交叉引用规则
 
-参与多仓库协作时，仓库内的 `CLAUDE.md` 或 `AGENTS.md` 应链接组织级共享架构/契约文档，以及适用的 Agentic SDLC 核心标准（`sdlc.zh.md`、`vibe-coding-collaboration.zh.md`、`multi-ai-git-workflow.zh.md`、`testing-strategy.zh.md`，以及适用时的 `ui-assurance/README.zh.md`）。
-
-## Code Health context projection
-
-接入 Code Health candidate contract 的仓库可以在 context 中投影任务所需的当前
-component、public-surface、runtime-path、flag、hotspot 和 retirement ID。F2 projection
-绑定精确 base/head revision、policy/schema digest、evaluator closure digest 和 candidate
-coverage result。Policy 与 baseline bytes 从 exact evaluated tree 读取；product registry
-revision 是 provenance，必须是 evaluated revision 的 ancestor。Projection 只用于解释：
-actual diff、编译的 obligation、waiver、baseline 和 trusted receipt 仍在 Agent authority
-之外。通用 Git/registry metric 可以 evaluated，但 language-specific route、schema、
-generated-client、migration、duplicate/dead-code 和任意 plugin adapter 在真实 adapter
-接入前必须明确为 `NOT_EVALUATED`。只有 affected closure 允许时才使用聚焦
-frontend/backend tests；触及共享 contract 或无法确定/安全/release 边界时，两侧和
-browser/API journey 都必须运行。
+参与多仓库协作时，仓库内的 `CLAUDE.md` 或 `AGENTS.md` 应链接组织级共享架构/契约文档，以及适用的 Agentic SDLC 核心标准（`sdlc.zh.md`、`vibe-coding-collaboration.zh.md`、`multi-ai-git-workflow.zh.md` 与 `testing-strategy.zh.md`）。
 
 ## 技术债学习闭环
 

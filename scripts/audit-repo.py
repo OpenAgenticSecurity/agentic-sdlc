@@ -245,7 +245,22 @@ def _infer_github_repo(target: Path) -> str | None:
     return None
 
 
-def _audit_layer1_context(target: Path) -> list[Finding]:
+def _has_makefile_and_agent_check(target: Path) -> tuple[bool, bool]:
+    has_makefile = False
+    for name in ("Makefile", "makefile", "GNUmakefile"):
+        candidate = target / name
+        if candidate.is_file():
+            has_makefile = True
+            try:
+                text = candidate.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            if re.search(r"^agent-check\s*:", text, re.MULTILINE):
+                return True, True
+    return has_makefile, False
+
+
+def _audit_layer1_context(target: Path, *, profile: str | None = None) -> list[Finding]:
     findings: list[Finding] = []
 
     agents_txt = _read_regular_text(target, "AGENTS.md")
@@ -270,7 +285,7 @@ def _audit_layer1_context(target: Path) -> list[Finding]:
             Finding(
                 rule_id="OAS-CTX-01",
                 layer="L1",
-                status="WARN",
+                status="FAIL" if profile is not None else "WARN",
                 title="Only one agent instruction file present",
                 detail=f"{present} exists, but {missing} is missing (tools like Claude Code / Codex / Cursor read different files).",
                 location=present,
@@ -346,7 +361,7 @@ def _audit_layer1_context(target: Path) -> list[Finding]:
             Finding(
                 rule_id="OAS-CTX-03",
                 layer="L1",
-                status="WARN",
+                status="FAIL" if profile is not None else "WARN",
                 title="No STATUS.md / implementation reality ledger",
                 detail="Without STATUS.md, agents treat stale design docs as implemented code and hallucinate deleted or planned modules.",
                 location="docs/architecture/STATUS.md",
@@ -371,13 +386,63 @@ def _audit_layer1_context(target: Path) -> list[Finding]:
             Finding(
                 rule_id="OAS-CTX-04",
                 layer="L1",
-                status="WARN",
+                status="FAIL" if profile is not None else "WARN",
                 title="Missing evidence-first PR template",
                 detail="PRs do not prompt for exact verification commands, exit codes, NOT_RUN disclosure, or negative security tests.",
                 location=".github/pull_request_template.md",
                 remediation="Copy profiles/L0-solo/pull_request_template.md to .github/pull_request_template.md.",
             )
         )
+
+    has_makefile, has_agent_check = _has_makefile_and_agent_check(target)
+    mentions_agent_check = bool(agents_txt and "make agent-check" in agents_txt)
+    if profile in {"L1", "L2"} and not has_makefile:
+        findings.append(
+            Finding(
+                rule_id="OAS-CTX-05",
+                layer="L1",
+                status="FAIL",
+                title="Missing Makefile (`make agent-check` entrypoint required for L1/L2)",
+                detail="Profile L1/L2 expects a single `make agent-check` verification entrypoint.",
+                location="Makefile",
+                remediation="Copy profiles/L0-solo/Makefile.agent-check.snippet to Makefile and wire real lint/type/test commands.",
+            )
+        )
+    elif (mentions_agent_check or profile in {"L1", "L2"}) and not has_agent_check:
+        findings.append(
+            Finding(
+                rule_id="OAS-CTX-05",
+                layer="L1",
+                status="WARN",
+                title="No `agent-check` target in Makefile",
+                detail="AGENTS.md or profile L1/L2 names `make agent-check`, but Makefile has no `agent-check:` target.",
+                location="Makefile",
+                remediation="Add an `agent-check:` target to Makefile (or update AGENTS.md with your real check command).",
+            )
+        )
+
+    if profile in {"L1", "L2"}:
+        placeholder_tmpls = [
+            rel
+            for rel in (
+                ".github/ISSUE_TEMPLATE/issue.md",
+                ".github/ISSUE_TEMPLATE/epic.md",
+                ".github/ISSUE_TEMPLATE/config.yml",
+            )
+            if "<owner>/<repo>" in (_read_regular_text(target, rel) or "")
+        ]
+        if placeholder_tmpls:
+            findings.append(
+                Finding(
+                    rule_id="OAS-CTX-06",
+                    layer="L1",
+                    status="WARN",
+                    title="Issue template(s) still contain `<owner>/<repo>` placeholder",
+                    detail="Unresolved repository placeholder in: " + ", ".join(placeholder_tmpls),
+                    location=placeholder_tmpls[0],
+                    remediation="Replace `<owner>/<repo>` with your real GitHub repository slug.",
+                )
+            )
 
     return findings
 
@@ -449,14 +514,15 @@ def _is_pinned_action_ref(ref: str) -> bool:
     return bool(SHA_PIN_RE.fullmatch(ref))
 
 
-def _audit_layer2_workflows(target: Path) -> list[Finding]:
+def _audit_layer2_workflows(target: Path, *, profile: str | None = None) -> list[Finding]:
     wf_dir = target / ".github" / "workflows"
+    missing_wf_status = "FAIL" if profile in {"L1", "L2"} else "WARN"
     if not wf_dir.is_dir() or wf_dir.is_symlink():
         return [
             Finding(
                 rule_id="OAS-CI-01",
                 layer="L2",
-                status="WARN",
+                status=missing_wf_status,
                 title="No GitHub Actions workflows found",
                 detail="Repository has no .github/workflows/ directory to enforce fail-closed CI checks.",
                 location=".github/workflows/",
@@ -474,7 +540,7 @@ def _audit_layer2_workflows(target: Path) -> list[Finding]:
             Finding(
                 rule_id="OAS-CI-01",
                 layer="L2",
-                status="WARN",
+                status=missing_wf_status,
                 title="No GitHub Actions workflow YAML files found",
                 detail=".github/workflows/ exists but contains no .yml or .yaml files.",
                 location=".github/workflows/",
@@ -959,13 +1025,13 @@ def _audit_layer2_agent_surfaces(target: Path) -> list[Finding]:
     return findings
 
 
-def _audit_layer2_codeowners(target: Path) -> Finding:
+def _audit_layer2_codeowners(target: Path, *, profile: str | None = None) -> Finding:
     text = _read_regular_text(target, ".github/CODEOWNERS")
     if text is None:
         return Finding(
             rule_id="OAS-CI-04",
             layer="L2",
-            status="WARN",
+            status="FAIL" if profile == "L2" else "WARN",
             title="No .github/CODEOWNERS protecting enforcement surfaces",
             detail="Without CODEOWNERS on .github/, Makefile, scripts/, and AGENTS.md, an agent PR can weaken its own gates without designated owner review.",
             location=".github/CODEOWNERS",
@@ -1856,6 +1922,7 @@ def _audit_layer3_github(
 def audit_repository(
     target: Path,
     *,
+    profile: str | None = None,
     use_github: bool = False,
     ruleset_file: Path | None = None,
     repo_arg: str | None = None,
@@ -1865,14 +1932,16 @@ def audit_repository(
 ) -> dict[str, object]:
     if target.is_symlink() or not target.is_dir():
         raise AuditInputError(f"target must be an existing non-symlink directory: {target}")
+    if profile is not None and profile not in {"L0", "L1", "L2"}:
+        raise AuditInputError(f"profile must be L0, L1, or L2, got {profile!r}")
     resolved = target.resolve()
 
     findings: list[Finding] = []
-    findings.extend(_audit_layer1_context(resolved))
+    findings.extend(_audit_layer1_context(resolved, profile=profile))
     findings.append(_audit_layer2_git_guardrails(resolved))
     findings.extend(_audit_layer2_agent_surfaces(resolved))
-    findings.extend(_audit_layer2_workflows(resolved))
-    findings.append(_audit_layer2_codeowners(resolved))
+    findings.extend(_audit_layer2_workflows(resolved, profile=profile))
+    findings.append(_audit_layer2_codeowners(resolved, profile=profile))
     findings.extend(_scan_multi_language_traps(resolved))
     findings.extend(
         _audit_layer3_github(
@@ -1957,6 +2026,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the local repository directory to inspect (strictly read-only).",
     )
     parser.add_argument(
+        "--profile",
+        choices=("L0", "L1", "L2"),
+        help="Optional adoption tier (L0, L1, or L2) escalating required tier files from WARN to FAIL.",
+    )
+    parser.add_argument(
         "--github",
         action="store_true",
         help="Also query live GitHub Branch Rulesets read-only via `gh api` (zero pip install).",
@@ -2006,6 +2080,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         report = audit_repository(
             args.target,
+            profile=args.profile,
             use_github=args.github,
             ruleset_file=args.github_ruleset_file,
             repo_arg=args.repo,

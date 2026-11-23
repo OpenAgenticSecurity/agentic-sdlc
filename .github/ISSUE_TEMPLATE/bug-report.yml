@@ -14,7 +14,9 @@ body:
       label: Component
       options:
         - scripts/bootstrap.sh
-        - scripts/check-product-compliance.sh
+        - scripts/audit-repo.py
+        - scripts/audit-pr-diff.py
+        - scripts/check-change-sync.py
         - scripts/workspace-git.py
         - scripts/agent-claim.py
         - scripts/observe-github-ruleset.py

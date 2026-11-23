@@ -3,7 +3,7 @@
 **Status**: accepted baseline
 **Updated**: 2026-11-20
 **Chinese**: [fake-done-dereference.zh.md](fake-done-dereference.zh.md)
-**Sources**: [Agentic Assurance Engineering](https://fz.cool/agentic-software-engineering-real-sdlc/) & [How Agents Fail: Verification Breakpoints of "Fake Done"](https://fz.cool/agentic-fake-done-breakpoints/)
+**Empirical Basis**: [Empirical Findings §5](../docs/empirical-findings.md) & [standards/testing-strategy.md](../standards/testing-strategy.md)
 **Templates**: [done-claim.template.md](done-claim.template.md) | [done-claim.example.json](done-claim.example.json)
 
 > **Core Principle**: Agent output is an untrusted draft by default. Never stop

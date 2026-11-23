@@ -26,7 +26,7 @@ bash /path/to/agentic-sdlc/scripts/bootstrap.sh \
   --with-skills
 
 # Read-only check that the baseline is in place:
-bash /path/to/agentic-sdlc/scripts/check-product-compliance.sh --profile L0 /path/to/your-repo
+python3 /path/to/agentic-sdlc/scripts/audit-repo.py --profile L0 /path/to/your-repo
 ```
 
 `bootstrap.sh` creates the `Makefile` only when the repository has none. An

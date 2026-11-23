@@ -40,8 +40,31 @@ def test_excluded_internal_and_heavy_contract_artifacts_are_absent() -> None:
         "scripts/build-catalog.py",
         "scripts/check-ui-assurance.py",
         "scripts/check-code-health.py",
+        "scripts/check-product-compliance.sh",
     ):
         assert not (REPO / split_out).exists(), f"split/excluded path must not exist in lean agentic-sdlc: {split_out}"
+
+
+def test_standards_and_checklists_have_zero_split_out_or_personal_blog_residue() -> None:
+    stale_tokens = (
+        "make code-health-test",
+        "make code-health-check",
+        "bundle-generate",
+        "ui-assurance/README",
+        "CodingTaskManifest",
+        "AuthorizedDevContextSnapshot",
+        "ValidationObligationSet",
+        "--all-repos",
+        "fz.cool",
+    )
+    offenders: list[str] = []
+    for folder in ("standards", "checklists"):
+        for md in sorted((REPO / folder).rglob("*.md")):
+            text = md.read_text(encoding="utf-8")
+            for token in stale_tokens:
+                if token in text:
+                    offenders.append(f"{md.relative_to(REPO).as_posix()}: {token}")
+    assert not offenders, "stale split-out or personal-blog residue found:\n" + "\n".join(offenders)
 
 
 def test_bootstrap_guides_and_plugin_manifests_exist() -> None:

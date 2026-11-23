@@ -3,7 +3,7 @@
 **状态**: accepted baseline
 **更新日期**: 2026-11-20
 **English**: [multi-agent-git-gates.md](multi-agent-git-gates.md)
-**实证来源**: [《多 Agent 协作时代的 Git 规范》](https://fz.cool/Multi-Agent-Git-Workflow/)、[《Agentic Assurance Engineering》](https://fz.cool/agentic-software-engineering-real-sdlc/)
+**实证依据**: [实证发现](../docs/empirical-findings.zh.md)、[docs/ontology.zh.md](../docs/ontology.zh.md)
 **权威规范与 CLI**: [standards/multi-ai-git-workflow.zh.md](../standards/multi-ai-git-workflow.zh.md)、[`scripts/workspace-git.py`](../scripts/workspace-git.py)、[`scripts/agent-claim.py`](../scripts/agent-claim.py)
 
 > **核心原则**：AI 写代码越快，破坏性 Git 动作就越必须放慢，责任边界就越必须清晰。**一个任务 = 一个 branch + 一个 worktree + 一位活跃 writer + 一份明确 scope**。

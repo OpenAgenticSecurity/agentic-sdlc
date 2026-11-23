@@ -28,5 +28,5 @@ bash /path/to/agentic-sdlc/scripts/bootstrap.sh --profile L1 --ci python --targe
 python3 /path/to/agentic-sdlc/scripts/workspace-git.py guardrails --root /path/to/workspace --apply
 
 # Verify adoption signals in your repository:
-bash /path/to/agentic-sdlc/scripts/check-product-compliance.sh --profile L1 /path/to/your-repo
+python3 /path/to/agentic-sdlc/scripts/audit-repo.py --profile L1 /path/to/your-repo
 ```

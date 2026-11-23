@@ -55,6 +55,7 @@ repo/
 worktrees/
 .claude/worktrees/
 .cursor/worktrees/
+.codex/worktrees/
 ```
 
 ## 分支命名
@@ -124,8 +125,8 @@ stash、覆盖或重置主 checkout。
 在多仓库工作区中，可使用本仓库内置 helper：
 
 ```bash
-python3 scripts/workspace-git.py audit --root /path/to/workspace --all-repos --fetch
-python3 scripts/workspace-git.py clean-defaults --root /path/to/workspace --all-repos --no-fetch --occupied <active-repo>
+python3 scripts/workspace-git.py audit --root /path/to/workspace --fetch
+python3 scripts/workspace-git.py clean-defaults --root /path/to/workspace --no-fetch --occupied <active-repo>
 python3 scripts/workspace-git.py agent-start --root /path/to/workspace --repo <repo> --task <task-name> --branch <branch-name> --create-worktree
 ```
 
@@ -446,7 +447,7 @@ git diff --check
 2. **仓库卫生**：`.gitignore` 忽略本地 worktree 命名空间和生成型本地状态，让 review noise 在 PR 前就暴露出来。
 3. **PR 契约**：PR template 和 branch protection 要求 summary、dependency、validation evidence、risk/rollback，以及 checks 通过后才能合并。
 4. **自动化检查**：CI 或本地 `make check` 类命令检查文档链接、必填元数据和产品测试；agents 必须报告实际运行过的精确命令。
-5. **Workspace preflight**：在多仓工作区中，跨仓库工作前应运行 `scripts/workspace-git.py audit --all-repos`，编辑仓库前应运行 `scripts/workspace-git.py agent-start`。被其他 agent 占用的仓库必须通过 `--occupied` 传给清理命令。
+5. **Workspace preflight**：在多仓工作区中，跨仓库工作前应运行 `scripts/workspace-git.py audit --root /path/to/workspace`，编辑仓库前应运行 `scripts/workspace-git.py agent-start`。被其他 agent 占用的仓库必须通过 `--occupied` 传给清理命令。
 
 当任务跨多个仓库时，agent 应按依赖顺序创建或更新 PR，等待 required checks，通过受保护分支合并，然后让每个被触及仓库回到 clean latest default branch，再报告完成。如果某个 default checkout 因 local-only WIP 无法安全同步，agent 应创建或指向一个基于 `origin/<default>` 的 clean latest worktree，并明确报告原 checkout 未能回到 default 的原因。交接报告必须包含真实 PR URL、merge 状态、本地同步状态，以及每个被触及 repo 是否结束在 clean latest default branch，避免 owner 反复追问 PR 是否存在、是否已合并、本地 checkout 是否已经最新。
 

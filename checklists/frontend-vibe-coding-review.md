@@ -3,7 +3,7 @@
 **Status**: accepted baseline
 **Updated**: 2026-11-20
 **Chinese**: [frontend-vibe-coding-review.zh.md](frontend-vibe-coding-review.zh.md)
-**Source**: [Frontend Vibe Coding Issues](https://fz.cool/vibe-coding-issues-in-frontend/) (454 deduplicated issues across ~100K LOC React/TS frontend; 321 with identifiable root causes; 216 with identifiable discovery channel)
+**Empirical Basis**: [Empirical Findings §3](../docs/empirical-findings.md) (454 deduplicated issues across ~100K LOC React/TS frontend; 321 with identifiable root causes; 216 with identifiable discovery channel)
 
 > **Core Reality**: Backend failures return HTTP 500 and a stack trace;
 > frontend failures render a **plausible-looking normal page**. Unit tests,

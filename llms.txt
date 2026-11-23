@@ -12,7 +12,7 @@ Read ONLY the file(s) matching your current task:
   - Guide & workflow map: `BOOTSTRAP.md` (`BOOTSTRAP.zh.md`), `docs/workflow-integration.md`
   - Templates: `profiles/L0-solo/`, `profiles/L1-team/` (`workflows/ci-{python,node-ts,rust,go,java}.yml`), `profiles/L2-governed/` (`github-ruleset.import.json`)
   - Pure-Bash bootstrap (never overwrites): `scripts/bootstrap.sh --profile <L0|L1|L2> [--ci python|node-ts|rust|go|java] --target <repo>`
-  - Read-only check: `scripts/check-product-compliance.sh --profile <L0|L1|L2> <repo>`
+  - Read-only profile & security check: `python3 scripts/audit-repo.py --profile <L0|L1|L2> <repo>`
 
 - **Write or review security-, reliability- & performance-sensitive AI code**:
   - Skill: `skills/secure-vibe-coding/SKILL.md`

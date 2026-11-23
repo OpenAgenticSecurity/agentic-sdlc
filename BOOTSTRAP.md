@@ -93,7 +93,7 @@ bash /path/to/agentic-sdlc/scripts/bootstrap.sh \
 
 # Verify adoption signals (read-only). Pass the profile you bootstrapped;
 # the script prints this exact command when it finishes:
-bash /path/to/agentic-sdlc/scripts/check-product-compliance.sh --profile L1 /path/to/your-repo
+python3 /path/to/agentic-sdlc/scripts/audit-repo.py --profile L1 /path/to/your-repo
 ```
 
 What to expect afterwards:
@@ -160,39 +160,17 @@ Using the empirical & security checklists during daily development:
 
 ## Optional: Deterministic Local Enforcement with `deps` and `sealed-data`
 
-`L0`–`L2` give you instructions, templates and a GitHub merge boundary. Two
-optional sibling projects in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)
-(upcoming public releases) add enforcement on the developer machine, inside the
-agent's own edit loop:
+`L0`–`L2` give you instructions, templates, local Git/diff scripts, and a GitHub
+merge boundary. Two upcoming optional sibling CLIs under
+[OpenAgenticSecurity](https://github.com/OpenAgenticSecurity) extend local Layer
+2 enforcement inside the agent's edit loop once published:
 
-- **`deps`** — a single-binary
-  Rust CLI (the engineering carrier for `agentic-sdlc`): Architecture-as-Code
-  ratchet, dependency-pin API guard, secret-hygiene audit, lifecycle hooks for
-  **Claude Code and Codex**, and a pinned stdio MCP server (`deps mcp`) for
-  other MCP-capable agents.
-- **`sealed-data`** — lets
-  agents build and run data pipelines against approved data cards without
-  reading the real dataset.
-
-```bash
-# Once `deps` is published / installed on PATH:
-cd /path/to/your-repo
-
-# 1. Baseline today's module couplings; new cross-boundary imports fail from now on:
-deps aac init .
-git add .deps/architecture.bundle.json
-
-# 2. Install pre-edit + Stop hooks for the agent you use:
-deps agent-hook install . --host claude --host-version "$(claude --version)" --enforce
-deps agent-hook install . --host codex --with-mcp
-
-# 3. Run the same gates locally or in CI and keep the replayable receipt:
-deps security-audit .
-deps agent-verify . --receipt .deps/receipt.json --remediate
-```
-
-To keep real datasets out of agent context once `sealed-data` is installed, run
-`sealed-data seal` followed by `sealed-data hook install .`.
+- **`deps`** *(upcoming)* — single-binary Rust carrier for Architecture-as-Code
+  ratchets (`deps aac`), secret-reference hygiene (`deps security-audit`), agent
+  lifecycle hooks (`deps agent-hook`), and replayable verification receipts
+  (`deps agent-verify`).
+- **`sealed-data`** *(upcoming)* — lets agents build and run data pipelines
+  against approved data cards (`sealed-data seal`) without reading raw datasets.
 
 ---
 
@@ -203,7 +181,7 @@ To keep real datasets out of agent context once `sealed-data` is installed, run
    - If you enable GitHub **Merge Queue**, also add `merge_group:` under `on:` and resolve `${{ github.event.merge_group.head_sha || github.event.pull_request.head.sha || github.sha }}` — the default templates wire `pull_request` only.
    - Treat PR-controlled CI as **candidate / advisory** — never self-attesting.
 2. **Enforcement-Surface `CODEOWNERS` (`L2`)**:
-   - Protect `.github/`, `Makefile`, `AGENTS.md`, `CLAUDE.md`, schemas, and gate scripts via `.github/CODEOWNERS` (see `profiles/L2-governed/CODEOWNERS.example`). Replace `@org/...` placeholders with real team/user handles — `check-product-compliance.sh --profile L2` fails closed if `@org/` remains, because GitHub silently skips unknown owners.
+   - Protect `.github/`, `Makefile`, `AGENTS.md`, `CLAUDE.md`, schemas, and gate scripts via `.github/CODEOWNERS` (see `profiles/L2-governed/CODEOWNERS.example`). Replace `@org/...` placeholders with real team/user handles — `audit-repo.py --profile L2` fails closed if `@org/` remains, because GitHub silently skips unknown owners.
 3. **GitHub Repository Ruleset on `main` (`L2`)**:
    Import `profiles/L2-governed/github-ruleset.import.json` directly in GitHub
    (**Settings -> Rules -> Rulesets -> New ruleset -> Import a ruleset**), then

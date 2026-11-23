@@ -79,35 +79,6 @@ Agent 最常反复引入的缺陷不在单个文件里，而在层与层之间�
 - 文档是否更新在正确权威位置
 - 生成式文字是否夸大成熟度
 
-## 输出一致性与权威
-
-对于已接入 UI Assurance 的仓库，目标治理链为 `CodingTaskManifest ->
-AuthorizedDevContextSnapshot -> actual diff 与 dependency closure ->
-ValidationObligationSet -> ValidationReceipt`。Coding Agent 只拥有 candidate patch 与
-`AgentCandidateReport`。
-
-Scope expansion、derived risk、waiver approval、trusted Receipt 签发、merge 与 release
-权威都在 Agent 之外。Agent prose、一次本地成功、author self-review 或绿色 candidate CI
-不能替代结构化 identity 检查与 protected admission。即使 Agent 声明 UI out of scope，
-实际 repository diff 仍可提高 scope 并增加 obligation。
-
-## Code Health candidate 边界
-
-Code Health 是独立的 candidate assurance domain，覆盖 public surface、runtime path、
-flag、hotspot 和 retirement。Agent 可以提出 change intent 和 evidence，但不能删除
-obligation、修改 trusted baseline、批准 waiver 或签发 trusted receipt。F2 只评估 exact
-base/head pair，从 exact tree 读取 policy/baseline，并将 product registry revision 绑定为
-ancestor provenance。通用 Git/registry observation 只是 candidate evidence；不支持的语言
-adapter 必须是 `NOT_EVALUATED`，不能生成空的绿色结果。必须使用真实的
-`make code-health-test` 和 `make code-health-check` 入口；candidate 结果变绿不等于
-merge 或 release authority。
-
-Docs-only 变更使用轻量 documentation gate。共享 contract closure 不变时，纯 frontend
-presentation 或纯 backend 内部实现可以使用聚焦 suite；触及 API/schema/generated
-client/auth/flag/state/serialization/WebSocket/SSR-BFF/shared build 时，必须跑完整
-frontend/backend affected closure 和 browser/API journey。无法确定或涉及安全/release
-边界时，fail closed 到两侧完整 affected suite。
-
 ## 禁止模式
 
 - 把单个服务的 runbook 直接塞进共享标准仓库

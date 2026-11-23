@@ -175,7 +175,7 @@ make verify-all
 | **`examples/`** | 可直接运行的后端契约门禁（`pytest`）与 Playwright 三层前端 E2E 骨架 | [examples/README.zh.md](examples/README.zh.md)（[English](examples/README.md)） |
 | **`evals/`** | 19 用例确定性信任边界评测（`scripts/run-evals.py`）+ Skill 评测集 | [evals/README.zh.md](evals/README.zh.md)（[English](evals/README.md)） |
 | **`standards/`** | 9 篇双语核心标准（双环 SDLC、安全、可靠/性能与版本发布标准）+ 2 套闭合契约 | [standards/README.zh.md](standards/README.zh.md)（[English](standards/README.md)） |
-| **`scripts/`** | 10 个接入/评测脚本（`audit-repo.py`、`audit-pr-diff.py`、`check-change-sync.py`、`run-evals.py`、`bootstrap.sh`、`workspace-git.py`、`agent-claim.py`、`observe-github-ruleset.py`、`link-shared-node-deps.mjs`、`check-product-compliance.sh`）+ 3 个契约/文档校验器 | [BOOTSTRAP.zh.md](BOOTSTRAP.zh.md) |
+| **`scripts/`** | 9 个接入/评测脚本（`audit-repo.py`、`audit-pr-diff.py`、`check-change-sync.py`、`run-evals.py`、`bootstrap.sh`、`workspace-git.py`、`agent-claim.py`、`observe-github-ruleset.py`、`link-shared-node-deps.mjs`）+ 3 个契约/文档校验器 | [BOOTSTRAP.zh.md](BOOTSTRAP.zh.md) |
 | **`docs/`** | Agentic SDLC 本体论（9 实体 / 5 公理）、工作流嵌入全景、实证数据与安全工程总纲宣言 | [ontology.zh.md](docs/ontology.zh.md) · [workflow-integration.zh.md](docs/workflow-integration.zh.md) · [empirical-findings.zh.md](docs/empirical-findings.zh.md) · [manifesto.zh.md](docs/manifesto.zh.md) |
 | **`site/`** | 零依赖双语 GitHub Pages 静态官网与规范 JSON Schema 托管 | [site/index.html](site/index.html) · [在线官网](https://openagenticsecurity.github.io/agentic-sdlc/) |
 
@@ -184,7 +184,7 @@ make verify-all
 | 想使用 | 需要准备 |
 |---|---|
 | Skills、清单、档位模板、标准 | 无需任何环境——纯 Markdown、YAML 与 JSON |
-| `bootstrap.sh`、`check-product-compliance.sh` | macOS 或 Linux 上的 Bash 3.2+ 与 Git（Windows 未经测试，请使用 WSL） |
+| `bootstrap.sh` | macOS 或 Linux 上的 Bash 3.2+ 与 Git（Windows 未经测试，请使用 WSL） |
 | `audit-repo.py`、`audit-pr-diff.py`、`check-change-sync.py`、`workspace-git.py`、`agent-claim.py`、`observe-github-ruleset.py` | Python 3.11+ 标准库；`--github`、`--live` 与 `publish` 还需要 `gh` CLI |
 | `observe-github-ruleset.py --validate`、`make verify-all` | `requirements-test.txt` 中带哈希锁定的依赖 |
 | `link-shared-node-deps.mjs` | Node.js 18.3+ 与 npm |

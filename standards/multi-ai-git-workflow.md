@@ -55,6 +55,7 @@ Ignore local worktree folders through repository `.gitignore` or `.git/info/excl
 worktrees/
 .claude/worktrees/
 .cursor/worktrees/
+.codex/worktrees/
 ```
 
 ## Branch Naming
@@ -127,8 +128,8 @@ implicitly stashing, overwriting, or resetting the primary checkout.
 In a multi-repo workspace, use the bundled workspace helper:
 
 ```bash
-python3 scripts/workspace-git.py audit --root /path/to/workspace --all-repos --fetch
-python3 scripts/workspace-git.py clean-defaults --root /path/to/workspace --all-repos --no-fetch --occupied <active-repo>
+python3 scripts/workspace-git.py audit --root /path/to/workspace --fetch
+python3 scripts/workspace-git.py clean-defaults --root /path/to/workspace --no-fetch --occupied <active-repo>
 python3 scripts/workspace-git.py agent-start --root /path/to/workspace --repo <repo> --task <task-name> --branch <branch-name> --create-worktree
 ```
 
@@ -462,7 +463,7 @@ The process should be enforced in five layers so humans and AI agents follow it 
 2. **Repository hygiene**: `.gitignore` ignores local worktree namespaces and generated local state so accidental review noise is visible before PR time.
 3. **PR contract**: PR templates and branch protection require summary, dependency, validation evidence, risk/rollback, and passing checks before merge.
 4. **Automation checks**: CI or local `make check` style commands should verify docs links, required metadata, and product tests; agents must quote the exact commands they ran.
-5. **Workspace preflight**: in multi-repo workspaces, run `scripts/workspace-git.py audit --all-repos` before cross-repo work and `scripts/workspace-git.py agent-start` before editing a repository. Occupied repositories must be passed to cleanup commands with `--occupied`.
+5. **Workspace preflight**: in multi-repo workspaces, run `scripts/workspace-git.py audit --root /path/to/workspace` before cross-repo work and `scripts/workspace-git.py agent-start` before editing a repository. Occupied repositories must be passed to cleanup commands with `--occupied`.
 
 When a task spans multiple repositories, the agent should create or update PRs in dependency order, wait for required checks, merge through protected branches, then return every touched repository to its clean latest default branch before reporting completion. If a default checkout cannot be safely synced because of local-only WIP, the agent should create or point to a clean latest worktree based on `origin/<default>` and clearly report why the original checkout was not returned to default. Handoff reports must state real PR URLs, merge/local-sync status, and whether each touched repo ended on its clean latest default branch so owners do not need to ask whether the PR exists, whether it merged, or whether the local checkout is current.
 

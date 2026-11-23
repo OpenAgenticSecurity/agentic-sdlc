@@ -6,7 +6,7 @@ import subprocess
 
 REPO = Path(__file__).resolve().parents[1]
 BOOTSTRAP = REPO / "scripts" / "bootstrap.sh"
-COMPLIANCE = REPO / "scripts" / "check-product-compliance.sh"
+AUDIT = REPO / "scripts" / "audit-repo.py"
 
 
 def _run_bootstrap(*args: str) -> subprocess.CompletedProcess[str]:
@@ -97,8 +97,8 @@ def test_bootstrap_l2_with_skills_and_checklists_passes_compliance(tmp_path: Pat
     # must fail closed until real team/user handles are configured (GitHub skips
     # invalid owners silently).
     before_edit = _run_compliance("--profile", "L2", str(target))
-    assert before_edit.returncode == 1, before_edit.stdout + before_edit.stderr
-    assert "@org/" in before_edit.stderr
+    assert before_edit.returncode == 2, before_edit.stdout + before_edit.stderr
+    assert "@org/" in (before_edit.stdout + before_edit.stderr)
 
     # Once real owners are written into .github/CODEOWNERS, L2 compliance passes.
     codeowners = target / ".github/CODEOWNERS"
@@ -108,12 +108,14 @@ def test_bootstrap_l2_with_skills_and_checklists_passes_compliance(tmp_path: Pat
     )
     comp = _run_compliance("--profile", "L2", str(target))
     assert comp.returncode == 0, comp.stdout + comp.stderr
-    assert "PASS:" in comp.stdout
+    assert "FAIL=0" in comp.stdout
 
 
 def _run_compliance(*args: str) -> subprocess.CompletedProcess[str]:
+    import sys
+
     return subprocess.run(
-        ["bash", str(COMPLIANCE), *args],
+        [sys.executable, "-S", str(AUDIT), *args],
         cwd=REPO,
         text=True,
         stdout=subprocess.PIPE,
@@ -144,19 +146,19 @@ def test_bootstrap_fresh_repo_passes_matching_profile_compliance(tmp_path: Path)
         proc = _run_bootstrap("--profile", profile, "--target", str(target))
         assert proc.returncode == 0, proc.stderr
         # The script tells the adopter the exact, profile-matching follow-up check.
-        assert f"check-product-compliance.sh --profile {profile} " in proc.stdout
+        assert f"audit-repo.py --profile {profile} " in proc.stdout
 
         if profile == "L2":
             # L2 CODEOWNERS ships with @org/... placeholders and must fail closed until edited.
             unconfigured = _run_compliance("--profile", "L2", str(target))
-            assert unconfigured.returncode == 1, unconfigured.stdout + unconfigured.stderr
-            assert "@org/" in unconfigured.stderr
+            assert unconfigured.returncode == 2, unconfigured.stdout + unconfigured.stderr
+            assert "@org/" in (unconfigured.stdout + unconfigured.stderr)
             co = target / ".github/CODEOWNERS"
             co.write_text(co.read_text(encoding="utf-8").replace("@org/", "@acme/"), encoding="utf-8")
 
         comp = _run_compliance("--profile", profile, str(target))
         assert comp.returncode == 0, f"{profile}: " + comp.stdout + comp.stderr
-        assert "PASS:" in comp.stdout
+        assert "FAIL=0" in comp.stdout
 
 
 def test_bootstrap_follow_up_command_is_copy_pasteable_for_paths_with_spaces(tmp_path: Path) -> None:
@@ -166,11 +168,11 @@ def test_bootstrap_follow_up_command_is_copy_pasteable_for_paths_with_spaces(tmp
     assert proc.returncode == 0, proc.stderr
 
     follow_up = proc.stdout.rstrip().splitlines()[-1].strip()
-    assert "check-product-compliance.sh --profile L0 " in follow_up
+    assert "audit-repo.py --profile L0 " in follow_up
     # Run the printed line exactly as a user would paste it into a shell.
     pasted = subprocess.run(["bash", "-c", follow_up], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
     assert pasted.returncode == 0, pasted.stdout + pasted.stderr
-    assert "PASS:" in pasted.stdout
+    assert "FAIL=0" in pasted.stdout
 
 
 def test_bootstrap_installs_fail_closed_agent_check_entrypoint(tmp_path: Path) -> None:
@@ -204,7 +206,7 @@ def test_bootstrap_never_modifies_an_existing_makefile(tmp_path: Path) -> None:
     assert "Merge Makefile.agent-check.snippet into your existing Makefile" in proc.stdout
 
     comp = _run_compliance("--profile", "L1", str(target))
-    assert "no agent-check target" in comp.stderr
+    assert "agent-check" in (comp.stdout + comp.stderr)
 
     # Once the adopter owns an agent-check target, bootstrap leaves it alone.
     (target / "Makefile").write_text(original + "\nagent-check:\n\t@echo ok\n", encoding="utf-8")
@@ -237,22 +239,26 @@ def test_compliance_warns_when_documented_check_command_does_not_exist(tmp_path:
 
     comp = _run_compliance("--profile", "L0", str(target))
     assert comp.returncode == 0, comp.stdout + comp.stderr
-    assert "AGENTS.md names `make agent-check`" in comp.stderr
+    assert "make agent-check" in comp.stdout
 
 
-def test_compliance_without_profile_flag_says_which_profile_it_assumed(tmp_path: Path) -> None:
-    target = tmp_path / "l0-default-profile"
+def test_profile_tier_escalation_catches_missing_l1_l2_surfaces(tmp_path: Path) -> None:
+    target = tmp_path / "l0-only"
     _git_init(target)
     assert _run_bootstrap("--profile", "L0", "--target", str(target)).returncode == 0
 
-    comp = _run_compliance(str(target))
-    assert comp.returncode == 1
-    assert "no --profile given; checked against L1" in comp.stderr
-    assert "--profile L0" in comp.stderr
+    # Passes L0, but fails L1 (missing CI workflow) and L2 (missing CODEOWNERS + CI workflow)
+    assert _run_compliance("--profile", "L0", str(target)).returncode == 0
+    l1 = _run_compliance("--profile", "L1", str(target))
+    assert l1.returncode == 2
+    assert "OAS-CI-01" in l1.stdout
+    l2 = _run_compliance("--profile", "L2", str(target))
+    assert l2.returncode == 2
+    assert "OAS-CI-04" in l2.stdout
 
-    explicit = _run_compliance("--profile", "L1", str(target))
-    assert explicit.returncode == 1
-    assert "no --profile given" not in explicit.stderr
+    # And this repository passes its own L1 profile check cleanly (dogfooding)
+    self_check = _run_compliance("--profile", "L1", str(REPO))
+    assert self_check.returncode == 0, self_check.stdout + self_check.stderr
 
 
 def test_bootstrap_ci_flag_installs_language_workflow_template(tmp_path: Path) -> None:

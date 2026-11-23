@@ -346,4 +346,4 @@ if [[ "$WITH_SKILLS" -eq 1 ]] && [[ "$SKILLS_DIR_SET" -eq 0 ]]; then
 fi
 echo "Verify adoption signals (read-only):"
 # %q keeps the printed command copy-pasteable when a path contains spaces.
-printf '  bash %q --profile %s %q\n' "$SCRIPT_DIR/check-product-compliance.sh" "$PROFILE" "$TARGET"
+printf '  python3 %q --profile %s %q\n' "$SCRIPT_DIR/audit-repo.py" "$PROFILE" "$TARGET"

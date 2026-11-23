@@ -101,10 +101,10 @@ Issue 只能在以下条件满足后关闭：
 - `Makefile` 提供 `agent-check` 或等价本地命令，供 AI agent 在交接前运行。
 - 仓库本地 `docs/VIBE_CODING_CONTEXT.md` 和 `docs/architecture/STATUS.md` 说明当前实现现实、主流程和验证入口。
 
-可用内置脚本检查任意仓库的合规状态：
+可用内置只读自检脚本检查任意仓库的档位合规状态：
 
 ```bash
-bash scripts/check-product-compliance.sh --profile L1 /path/to/your-repo
+python3 scripts/audit-repo.py --profile L1 /path/to/your-repo
 ```
 
 或执行 `make product-compliance REPO=/path/to/your-repo`。该检查不能替代 code review，但可以暴露哪些仓库尚未把闭环规则接入入口文件、模板和本地检查。

@@ -3,7 +3,7 @@
 **状态**: accepted baseline
 **更新日期**: 2026-11-20
 **English**: [frontend-vibe-coding-review.md](frontend-vibe-coding-review.md)
-**实证来源**: [《Vibe Coding 的前端生死体验》](https://fz.cool/vibe-coding-issues-in-frontend/)（~10 万行 React/TS 前端 454 个去重问题；321 个可判断成因；216 个可判断发现渠道）
+**实证依据**: [实证发现 §3](../docs/empirical-findings.zh.md)（~10 万行 React/TS 前端 454 个去重问题；321 个可判断成因；216 个可判断发现渠道）
 
 > **残酷现实**：后端出错会给你 HTTP 500 和堆栈；前端出错往往给你一个**看起来很正常的页面**。单测、TypeScript 与 CI 自己发现的问题仅占 **7%**（且多数靠浏览器 QA Agent）；**35%** 是人用的时候撞上的，**31%** 靠深度审计挖出来。
 

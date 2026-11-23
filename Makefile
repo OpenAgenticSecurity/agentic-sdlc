@@ -15,14 +15,12 @@ check: affected-test-closure-check governance-enforcement-evidence-check
 
 affected-test-closure-check:
 	$(PYTHON) scripts/check-affected-closure.py --root "$(CURDIR)" check
-	$(PYTHON) -m pytest -q tests/affected_closure/test_contract.py
 
 governance-enforcement-evidence-check:
 	$(PYTHON) scripts/check-enforcement-evidence.py --root "$(CURDIR)" check
-	$(PYTHON) -m pytest -q tests/affected_closure/test_enforcement_evidence.py tests/affected_closure/test_observe_github_ruleset.py
 
 agent-governance-test:
-	$(PYTHON) -m pytest -q tests --ignore=tests/affected_closure
+	$(PYTHON) -m pytest -q tests
 
 lint:
 	$(PYTHON) -m ruff check --no-cache .
@@ -64,4 +62,4 @@ audit-pr-diff:
 
 product-compliance:
 	@test -n "$(REPO)" || (echo "Usage: make product-compliance REPO=/path/to/repo [PROFILE=L0|L1|L2]" && exit 1)
-	bash scripts/check-product-compliance.sh --profile "$(PROFILE)" "$(REPO)"
+	$(PYTHON) -S scripts/audit-repo.py --profile "$(PROFILE)" "$(REPO)"

@@ -101,10 +101,10 @@ Every adopting repository should expose these entry points and automation signal
 - `Makefile` provides `agent-check` (or an equivalent local command) for agents before handoff.
 - Repo-local `docs/VIBE_CODING_CONTEXT.md` and `docs/architecture/STATUS.md` describe implementation reality, primary flows, and verification entry points.
 
-Run the bundled compliance script against any repository:
+Run the bundled read-only profile check against any repository:
 
 ```bash
-bash scripts/check-product-compliance.sh --profile L1 /path/to/your-repo
+python3 scripts/audit-repo.py --profile L1 /path/to/your-repo
 ```
 
 Or use `make product-compliance REPO=/path/to/your-repo`. This check does not replace code review, but it exposes repositories that have not wired the loop into their entry files, templates, and local checks.

@@ -37,8 +37,8 @@
 
 - 仅改变 frontend presentation、样式或局部交互，且没有改变
   公开 contract/API、schema、generated client、auth/permission、feature flag、共享状态、serialization
-  格式、WebSocket contract、SSR/BFF 行为或共享构建配置：运行 frontend lint/type、
-  聚焦 unit/component 测试和适用的 UI Assurance obligation；不要求仅因目录标签而
+  格式、WebSocket contract、SSR/BFF 行为或共享构建配置：运行 frontend lint/type 与
+  聚焦 unit/component 测试；不要求仅因目录标签而
   机械地跑完整 backend unit suite。
 - 仅改变 backend 内部实现，且没有改变上述任何共享边界：运行聚焦 backend unit
   与相关 backend integration；不要求仅因目录标签而机械地跑完整 frontend suite。
@@ -97,34 +97,6 @@ evidence，不是 trusted enforcement。修改机制的 PR 需要 architecture/c
 frontend/backend 或 full suite 的规则。产品仓库仍必须提供真实 Git diff 与测试入口 wiring
 proof；平台 checker 不复制这些 selector。
 
-## Code Health candidate 层
-
-Code Health candidate contract 与 UI Assurance、Product Architecture 是独立的
-assurance domain。`make code-health-test` 运行共享原语 characterization tests 以及
-closed schema/semantic fixture suite，并关闭环境 pytest 选项和 plugin autoload；
-`make code-health-check` 是不写入的 bundle drift
-和 mutation gate。`bundle-generate` 是 maintainer 操作，不是 CI 的通过/失败捷径。
-
-F1 checker 证明 canonical identity、closed record、显式 runtime-path/feature-flag
-lifecycle、append-only retirement/waiver chain 和派生 receipt summary；F2 增加有界的
-exact base/head Git observer、exact-tree policy/baseline loading、产品拥有的 registry
-loading、typed impact/obligation compilation、candidate-receipt replay check 和确定性的
-module-context projection，并输出 `authority=candidate`、`trusted=false`。它不提供
-trusted baseline、product adapter、required status、merge/release authority，也不能授权
-跳过 periodic/full/release suite。通用 Git/registry observation 可以 evaluated，但
-Python/TypeScript route/schema adapter、generated-client analysis、migration、
-duplicate/dead-code discovery 和任意 plugin loading 仍是明确的 adapter gap，必须为
-`NOT_EVALUATED`，不能生成空的绿色结果。缺少 adapter、dependency、browser、fixture
-service 或其他 mandatory prerequisite 仍然是非绿色结果。
-
-纯 backend 内部实现且没有 public contract、schema、generated client、auth/permission、
-feature flag、共享状态、serialization、WebSocket、SSR/BFF 或共享构建影响时，聚焦的
-backend unit 和相关 integration 足够，不机械要求完整 frontend suite；纯 presentation
-frontend 变更对称适用。触及任何共享边界，或闭包不确定/安全敏感/release scope 时，形成
-一个 frontend/backend affected closure，必须有 producer/consumer contract、backend
-parser/service、frontend consumer 测试和至少一个 browser/API journey；无法界定闭包时
-升级为两侧完整 affected suite。
-
 Docs-only 变更运行 `make check`，不机械运行完整 frontend 或 backend
 套件。如果文档变更同时编辑 schema、generated contract、architecture/enforcement surface、
 shared build 或 release input，则由实际共享边界而不是 `.md` 后缀决定 affected closure
@@ -142,29 +114,6 @@ public contract，也遵循同一闭包规则。
 | 安全敏感变更 | 相关 auth、isolation、redaction 或 permission tests |
 | Release candidate | 完整测试套件 + release smoke checks |
 
-## UI Assurance 风险与证据契约
-
-UI Assurance 根据 actual diff、dependency closure、registered Surface，以及 declared 与
-derived risk 中较高者，编译最低证据：
-
-| 风险 | 最低 candidate categories |
-|---|---|
-| `C0` | scope diff 加适用的 repository lint/type checks |
-| `C1` | `C0` 加聚焦的 unit 或 component presentation checks |
-| `C2` | 适用的正向 structure、component states、browser journey、visual assertion、accessibility 与 keyboard/focus |
-| `C3` | `C2` 加 critical journeys，以及 feature flag、role、permission、tenant 与 license visibility matrix |
-| `C4` | 完整 affected closure、违规与合法对照 mutation、exact-head 独立 mechanism review，以及 independently pinned 或 protected evaluator |
-
-每条已编译 obligation 只能记录 `PASS`、`FAIL`、`NOT_RUN`、`FLAKY`、`ERROR` 或
-`NOT_APPLICABLE`。只有 `PASS` 能满足 mandatory obligation。Dependency、browser、fixture
-service 或 environment 缺失时必须为 `NOT_RUN`，candidate command 必须非零退出，不能成功
-skip。`NOT_APPLICABLE` 归确定性 compiler 所有，不能由 Agent 或既有 obligation result 声明。
-
-新的 structure rule 必须让代表性违规案例失败，同时让相邻合法对照通过。Source substring
-check、failure screenshot、automated axe output 与一次绿色执行都不能独立证明充分性。
-Visual baseline 变更需要 exact-diff review，不能由 candidate producer 自批。Release
-admission 必须绑定被测试的同一 immutable artifact digest；相同 Git revision 的重建物并不等价。
-
 ## 门禁完整性
 
 一个门禁如果存在但不运行、不覆盖被改动的文件，或者可以被悄悄放宽，只会带来虚假的
@@ -173,7 +122,8 @@ admission 必须绑定被测试的同一 immutable artifact digest；相同 Git 
 - 每个门禁都有书面 spec：检查什么、覆盖哪些文件、接受哪些绕过或 suppression、由什么
   事件触发、变红是否阻塞 merge。
 - 新增或修改的门禁，要用一个植入的违规案例证明它会变红，并用一个相邻的合法对照证明它
-  保持绿色。收集到 0 个测试、全部 skip，或 job 根本没有触发，都不算通过。
+  保持绿色。收集到 0 个测试、全部 skip，或 job 根本没有触发，都不算通过；严禁将
+  `NOT_RUN`、`FLAKY`、`ERROR` 或 `UNKNOWN` 折叠为 `PASS`。
 - Budget、baseline 和 suppression 列表只减不增。不得为了让变更通过而降低规则的严重级别。
   提高 budget 必须单独开 PR，写明原因和 owner，不能作为功能 PR 的附带改动。
 - 必须阻塞 merge 的检查，要在 branch protection 中设为 required status check。没有设为

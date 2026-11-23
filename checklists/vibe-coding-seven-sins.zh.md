@@ -3,7 +3,7 @@
 **状态**: accepted baseline
 **更新日期**: 2026-11-20
 **English**: [vibe-coding-seven-sins.md](vibe-coding-seven-sins.md)
-**实证来源**: [《Vibe Coding 生存指南》](https://fz.cool/vibe-coding-complete-guide/)（443 次真实项目会话、84 亿 Token 量化复盘）
+**实证依据**: [实证发现 §2](../docs/empirical-findings.zh.md)（443 次真实项目会话、84 亿 Token 量化复盘）
 
 > **核心结论**：结构不是速度的敌人，结构是速度的前提。小项目（`<5K` LOC、1–6 次会话）在可丢弃模式下成功率接近 100%；跨越相变临界点进入大项目（`>10K` LOC、50+ 次会话）后，缺乏结构会让成功率暴跌至约 55%，最大风险不是单次坏代码，而是跨会话的**一致性漂移**。
 
