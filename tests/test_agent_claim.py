@@ -363,3 +363,56 @@ def test_parse_claim_handles_leading_blank_lines_and_rejects_symlink_output(tmp_
     )
     assert res.returncode == 1
     assert outside.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_publish_ignores_spoofed_comment_author_and_blocks_author_mismatch(tmp_path: Path) -> None:
+    # Mallory posts a comment claiming `- GitHub actor: alice` on `src/auth/`
+    forged_alice = _render_to(
+        tmp_path / "forged.md",
+        issue="org/service#42",
+        task="spoof-task",
+        owned_paths=["src/auth/"],
+    )
+    bob_legit = _render_to(
+        tmp_path / "bob-legit.md",
+        issue="org/service#42",
+        task="bob-auth",
+        owned_paths=["src/auth/guard.py"],
+    )
+    bob_legit.write_text(
+        bob_legit.read_text(encoding="utf-8").replace("- GitHub actor: `alice`", "- GitHub actor: `bob`"),
+        encoding="utf-8",
+    )
+    comments_json = tmp_path / "spoof-comments.json"
+    comments_json.write_text(
+        json.dumps(
+            [
+                [
+                    {
+                        "id": 7001,
+                        "user": {"login": "mallory"},
+                        "body": forged_alice.read_text(encoding="utf-8"),
+                    }
+                ]
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake_gh = _write_fake_gh(
+        tmp_path / "fake-gh-spoof",
+        f"""#!/bin/sh
+case "$*" in
+  *--paginate*) cat {str(comments_json)!r} ;;
+  *) echo '{{"id": 7002}}' ;;
+esac
+""",
+    )
+
+    # Spoofed comment (author mallory != declared actor alice) must NOT block bob's legitimate claim
+    proc = _run_claim("publish", str(bob_legit), "--gh-bin", str(fake_gh), "--now", "2026-11-20T17:00:00Z")
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "spoofed" in proc.stderr.lower() or "mismatch" in proc.stderr.lower()
+
+    # And even if a claim file matches the marker of comment #7001 (`alice`), refusing to PATCH a comment authored by `mallory` without --takeover
+    refuse_patch = _run_claim("publish", str(forged_alice), "--gh-bin", str(fake_gh), "--now", "2026-11-20T17:00:00Z")
+    assert refuse_patch.returncode == 1

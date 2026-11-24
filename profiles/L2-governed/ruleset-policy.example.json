@@ -2,8 +2,7 @@
   "policy_id": "policy.example-repo.main.v1",
   "policy_version": "1.0.0",
   "required_status_contexts": [
-    "agent-check",
-    "security-scan"
+    "agent-check"
   ],
   "minimum_approving_review_count": 2,
   "require_code_owner_review": true,

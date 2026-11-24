@@ -41,17 +41,33 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Install locked dependencies (fail closed if no lockfile is configured)
+      - name: Install locked dependencies (fail closed on missing or unpinned lockfile)
         run: |
           set -euo pipefail
-          # Prefer hash-locked requirements (`--require-hashes --only-binary=:all:`) or `uv sync --frozen`.
-          # Never install unpinned floating packages in security-critical CI.
-          if [ -f requirements-dev.txt ]; then
-            python -m pip install -r requirements-dev.txt
-          elif [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt
+          req_file=""
+          for candidate in requirements.lock requirements-dev.lock requirements-dev.txt requirements.txt; do
+            if [ -f "$candidate" ]; then
+              req_file="$candidate"
+              break
+            fi
+          done
+          if [ -n "$req_file" ]; then
+            if grep -q -- '--hash=sha256:' "$req_file"; then
+              python -m pip install --require-hashes --only-binary=:all: -r "$req_file"
+            else
+              # Reject floating or unpinned package lines (every package line must pin exact `==`)
+              bad_lines="$(grep -Ev '^[[:space:]]*(#|$|-r[[:space:]]|-c[[:space:]]|--)' "$req_file" | grep -Ev '==' || true)"
+              if [ -n "$bad_lines" ]; then
+                echo "CI fail-closed: unpinned dependency specifier(s) in $req_file (pin exact == versions or --require-hashes):" >&2
+                printf '%s\n' "$bad_lines" >&2
+                exit 2
+              fi
+              python -m pip install -r "$req_file"
+            fi
+          elif [ -f uv.lock ] && command -v uv >/dev/null 2>&1; then
+            uv sync --locked --frozen
           else
-            echo "CI not configured: commit a pinned/locked dependency file (or replace this step with uv sync --frozen)." >&2
+            echo "CI not configured: commit a pinned/hash-locked requirements file (or uv.lock)." >&2
             exit 2
           fi
 

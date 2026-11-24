@@ -80,3 +80,18 @@ def test_ruff_cmd_falls_back_to_path_binary_when_module_absent(monkeypatch) -> N
     monkeypatch.setattr(importlib.util, "find_spec", lambda _name: None)
     monkeypatch.setattr(shutil, "which", lambda _name: "/usr/local/bin/ruff")
     assert _ruff_cmd() == ["/usr/local/bin/ruff"]
+
+
+def test_python_template_install_step_rejects_unpinned_requirements(tmp_path: Path) -> None:
+    workflow = yaml.safe_load(PYTHON_TEMPLATE.read_text(encoding="utf-8"))
+    install_scripts = [
+        str(step.get("run", ""))
+        for job in workflow["jobs"].values()
+        for step in job["steps"]
+        if "Install locked dependencies" in str(step.get("name", ""))
+    ]
+    assert len(install_scripts) == 1
+    (tmp_path / "requirements.txt").write_text("requests>=2.31.0\n", encoding="utf-8")
+    proc = subprocess.run(["bash", "-c", install_scripts[0]], cwd=tmp_path, text=True, capture_output=True, check=False)
+    assert proc.returncode == 2, f"unpinned requirements.txt must fail closed with exit 2, got {proc.returncode}: {proc.stderr}"
+    assert "unpinned" in proc.stderr.lower() or "==" in proc.stderr

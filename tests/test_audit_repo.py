@@ -503,3 +503,30 @@ def test_path_scoped_and_expiring_waivers_plus_sarif_and_inline_env(tmp_path: Pa
     )
     assert expired.returncode == 1
     assert "expired" in expired.stderr
+
+
+def test_scan_coverage_cap_or_oversize_emits_oas_cov_01_and_prevents_false_pass(tmp_path: Path) -> None:
+    _write_clean_repo(tmp_path)
+    (tmp_path / "src/extra.py").write_text("x = 1\n", encoding="utf-8")
+    (tmp_path / "src/big.js").write_text("export const big = '" + ("a" * 128) + "';\n", encoding="utf-8")
+
+    # Cap at 1 file and 32 bytes so both file-count truncation and oversize skip occur
+    proc = _run_audit(
+        str(tmp_path),
+        "--github-ruleset-file",
+        str(STRONG_RULESET),
+        "--max-files",
+        "1",
+        "--max-file-bytes",
+        "32",
+        "--format",
+        "json",
+        isolated=True,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    report = json.loads(proc.stdout)
+    by_rule = {item["rule_id"]: item for item in report["findings"]}
+    assert "OAS-COV-01" in by_rule
+    assert by_rule["OAS-COV-01"]["status"] == "WARN"
+    # Incomplete scan coverage must NEVER produce derived_status == "PASS"
+    assert report["derived_status"] == "PARTIAL"

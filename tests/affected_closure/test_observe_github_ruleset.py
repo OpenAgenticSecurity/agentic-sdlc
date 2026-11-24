@@ -24,7 +24,6 @@ def _strong_raw_ruleset(
         required_contexts
         if required_contexts is not None
         else [
-            "security-scan",
             "agent-check",
         ]
     )
@@ -106,7 +105,6 @@ def test_offline_strong_ruleset_passes_validate_and_computes_exact_digest(tmp_pa
     ]
     assert observed_contexts == [
         "agent-check",
-        "security-scan",
     ]
 
 
@@ -114,7 +112,7 @@ def test_weak_rulesets_fail_validate_with_exit_code_2(tmp_path: Path) -> None:
     cases = [
         (
             "missing-status",
-            _strong_raw_ruleset(required_contexts=["agent-check"]),
+            _strong_raw_ruleset(required_contexts=[]),
             "required status",
         ),
         (

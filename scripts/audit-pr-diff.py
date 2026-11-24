@@ -80,6 +80,13 @@ SKIP_TEST_RE = re.compile(
     r"|\bt\.Skip(?:f|Now)?\s*\("
 )
 CLI_BYPASS_RE = re.compile(r"(?<!\w)(?:--no-verify|--passWithNoTests)\b")
+TAUTOLOGICAL_ASSERT_RE = re.compile(
+    r"^\s*assert\s+(?:True|1|not\s+False)\s*(?:[,;#]|$)"
+    r"|\bexpect\s*\(\s*(?:true|1)\s*\)\s*\.\s*(?:toBe\s*\(\s*(?:true|1)\s*\)|toBeTruthy\s*\(\s*\))"
+    r"|\bassert!\s*\(\s*true\s*\)"
+    r"|\bassert_eq!\s*\(\s*(?:true\s*,\s*true|1\s*,\s*1)\s*\)"
+    r"|\bassertTrue\s*\(\s*true\s*\)"
+)
 ASSERT_LINE_RE = re.compile(
     r"\b(?:assert(?:_[a-z0-9_]+|[A-Z]\w*)?|pytest\.raises|expect)\b"
     r"|\b(?:require|assert)\.(?:NoError|Equal|True|False|Nil|NotNil)\s*\("
@@ -319,6 +326,11 @@ def _check_suppression_on_added_line(rel_path: str, raw_line: str) -> str | None
     skip_hit = SKIP_TEST_RE.search(unquoted)
     if skip_hit:
         return skip_hit.group(0).strip()
+    if _is_test_file(rel_path):
+        code_only = _strip_line_comments(unquoted)
+        taut_hit = TAUTOLOGICAL_ASSERT_RE.search(code_only)
+        if taut_hit:
+            return f"tautological assertion: {taut_hit.group(0).strip()}"
     p = Path(rel_path)
     if p.suffix.lower() in BYPASS_FLAG_FILES or p.name in {"Makefile", "makefile", "GNUmakefile"}:
         # In workflow/config files, CLI flags may sit inside YAML string quotes, so scan raw_line excluding comments.
@@ -334,6 +346,8 @@ def _is_assertion_line(raw_line: str, *, rel_path: str = "") -> bool:
     if not stripped or stripped.startswith(("#", "//", "/*", "*")):
         return False
     code_only = _strip_line_comments(_strip_quoted_strings(raw_line, rel_path=rel_path))
+    if TAUTOLOGICAL_ASSERT_RE.search(code_only) is not None:
+        return False
     return ASSERT_LINE_RE.search(code_only) is not None
 
 

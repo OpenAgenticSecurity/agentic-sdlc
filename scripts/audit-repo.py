@@ -1190,34 +1190,36 @@ def _audit_layer2_codeowners(target: Path, *, profile: str | None = None) -> Fin
     )
 
 
-def _iter_non_test_python_files(target: Path) -> list[Path]:
-    files: list[Path] = []
-    stack: list[Path] = [target]
-    while stack and len(files) < MAX_PY_FILES:
-        current = stack.pop()
-        try:
-            entries = sorted(current.iterdir(), reverse=True)
-        except OSError:
-            continue
-        for entry in entries:
-            if entry.is_symlink():
-                continue
-            name = entry.name
-            if entry.is_dir():
-                if name in SKIP_DIRS or name in TEST_DIR_NAMES:
-                    continue
-                stack.append(entry)
-            elif entry.is_file() and name.endswith(".py"):
-                if name.startswith("test_") or name.endswith("_test.py") or name == "conftest.py":
-                    continue
-                try:
-                    if entry.stat().st_size <= MAX_PY_FILE_BYTES:
-                        files.append(entry)
-                except OSError:
-                    continue
-                if len(files) >= MAX_PY_FILES:
-                    break
-    return sorted(files)
+@dataclass
+class ScanCoverage:
+    max_files: int = MAX_PY_FILES
+    max_file_bytes: int = MAX_PY_FILE_BYTES
+    capped_files: int = 0
+    oversize_files: list[str] | None = None
+    unreadable_files: list[str] | None = None
+
+    def record_oversize(self, rel: str) -> None:
+        if self.oversize_files is None:
+            self.oversize_files = []
+        self.oversize_files.append(rel)
+
+    def record_unreadable(self, rel: str) -> None:
+        if self.unreadable_files is None:
+            self.unreadable_files = []
+        self.unreadable_files.append(rel)
+
+    @property
+    def is_incomplete(self) -> bool:
+        return bool(self.capped_files > 0 or self.oversize_files or self.unreadable_files)
+
+
+def _iter_non_test_python_files(target: Path, coverage: ScanCoverage | None = None) -> list[Path]:
+    return _iter_source_files(
+        target,
+        frozenset({".py"}),
+        skip_file_fn=lambda name: name.startswith("test_") or name.endswith("_test.py") or name == "conftest.py",
+        coverage=coverage,
+    )
 
 
 def _attr_chain(node: ast.AST) -> list[str]:
@@ -1254,8 +1256,13 @@ def _is_broad_exception(handler: ast.ExceptHandler) -> bool:
     return False
 
 
-def _scan_python_ast(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
-    py_files = _iter_non_test_python_files(target)
+def _scan_python_ast(
+    target: Path,
+    *,
+    waivers: Sequence[WaiverSpec] = (),
+    coverage: ScanCoverage | None = None,
+) -> list[Finding]:
+    py_files = _iter_non_test_python_files(target, coverage=coverage)
     if not py_files:
         return []
 
@@ -1442,10 +1449,17 @@ def _strip_c_style_comments(source: str) -> str:
     return "".join(out)
 
 
-def _iter_source_files(target: Path, suffixes: frozenset[str], *, skip_file_fn) -> list[Path]:
+def _iter_source_files(
+    target: Path,
+    suffixes: frozenset[str],
+    *,
+    skip_file_fn: Callable[[str], bool],
+    coverage: ScanCoverage | None = None,
+) -> list[Path]:
+    cov = coverage or ScanCoverage()
     files: list[Path] = []
     stack: list[Path] = [target]
-    while stack and len(files) < MAX_PY_FILES:
+    while stack:
         current = stack.pop()
         try:
             entries = sorted(current.iterdir(), reverse=True)
@@ -1462,17 +1476,28 @@ def _iter_source_files(target: Path, suffixes: frozenset[str], *, skip_file_fn) 
             elif entry.is_file() and entry.suffix in suffixes:
                 if skip_file_fn(name):
                     continue
+                rel = entry.relative_to(target).as_posix()
                 try:
-                    if entry.stat().st_size <= MAX_PY_FILE_BYTES:
-                        files.append(entry)
+                    size = entry.stat().st_size
                 except OSError:
+                    cov.record_unreadable(rel)
                     continue
-                if len(files) >= MAX_PY_FILES:
-                    break
+                if size > cov.max_file_bytes:
+                    cov.record_oversize(rel)
+                    continue
+                if len(files) >= cov.max_files:
+                    cov.capped_files += 1
+                    continue
+                files.append(entry)
     return sorted(files)
 
 
-def _scan_js_ts(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
+def _scan_js_ts(
+    target: Path,
+    *,
+    waivers: Sequence[WaiverSpec] = (),
+    coverage: ScanCoverage | None = None,
+) -> list[Finding]:
     def _is_js_test(name: str) -> bool:
         return (
             name.endswith(".d.ts")
@@ -1481,7 +1506,7 @@ def _scan_js_ts(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Fin
             or name.startswith("test_")
         )
 
-    js_files = _iter_source_files(target, JS_TS_SUFFIXES, skip_file_fn=_is_js_test)
+    js_files = _iter_source_files(target, JS_TS_SUFFIXES, skip_file_fn=_is_js_test, coverage=coverage)
     pkg_text = _read_regular_text(target, "package.json")
     tsconfig_text = _read_regular_text(target, "tsconfig.json")
     if not js_files and pkg_text is None and tsconfig_text is None:
@@ -1494,6 +1519,8 @@ def _scan_js_ts(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Fin
         try:
             cleaned = _strip_c_style_comments(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError):
+            if coverage is not None:
+                coverage.record_unreadable(rel)
             continue
         for lineno, line in enumerate(cleaned.splitlines(), start=1):
             match = JS_SINK_RE.search(line)
@@ -1564,8 +1591,18 @@ def _scan_js_ts(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Fin
     return findings
 
 
-def _scan_go(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
-    go_files = _iter_source_files(target, frozenset({".go"}), skip_file_fn=lambda name: name.endswith("_test.go"))
+def _scan_go(
+    target: Path,
+    *,
+    waivers: Sequence[WaiverSpec] = (),
+    coverage: ScanCoverage | None = None,
+) -> list[Finding]:
+    go_files = _iter_source_files(
+        target,
+        frozenset({".go"}),
+        skip_file_fn=lambda name: name.endswith("_test.go"),
+        coverage=coverage,
+    )
     if not go_files:
         return []
     hits: list[tuple[str, int, str]] = []
@@ -1574,6 +1611,8 @@ def _scan_go(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Findin
         try:
             cleaned = _strip_c_style_comments(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError):
+            if coverage is not None:
+                coverage.record_unreadable(rel)
             continue
         for lineno, line in enumerate(cleaned.splitlines(), start=1):
             if GO_TLS_RE.search(line):
@@ -1602,8 +1641,18 @@ def _scan_go(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Findin
     ]
 
 
-def _scan_rust(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
-    rs_files = _iter_source_files(target, frozenset({".rs"}), skip_file_fn=lambda name: name.endswith("_test.rs"))
+def _scan_rust(
+    target: Path,
+    *,
+    waivers: Sequence[WaiverSpec] = (),
+    coverage: ScanCoverage | None = None,
+) -> list[Finding]:
+    rs_files = _iter_source_files(
+        target,
+        frozenset({".rs"}),
+        skip_file_fn=lambda name: name.endswith("_test.rs"),
+        coverage=coverage,
+    )
     if not rs_files:
         return []
     hits: list[tuple[str, int, str]] = []
@@ -1612,6 +1661,8 @@ def _scan_rust(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Find
         try:
             cleaned = _strip_c_style_comments(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError):
+            if coverage is not None:
+                coverage.record_unreadable(rel)
             continue
         for lineno, line in enumerate(cleaned.splitlines(), start=1):
             if RUST_TLS_RE.search(line):
@@ -1640,11 +1691,17 @@ def _scan_rust(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Find
     ]
 
 
-def _scan_java(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
+def _scan_java(
+    target: Path,
+    *,
+    waivers: Sequence[WaiverSpec] = (),
+    coverage: ScanCoverage | None = None,
+) -> list[Finding]:
     java_files = _iter_source_files(
         target,
         frozenset({".java"}),
         skip_file_fn=lambda name: name.endswith("Test.java") or name.endswith("Tests.java"),
+        coverage=coverage,
     )
     if not java_files:
         return []
@@ -1654,6 +1711,8 @@ def _scan_java(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Find
         try:
             cleaned = _strip_c_style_comments(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError):
+            if coverage is not None:
+                coverage.record_unreadable(rel)
             continue
         for lineno, line in enumerate(cleaned.splitlines(), start=1):
             if JAVA_EXEC_RE.search(line):
@@ -1682,13 +1741,41 @@ def _scan_java(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Find
     ]
 
 
-def _scan_multi_language_traps(target: Path, *, waivers: Sequence[WaiverSpec] = ()) -> list[Finding]:
+def _scan_multi_language_traps(
+    target: Path,
+    *,
+    waivers: Sequence[WaiverSpec] = (),
+    coverage: ScanCoverage | None = None,
+) -> list[Finding]:
+    cov = coverage if coverage is not None else ScanCoverage()
     findings: list[Finding] = []
-    findings.extend(_scan_python_ast(target, waivers=waivers))
-    findings.extend(_scan_js_ts(target, waivers=waivers))
-    findings.extend(_scan_go(target, waivers=waivers))
-    findings.extend(_scan_rust(target, waivers=waivers))
-    findings.extend(_scan_java(target, waivers=waivers))
+    findings.extend(_scan_python_ast(target, waivers=waivers, coverage=cov))
+    findings.extend(_scan_js_ts(target, waivers=waivers, coverage=cov))
+    findings.extend(_scan_go(target, waivers=waivers, coverage=cov))
+    findings.extend(_scan_rust(target, waivers=waivers, coverage=cov))
+    findings.extend(_scan_java(target, waivers=waivers, coverage=cov))
+    if cov.is_incomplete:
+        parts: list[str] = []
+        if cov.capped_files > 0:
+            parts.append(f"{cov.capped_files} file(s) beyond --max-files={cov.max_files}")
+        if cov.oversize_files:
+            parts.append(
+                f"{len(cov.oversize_files)} oversize file(s) >{cov.max_file_bytes}B ({', '.join(cov.oversize_files[:3])})"
+            )
+        if cov.unreadable_files:
+            parts.append(
+                f"{len(cov.unreadable_files)} unreadable/non-UTF-8 file(s) ({', '.join(cov.unreadable_files[:3])})"
+            )
+        findings.append(
+            Finding(
+                rule_id="OAS-COV-01",
+                layer="L2",
+                status="WARN",
+                title="Partial static scan coverage — skipped file(s) not evaluated",
+                detail="; ".join(parts) + ".",
+                remediation="Raise --max-files / --max-file-bytes or wire dedicated full-repo SAST (Ruff S / Semgrep / CodeQL / deps).",
+            )
+        )
     if not findings:
         return [
             Finding(
@@ -2048,13 +2135,18 @@ def audit_repository(
     default_branch: str | None = None,
     gh_bin: str = "gh",
     timeout: int = 30,
+    max_files: int = MAX_PY_FILES,
+    max_file_bytes: int = MAX_PY_FILE_BYTES,
 ) -> dict[str, object]:
     if target.is_symlink() or not target.is_dir():
         raise AuditInputError(f"target must be an existing non-symlink directory: {target}")
     if profile is not None and profile not in {"L0", "L1", "L2"}:
         raise AuditInputError(f"profile must be L0, L1, or L2, got {profile!r}")
+    if max_files < 1 or max_file_bytes < 1:
+        raise AuditInputError("max_files and max_file_bytes must be >= 1")
     resolved = target.resolve()
     waiver_list = tuple(waivers)
+    coverage = ScanCoverage(max_files=max_files, max_file_bytes=max_file_bytes)
 
     findings: list[Finding] = []
     findings.extend(_audit_layer1_context(resolved, profile=profile))
@@ -2062,7 +2154,7 @@ def audit_repository(
     findings.extend(_audit_layer2_agent_surfaces(resolved, waivers=waiver_list))
     findings.extend(_audit_layer2_workflows(resolved, profile=profile, waivers=waiver_list))
     findings.append(_audit_layer2_codeowners(resolved, profile=profile))
-    findings.extend(_scan_multi_language_traps(resolved, waivers=waiver_list))
+    findings.extend(_scan_multi_language_traps(resolved, waivers=waiver_list, coverage=coverage))
     findings.extend(
         _audit_layer3_github(
             target=resolved,
@@ -2101,10 +2193,15 @@ def audit_repository(
         status: sum(1 for item in findings if item.status == status)
         for status in ("PASS", "WARN", "FAIL", "WAIVED", "NOT_RUN", "NOT_APPLICABLE")
     }
+    incomplete_cov = coverage.is_incomplete or any(f.rule_id == "OAS-SVC-PARSE" for f in findings)
     derived_status = (
         "FAIL"
         if counts["FAIL"] > 0
-        else ("PARTIAL" if counts["NOT_RUN"] > 0 else ("WAIVED" if counts["WAIVED"] > 0 else "PASS"))
+        else (
+            "PARTIAL"
+            if counts["NOT_RUN"] > 0 or incomplete_cov
+            else ("WAIVED" if counts["WAIVED"] > 0 else "PASS")
+        )
     )
 
     return {
@@ -2261,6 +2358,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=30,
         help="Timeout in seconds for live GitHub CLI calls (default: 30).",
     )
+    parser.add_argument(
+        "--max-files",
+        type=int,
+        default=MAX_PY_FILES,
+        help=f"Maximum source files per language scan before reporting OAS-COV-01 PARTIAL (default: {MAX_PY_FILES}).",
+    )
+    parser.add_argument(
+        "--max-file-bytes",
+        type=int,
+        default=MAX_PY_FILE_BYTES,
+        help=f"Maximum bytes per source file before reporting OAS-COV-01 PARTIAL (default: {MAX_PY_FILE_BYTES}).",
+    )
     return parser
 
 
@@ -2285,6 +2394,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             default_branch=args.default_branch,
             gh_bin=args.gh_bin,
             timeout=args.timeout,
+            max_files=args.max_files,
+            max_file_bytes=args.max_file_bytes,
         )
     except AuditNotRunError as exc:
         print(str(exc), file=sys.stderr)

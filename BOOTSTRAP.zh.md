@@ -143,7 +143,7 @@ python3 /path/to/agentic-sdlc/scripts/workspace-git.py guardrails \
 2. **门禁表面 `CODEOWNERS`（`L2`）**：
    - 将 `.github/`、`Makefile`、`AGENTS.md`、`CLAUDE.md`、Schema 与校验脚本纳入 `.github/CODEOWNERS` 审查边界（见 `profiles/L2-governed/CODEOWNERS.example`）。务必把 `@org/...` 占位符替换为真实 team/用户 handle——`audit-repo.py --profile L2` 发现 `@org/` 会直接 fail closed（GitHub 会静默跳过无效所有者）。
 3. **配置 GitHub `main` 分支 Ruleset（`L2`）**：
-   直接在 GitHub 页面导入 `profiles/L2-governed/github-ruleset.import.json`（**Settings -> Rules -> Rulesets -> New ruleset -> Import a ruleset**），把其中的 `agent-check` / `security-scan` 替换为你的真实 CI job 名（如未使用 GitHub Actions，请同步替换 `integration_id: 15368`）——默认强制开启 `~DEFAULT_BRANCH`、`>=2` 审批、`require_code_owner_review`、`dismiss_stale_reviews_on_push`、`require_last_push_approval`、绑定来源的 `required_status_checks`，并禁止任何无条件（`always`/`exempt`）或未列入白名单（`allowed_pull_request_bypass_actors`）的 `pull_request` bypass 主体。
+   直接在 GitHub 页面导入 `profiles/L2-governed/github-ruleset.import.json`（**Settings -> Rules -> Rulesets -> New ruleset -> Import a ruleset**），默认必过检查 `agent-check` 与 `L1` 模板开箱对齐（可按需修改或追加自定义 CI job 名；如未使用 GitHub Actions，请同步替换 `integration_id: 15368`）——默认强制开启 `~DEFAULT_BRANCH`、`>=2` 审批、`require_code_owner_review`、`dismiss_stale_reviews_on_push`、`require_last_push_approval`、绑定来源的 `required_status_checks`，并禁止任何无条件（`always`/`exempt`）或未列入白名单（`allowed_pull_request_bypass_actors`）的 `pull_request` bypass 主体。
 4. **只读体检你的线上 Ruleset**：
    需要已登录的 `gh` CLI；`--validate` 还需要哈希锁定依赖文件里的 `jsonschema`：
    ```bash

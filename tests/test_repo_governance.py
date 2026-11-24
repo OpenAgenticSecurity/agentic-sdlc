@@ -334,6 +334,22 @@ def test_repository_dogfoods_its_own_agentic_sync_config() -> None:
     assert payload["derived_status"] == "FAIL"
 
 
+def test_l2_ruleset_contexts_match_l1_workflow_job_names() -> None:
+    ruleset = json.loads((REPO / "profiles/L2-governed/github-ruleset.import.json").read_text(encoding="utf-8"))
+    policy = json.loads((REPO / "profiles/L2-governed/ruleset-policy.example.json").read_text(encoding="utf-8"))
+    rs_contexts = [
+        chk["context"]
+        for rule in ruleset["rules"]
+        if rule["type"] == "required_status_checks"
+        for chk in rule["parameters"]["required_status_checks"]
+    ]
+    assert rs_contexts == policy["required_status_contexts"] == ["agent-check"]
+    for wf_path in TEMPLATE_WORKFLOWS:
+        parsed = yaml.safe_load(wf_path.read_text(encoding="utf-8"))
+        job_names = {job.get("name", jid) for jid, job in parsed["jobs"].items()}
+        assert set(rs_contexts) <= job_names, f"{wf_path.name} jobs {job_names} do not satisfy L2 contexts {rs_contexts}"
+
+
 def test_own_workflows_only_call_existing_make_targets_and_input_files() -> None:
     makefile_text = (REPO / "Makefile").read_text(encoding="utf-8")
     make_target_re = re.compile(r"\bmake\s+([a-z0-9-]+)\b")

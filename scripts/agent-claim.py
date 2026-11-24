@@ -547,6 +547,8 @@ def _cmd_publish(args: argparse.Namespace) -> int:
     other_claims: list[AgentClaimRecord] = []
     for comment in comments:
         body = str(comment.get("body", ""))
+        user_obj = comment.get("user")
+        comment_author = str(user_obj.get("login", "")) if isinstance(user_obj, dict) else ""
         first_line = _first_non_empty_line(body)
         if first_line == claim.marker and existing_id is None:
             raw_id = comment.get("id")
@@ -556,11 +558,28 @@ def _cmd_publish(args: argparse.Namespace) -> int:
             continue
         if MARKER_RE.fullmatch(first_line):
             try:
-                other_claims.append(parse_claim(body, source=f"comment#{comment.get('id', '?')}"))
+                parsed_other = parse_claim(body, source=f"comment#{comment.get('id', '?')}")
             except ClaimProtocolError:
                 continue
+            if comment_author and comment_author.lower() != parsed_other.github_actor.lower():
+                print(
+                    f"WARN: ignoring spoofed claim comment #{comment.get('id', '?')} "
+                    f"(comment author {comment_author!r} != declared GitHub actor {parsed_other.github_actor!r})",
+                    file=sys.stderr,
+                )
+                continue
+            other_claims.append(parsed_other)
 
     if existing_comment is not None:
+        user_obj = existing_comment.get("user")
+        comment_author = str(user_obj.get("login", "")) if isinstance(user_obj, dict) else ""
+        if comment_author and comment_author.lower() != claim.github_actor.lower() and not args.takeover:
+            print(
+                f"agent-claim error: refusing to overwrite comment #{existing_id} authored by "
+                f"{comment_author!r} (claim declares {claim.github_actor!r}); pass --takeover to reassign",
+                file=sys.stderr,
+            )
+            return 1
         existing_body = str(existing_comment.get("body", ""))
         try:
             existing_parsed = parse_claim(existing_body, source=f"comment#{existing_id}")
@@ -576,16 +595,6 @@ def _cmd_publish(args: argparse.Namespace) -> int:
                     f"agent-claim error: refusing to overwrite active claim comment #{existing_id} "
                     f"owned by {existing_parsed.github_actor!r} (session {existing_parsed.session!r}); "
                     "use a distinct --task or pass --takeover to reassign",
-                    file=sys.stderr,
-                )
-                return 1
-        else:
-            user_obj = existing_comment.get("user")
-            comment_author = str(user_obj.get("login", "")) if isinstance(user_obj, dict) else ""
-            if comment_author and comment_author.lower() != claim.github_actor.lower() and not args.takeover:
-                print(
-                    f"agent-claim error: refusing to overwrite comment #{existing_id} authored by "
-                    f"{comment_author!r}; pass --takeover to reassign",
                     file=sys.stderr,
                 )
                 return 1

@@ -195,7 +195,7 @@ make verify-all
 | 仓库 | 定位 |
 |---|---|
 | **`agentic-sdlc`**（本仓） | 方法论、9 篇标准、10 套清单、6 个独立 Skills、可复用 `action.yml`、L0–L2 启动包与 Git/Ruleset 脚本 |
-| **`deps`** *（即将开源于 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)）* | 第二层可选单二进制 Rust **工程承载**：Tree-sitter `deps context`/`locate`、`deps aac init`/`check`、`deps lineage-audit`、`deps security-audit`/`security-filter`、Claude Code 与 Codex 生命周期钩子（`deps agent-hook install`）、`deps agent-verify --receipt` |
+| **`deps`** *（即将开源于 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)）* | 与 `agentic-sdlc` 互补的单二进制 Rust **AST 编译器**：Tree-sitter `deps aac` 边界棘轮、`deps impact --base`（静态 AST 反向依赖 + 跨层语义消费者 + `.agentic-sync.json` 隐式耦合对账与空壳测试拦截）、依赖版本 API 守卫、`deps affected-closure`、生命周期钩子与 `deps agent-verify --receipt` |
 | **`sealed-data`** *（即将开源于 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)）* | 可选 Rust CLI：让 Agent 只基于审批后的 Data Card 开发和运行数据管道（`sealed-data seal`），不读取真实数据集 |
 | **`assurance-contracts`** *（即将开源于 [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity)）* | 可选的企业级 L2 协议套件：面向自建 Guardian 的 UI Assurance（8 Schema）与 Code Health（10 Schema）闭合契约与校验器 |
 

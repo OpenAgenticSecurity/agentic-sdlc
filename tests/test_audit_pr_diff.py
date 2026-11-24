@@ -220,3 +220,21 @@ def test_multiline_docstrings_and_template_literals_do_not_false_positive(tmp_pa
     proc = _run_referee("--repo", str(repo), "--base", "HEAD~1", "--head", "HEAD", "--format", "json")
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert {f["rule_id"]: f for f in json.loads(proc.stdout)["findings"]}["OAS-DIFF-02"]["status"] == "PASS"
+
+
+def test_catches_tautological_assertions_replacing_real_assertions(tmp_path: Path) -> None:
+    repo = _init_repo(tmp_path)
+    # Replace a real assertion with `assert True` (same line count!) + add `expect(true).toBe(true)`
+    (repo / "tests/test_calc.py").write_text(
+        "from src.calc import add\n\n\ndef test_add() -> None:\n    assert add(1, 2) == 3\n    assert True\n",
+        encoding="utf-8",
+    )
+    (repo / "tests/ui.spec.ts").write_text("test('x', () => { expect(true).toBe(true); });\n", encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "replace real assert with assert True")
+
+    proc = _run_referee("--repo", str(repo), "--base", "HEAD~1", "--head", "HEAD", "--format", "json")
+    assert proc.returncode == 2, proc.stdout + proc.stderr
+    items = "\n".join({f["rule_id"]: f for f in json.loads(proc.stdout)["findings"]}["OAS-DIFF-02"]["items"])
+    assert "tests/test_calc.py" in items
+    assert "tests/ui.spec.ts" in items

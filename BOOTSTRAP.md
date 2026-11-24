@@ -184,9 +184,10 @@ merge boundary. Two upcoming optional sibling CLIs under
    - Protect `.github/`, `Makefile`, `AGENTS.md`, `CLAUDE.md`, schemas, and gate scripts via `.github/CODEOWNERS` (see `profiles/L2-governed/CODEOWNERS.example`). Replace `@org/...` placeholders with real team/user handles — `audit-repo.py --profile L2` fails closed if `@org/` remains, because GitHub silently skips unknown owners.
 3. **GitHub Repository Ruleset on `main` (`L2`)**:
    Import `profiles/L2-governed/github-ruleset.import.json` directly in GitHub
-   (**Settings -> Rules -> Rulesets -> New ruleset -> Import a ruleset**), then
-   replace `agent-check` / `security-scan` with your exact CI job names (and
-   replace `integration_id: 15368` if your CI is not GitHub Actions). It
+   (**Settings -> Rules -> Rulesets -> New ruleset -> Import a ruleset**); its
+   default required check `agent-check` matches the `L1` templates out of the
+   box (add or rename contexts to match your CI jobs, and replace
+   `integration_id: 15368` if your CI is not GitHub Actions). It
    enforces `~DEFAULT_BRANCH`, `required_approving_review_count >= 2`,
    `require_code_owner_review`, `dismiss_stale_reviews_on_push`,
    `require_last_push_approval`, source-bound `required_status_checks`, and zero

@@ -196,7 +196,7 @@ Do **not** copy `standards/` into your product repo, and never point your agent 
 | Repository | Role |
 |---|---|
 | **`agentic-sdlc`** (this repo) | Methodology, 9 standards, 10 checklists, 6 standalone Skills, reusable `action.yml`, L0–L2 kits & Git/Ruleset scripts |
-| **`deps`** *(upcoming in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))* | Optional single-binary Rust **engineering carrier** for Layer 2: Tree-sitter `deps context`/`locate`, `deps aac init`/`check`, `deps lineage-audit`, `deps security-audit`/`security-filter`, Claude Code & Codex lifecycle hooks (`deps agent-hook install`), and `deps agent-verify --receipt` |
+| **`deps`** *(upcoming in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))* | Optional single-binary Rust **AST carrier** complementing `agentic-sdlc`: Tree-sitter `deps aac` boundary ratchets, `deps impact --base` (Static AST + Semantic consumer + `.agentic-sync.json` reconciliation & vacuous-test check), pinned-dependency API guard, `deps affected-closure`, lifecycle hooks, and `deps agent-verify --receipt` |
 | **`sealed-data`** *(upcoming in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))* | Optional Rust CLI that lets agents build and run data pipelines against approved data cards (`sealed-data seal`) without reading the real dataset |
 | **`assurance-contracts`** *(upcoming in [OpenAgenticSecurity](https://github.com/OpenAgenticSecurity))* | Optional enterprise L2 protocol suite: 18 closed JSON Schemas & candidate checkers for UI Assurance and Code Health retirement ledgers |
 
